@@ -82,16 +82,29 @@ int CALLBACK WinMain(
     ShowWindow(hwnd, cmdShow);
     UpdateWindow(hwnd);
 
-    // Create a dispatcher queue for our thread
+    // Create a DispatcherQueue for our thread
     auto controller = CreateDispatcherQueueController();
+
+    // Initialize D3D
+    auto d3dDevice = CreateD3DDevice();
+    auto d2dFactory = CreateD2DFactory();
+    auto d2dDevice = CreateD2DDevice(d2dFactory, d3dDevice);
 
     // Initialize Composition
     auto compositor = Compositor();
+    auto compositionGraphics = CreateCompositionGraphicsDevice(compositor, d2dDevice.get());
     auto target = CreateDesktopWindowTarget(compositor, hwnd);
     auto root = compositor.CreateSpriteVisual();
     root.RelativeSizeAdjustment({ 1.0f, 1.0f });
     root.Brush(compositor.CreateColorBrush(Colors::CornflowerBlue()));
     target.Root(root);
+
+    // Enqueue our capture work on the dispatcher
+    auto queue = controller.DispatcherQueue();
+    auto success = queue.TryEnqueue([=]() -> void
+    {
+
+    });
 
     // Message pump
     MSG msg;

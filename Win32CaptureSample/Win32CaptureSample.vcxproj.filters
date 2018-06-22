@@ -6,5 +6,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
+    <ClInclude Include="d3dHelpers.h" />
+    <ClInclude Include="composition.interop.h" />
+    <ClInclude Include="direct3d11.interop.h" />
   </ItemGroup>
 </Project>
