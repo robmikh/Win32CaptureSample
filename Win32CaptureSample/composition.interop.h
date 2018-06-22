@@ -44,3 +44,16 @@ inline void SurfaceEndDraw(
     auto surfaceInterop = surface.as<ABI::Windows::UI::Composition::ICompositionDrawingSurfaceInterop>();
     winrt::check_hresult(surfaceInterop->EndDraw());
 }
+
+inline auto CreateCompositionSurfaceForSwapChain(
+    winrt::Windows::UI::Composition::Compositor const& compositor,
+    ::IUnknown* swapChain)
+{
+    winrt::Windows::UI::Composition::ICompositionSurface surface{ nullptr };
+    auto compositorInterop = compositor.as<ABI::Windows::UI::Composition::ICompositorInterop>();
+    winrt::com_ptr<ABI::Windows::UI::Composition::ICompositionSurface> surfaceInterop;
+    winrt::check_hresult(compositorInterop->CreateCompositionSurfaceForSwapChain(swapChain, surfaceInterop.put()));
+    winrt::check_hresult(surfaceInterop->QueryInterface(winrt::guid_of<winrt::Windows::UI::Composition::ICompositionSurface>(),
+        reinterpret_cast<void**>(winrt::put_abi(surface))));
+    return surface;
+}

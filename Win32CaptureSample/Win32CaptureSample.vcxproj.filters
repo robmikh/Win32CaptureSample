@@ -3,11 +3,16 @@
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="App.cpp" />
+    <ClCompile Include="SimpleCapture.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="d3dHelpers.h" />
     <ClInclude Include="composition.interop.h" />
     <ClInclude Include="direct3d11.interop.h" />
+    <ClInclude Include="App.h" />
+    <ClInclude Include="SimpleCapture.h" />
+    <ClInclude Include="safe_flag.h" />
   </ItemGroup>
 </Project>

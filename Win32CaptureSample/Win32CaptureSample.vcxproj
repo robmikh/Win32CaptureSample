@@ -135,14 +135,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="App.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="pch.cpp" />
+    <ClCompile Include="SimpleCapture.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="App.h" />
     <ClInclude Include="composition.interop.h" />
     <ClInclude Include="d3dHelpers.h" />
     <ClInclude Include="direct3d11.interop.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="safe_flag.h" />
+    <ClInclude Include="SimpleCapture.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
