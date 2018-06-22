@@ -1,4 +1,5 @@
 #include "pch.h"
+#include <ShObjIdl.h>
 
 using namespace winrt;
 using namespace Windows::UI;
@@ -29,6 +30,14 @@ DesktopWindowTarget CreateDesktopWindowTarget(Compositor const& compositor, HWND
     DesktopWindowTarget target{ nullptr };
     check_hresult(interop->CreateDesktopWindowTarget(window, true, reinterpret_cast<abi::IDesktopWindowTarget**>(put_abi(target))));
     return target;
+}
+
+fire_and_forget StartCapture(HWND window)
+{
+    auto picker = Windows::Graphics::Capture::GraphicsCapturePicker();
+    auto initializer = picker.as<IInitializeWithWindow>();
+    check_hresult(initializer->Initialize(window));
+    auto item = co_await picker.PickSingleItemAsync();
 }
 
 int CALLBACK WinMain(
@@ -92,7 +101,6 @@ int CALLBACK WinMain(
 
     // Initialize Composition
     auto compositor = Compositor();
-    auto compositionGraphics = CreateCompositionGraphicsDevice(compositor, d2dDevice.get());
     auto target = CreateDesktopWindowTarget(compositor, hwnd);
     auto root = compositor.CreateSpriteVisual();
     root.RelativeSizeAdjustment({ 1.0f, 1.0f });
@@ -103,8 +111,9 @@ int CALLBACK WinMain(
     auto queue = controller.DispatcherQueue();
     auto success = queue.TryEnqueue([=]() -> void
     {
-
+        StartCapture(hwnd);
     });
+    WINRT_ASSERT(success);
 
     // Message pump
     MSG msg;
