@@ -13,6 +13,5 @@
     <ClInclude Include="direct3d11.interop.h" />
     <ClInclude Include="App.h" />
     <ClInclude Include="SimpleCapture.h" />
-    <ClInclude Include="safe_flag.h" />
   </ItemGroup>
 </Project>

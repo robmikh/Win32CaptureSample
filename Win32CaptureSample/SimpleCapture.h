@@ -35,9 +35,7 @@ private:
 
     winrt::Windows::Graphics::DirectX::Direct3D11::IDirect3DDevice m_device{ nullptr };
     winrt::com_ptr<IDXGISwapChain1> m_swapChain{ nullptr };
-
-    winrt::Windows::System::DispatcherQueueController m_dispatcherQueueController{ nullptr };
-    winrt::Windows::System::DispatcherQueue m_dispatcherQueue{ nullptr };
+    winrt::com_ptr<ID3D11DeviceContext> m_d3dContext{ nullptr };
 
     std::atomic<bool> m_closed = false;
 };

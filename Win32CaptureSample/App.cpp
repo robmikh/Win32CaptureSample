@@ -66,8 +66,7 @@ void App::Run(
 
 IAsyncAction App::StartCaptureAsync()
 {
-    auto picker = GraphicsCapturePicker();
-    auto item = co_await picker.PickSingleItemAsync();
+    auto item = co_await m_picker.PickSingleItemAsync();
 
     if (item != nullptr)
     {

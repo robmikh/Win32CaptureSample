@@ -5,7 +5,7 @@ class SimpleCapture;
 class App
 {
 public:
-    App() = default;
+    App() {}
     ~App() {}
 
     void Run(

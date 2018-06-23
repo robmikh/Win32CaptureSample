@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "SimpleCapture.h"
-#include "safe_flag.h"
 
 using namespace winrt;
 
@@ -23,6 +22,7 @@ SimpleCapture::SimpleCapture(
     m_device = device;
 
     auto d3dDevice = GetDXGIInterfaceFromObject<ID3D11Device>(m_device);
+    d3dDevice->GetImmediateContext(m_d3dContext.put());
 
     m_swapChain = CreateDXGISwapChain(
         d3dDevice, 
@@ -31,41 +31,15 @@ SimpleCapture::SimpleCapture(
         static_cast<DXGI_FORMAT>(DirectXPixelFormat::B8G8R8A8UIntNormalized),
         2);
 
-    // Create our thread
-    m_dispatcherQueueController = DispatcherQueueController::CreateOnDedicatedThread();
-    m_dispatcherQueue = m_dispatcherQueueController.DispatcherQueue();
+    m_framePool = Direct3D11CaptureFramePool::Create(
+        m_device,
+        DirectXPixelFormat::B8G8R8A8UIntNormalized,
+        2,
+        m_item.Size());
+    m_session = m_framePool.CreateCaptureSession(m_item);
+    m_lastSize = m_item.Size();
+    m_framePool.FrameArrived({ this, &SimpleCapture::OnFrameArrived });
 
-    // Don't return from the constructor until our work has finished on
-    // the capture thread.
-    auto initialized = std::make_shared<safe_flag>();
-    // If we were to just capture the item and device in the lambda, we
-    // would end up smuggling the objects to the other thread and get a 
-    // marshalling error. Use an agile ref to get around this.
-    auto itemAgile = agile_ref(m_item);
-    auto deviceAgile = agile_ref(m_device);
-    auto success = m_dispatcherQueue.TryEnqueue([=, &initialized]() -> void
-    {
-        auto itemTemp = itemAgile.get();
-        auto deviceTemp = deviceAgile.get();
-
-        m_framePool = Direct3D11CaptureFramePool::Create(
-            deviceTemp,
-            DirectXPixelFormat::B8G8R8A8UIntNormalized,
-            2,
-            itemTemp.Size());
-        m_session = m_framePool.CreateCaptureSession(itemTemp);
-        m_lastSize = itemTemp.Size();
-        m_framePool.FrameArrived({ this, &SimpleCapture::OnFrameArrived });
-
-        initialized->set();
-    });
-
-    if (!success)
-    {
-        throw hresult_error(E_UNEXPECTED);
-    }
-
-    initialized->wait();
     WINRT_ASSERT(m_session != nullptr);
 }
 
@@ -94,16 +68,12 @@ void SimpleCapture::Close()
         m_framePool = nullptr;
         m_session = nullptr;
         m_item = nullptr;
-
-        auto ignored = m_dispatcherQueueController.ShutdownQueueAsync();
-        m_dispatcherQueueController = nullptr;
-        m_dispatcherQueue = nullptr;
     }
 }
 
 void SimpleCapture::OnFrameArrived(
     Direct3D11CaptureFramePool const& sender,
-    ::IInspectable const&)
+    winrt::Windows::Foundation::IInspectable const&)
 {
     auto newSize = false;
 
@@ -127,10 +97,12 @@ void SimpleCapture::OnFrameArrived(
         }
 
         {
-            //auto bitmap = CanvasBitmap::CreateFromDirect3D11Surface(m_device, frame.Surface());
-            //auto drawingSession = m_swapChain.CreateDrawingSession(Colors::Transparent());
+            auto frameSurface = GetDXGIInterfaceFromObject<ID3D11Texture2D>(frame.Surface());
+            
+            com_ptr<ID3D11Texture2D> backBuffer;
+            check_hresult(m_swapChain->GetBuffer(0, guid_of<ID3D11Texture2D>(), backBuffer.put_void()));
 
-            //drawingSession.DrawImage(bitmap);
+            m_d3dContext->CopyResource(backBuffer.get(), frameSurface.get());
         }
     }
 

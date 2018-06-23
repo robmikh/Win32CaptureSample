@@ -1,4 +1,6 @@
 #include "pch.h"
+#include "App.h"
+#include "SimpleCapture.h"
 #include <ShObjIdl.h>
 
 using namespace winrt;
@@ -32,12 +34,12 @@ DesktopWindowTarget CreateDesktopWindowTarget(Compositor const& compositor, HWND
     return target;
 }
 
-fire_and_forget StartCapture(HWND window)
+auto InitializePicker(HWND window)
 {
     auto picker = Windows::Graphics::Capture::GraphicsCapturePicker();
     auto initializer = picker.as<IInitializeWithWindow>();
     check_hresult(initializer->Initialize(window));
-    auto item = co_await picker.PickSingleItemAsync();
+    return picker;
 }
 
 int CALLBACK WinMain(
@@ -94,11 +96,6 @@ int CALLBACK WinMain(
     // Create a DispatcherQueue for our thread
     auto controller = CreateDispatcherQueueController();
 
-    // Initialize D3D
-    auto d3dDevice = CreateD3DDevice();
-    auto d2dFactory = CreateD2DFactory();
-    auto d2dDevice = CreateD2DDevice(d2dFactory, d3dDevice);
-
     // Initialize Composition
     auto compositor = Compositor();
     auto target = CreateDesktopWindowTarget(compositor, hwnd);
@@ -107,11 +104,15 @@ int CALLBACK WinMain(
     root.Brush(compositor.CreateColorBrush(Colors::CornflowerBlue()));
     target.Root(root);
 
+    // Create our app
+    auto app = std::make_shared<App>();
+    auto picker = InitializePicker(hwnd);
+
     // Enqueue our capture work on the dispatcher
     auto queue = controller.DispatcherQueue();
     auto success = queue.TryEnqueue([=]() -> void
     {
-        StartCapture(hwnd);
+        app->Run(root, picker);
     });
     WINRT_ASSERT(success);
 

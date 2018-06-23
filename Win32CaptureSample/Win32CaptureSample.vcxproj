@@ -146,7 +146,6 @@
     <ClInclude Include="d3dHelpers.h" />
     <ClInclude Include="direct3d11.interop.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="safe_flag.h" />
     <ClInclude Include="SimpleCapture.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
