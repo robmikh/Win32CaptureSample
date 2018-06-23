@@ -1,5 +1,5 @@
 # Win32CaptureSample
-A simple sample using the Windows.Graphcis.Capture APIs in a Win32 application.
+A simple sample using the Windows.Graphics.Capture APIs in a Win32 application.
 
 ## Win32 vs UWP
 For the most part, using the API is the same between Win32 and UWP. However, there are some small differences.
