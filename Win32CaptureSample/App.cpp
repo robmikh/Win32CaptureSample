@@ -42,7 +42,13 @@ void App::Initialize(
 
 void App::StartCapture(HWND hwnd)
 {
-    GraphicsCaptureItem item{ nullptr };
+	if (m_capture.get() != nullptr)
+	{
+		m_capture->Close();
+		m_capture = nullptr;
+	}
+
+	auto item = CreateCaptureItemForWindow(hwnd);
 
     m_capture = std::make_unique<SimpleCapture>(m_device, item);
 

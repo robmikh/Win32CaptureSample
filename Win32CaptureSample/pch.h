@@ -31,3 +31,4 @@
 #include "composition.interop.h"
 #include "d3dHelpers.h"
 #include "direct3d11.interop.h"
+#include "capture.interop.h"

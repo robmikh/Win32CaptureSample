@@ -14,5 +14,6 @@
     <ClInclude Include="App.h" />
     <ClInclude Include="SimpleCapture.h" />
     <ClInclude Include="Win32WindowEnumeration.h" />
+    <ClInclude Include="capture.interop.h" />
   </ItemGroup>
 </Project>

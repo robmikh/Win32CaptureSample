@@ -101,7 +101,7 @@ int CALLBACK WinMain(
     HWND comboBoxHwnd = CreateWindow(
         WC_COMBOBOX,
         L"",
-        CBS_DROPDOWNLIST | CBS_HASSTRINGS| WS_VSCROLL | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE,
+        CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_VSCROLL | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE,
         10,
         10,
         200,
