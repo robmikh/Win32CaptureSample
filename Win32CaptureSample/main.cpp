@@ -35,14 +35,6 @@ DesktopWindowTarget CreateDesktopWindowTarget(Compositor const& compositor, HWND
     return target;
 }
 
-auto InitializePicker(HWND window)
-{
-    auto picker = Windows::Graphics::Capture::GraphicsCapturePicker();
-    auto initializer = picker.as<IInitializeWithWindow>();
-    check_hresult(initializer->Initialize(window));
-    return picker;
-}
-
 int CALLBACK WinMain(
     HINSTANCE instance,
     HINSTANCE previousInstance,
