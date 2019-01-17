@@ -2,6 +2,7 @@
 #include "App.h"
 #include "SimpleCapture.h"
 #include <ShObjIdl.h>
+#include "Win32WindowEnumeration.h"
 
 using namespace winrt;
 using namespace Windows::UI;
@@ -48,6 +49,9 @@ int CALLBACK WinMain(
     LPSTR     cmdLine,
     int       cmdShow);
 
+auto g_app = std::make_shared<App>();
+auto g_windows = EnumerateWindows();
+
 LRESULT CALLBACK WndProc(
     HWND   hwnd,
     UINT   msg,
@@ -74,7 +78,7 @@ int CALLBACK WinMain(
     wcex.lpszMenuName = NULL;
     wcex.lpszClassName = L"Win32CaptureSample";
     wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_APPLICATION));
-    WINRT_ASSERT(RegisterClassEx(&wcex));
+    WINRT_VERIFY(RegisterClassEx(&wcex));
 
     HWND hwnd = CreateWindow(
         L"Win32CaptureSample",
@@ -88,10 +92,32 @@ int CALLBACK WinMain(
         NULL,
         instance,
         NULL);
-    WINRT_ASSERT(hwnd);
+    WINRT_VERIFY(hwnd);
 
     ShowWindow(hwnd, cmdShow);
     UpdateWindow(hwnd);
+
+    // Create combo box
+    HWND comboBoxHwnd = CreateWindow(
+        WC_COMBOBOX,
+        L"",
+        CBS_DROPDOWNLIST | CBS_HASSTRINGS| WS_VSCROLL | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE,
+        10,
+        10,
+        200,
+        200,
+        hwnd,
+        NULL,
+        instance,
+        NULL);
+    WINRT_VERIFY(comboBoxHwnd);
+
+    // Populate combo box
+    for (auto& window : g_windows)
+    {
+        SendMessage(comboBoxHwnd, CB_ADDSTRING, 0, (LPARAM)window.Title().c_str());
+    }
+    //SendMessage(comboBoxHwnd, CB_SETCURSEL, 0, 0);
 
     // Create a DispatcherQueue for our thread
     auto controller = CreateDispatcherQueueController();
@@ -99,22 +125,17 @@ int CALLBACK WinMain(
     // Initialize Composition
     auto compositor = Compositor();
     auto target = CreateDesktopWindowTarget(compositor, hwnd);
-    auto root = compositor.CreateSpriteVisual();
+    auto root = compositor.CreateContainerVisual();
     root.RelativeSizeAdjustment({ 1.0f, 1.0f });
-    root.Brush(compositor.CreateColorBrush(Colors::CornflowerBlue()));
     target.Root(root);
-
-    // Create our app
-    auto app = std::make_shared<App>();
-    auto picker = InitializePicker(hwnd);
 
     // Enqueue our capture work on the dispatcher
     auto queue = controller.DispatcherQueue();
     auto success = queue.TryEnqueue([=]() -> void
     {
-        app->Run(root, picker);
+        g_app->Initialize(root);
     });
-    WINRT_ASSERT(success);
+    WINRT_VERIFY(success);
 
     // Message pump
     MSG msg;
@@ -137,6 +158,14 @@ LRESULT CALLBACK WndProc(
     {
     case WM_DESTROY:
         PostQuitMessage(0);
+        break;
+    case WM_COMMAND:
+        if (HIWORD(wParam) == CBN_SELCHANGE)
+        {
+            auto index = SendMessage((HWND)lParam, CB_GETCURSEL, 0, 0);
+            auto window = g_windows[index];
+            g_app->StartCapture(window.Hwnd());
+        }
         break;
     default:
         return DefWindowProc(hwnd, msg, wParam, lParam);
