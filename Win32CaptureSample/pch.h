@@ -1,5 +1,7 @@
 #pragma once
 
+#include <Unknwn.h>
+
 // WinRT
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.System.h>
