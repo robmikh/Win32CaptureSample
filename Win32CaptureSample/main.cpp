@@ -56,6 +56,8 @@ int CALLBACK WinMain(
     LPSTR     cmdLine,
     int       cmdShow)
 {
+	init_apartment(apartment_type::single_threaded);
+
     // Create the window
     WNDCLASSEX wcex = {};
     wcex.cbSize = sizeof(WNDCLASSEX);
