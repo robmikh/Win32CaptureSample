@@ -1,48 +1,11 @@
 #include "pch.h"
 #include "App.h"
 #include "SimpleCapture.h"
-#include <ShObjIdl.h>
 #include "Win32WindowEnumeration.h"
 
 using namespace winrt;
-using namespace Windows::System;
 using namespace Windows::UI;
 using namespace Windows::UI::Composition;
-using namespace Windows::UI::Composition::Desktop;
-
-auto CreateDispatcherQueueController()
-{
-    namespace abi = ABI::Windows::System;
-
-    DispatcherQueueOptions options
-    {
-        sizeof(DispatcherQueueOptions),
-        DQTYPE_THREAD_CURRENT,
-        DQTAT_COM_STA
-    };
-
-    Windows::System::DispatcherQueueController controller{ nullptr };
-    check_hresult(CreateDispatcherQueueController(options, reinterpret_cast<abi::IDispatcherQueueController**>(put_abi(controller))));
-    return controller;
-}
-
-DesktopWindowTarget CreateDesktopWindowTarget(Compositor const& compositor, HWND window)
-{
-    namespace abi = ABI::Windows::UI::Composition::Desktop;
-
-    auto interop = compositor.as<abi::ICompositorDesktopInterop>();
-    DesktopWindowTarget target{ nullptr };
-    check_hresult(interop->CreateDesktopWindowTarget(window, true, reinterpret_cast<abi::IDesktopWindowTarget**>(put_abi(target))));
-    return target;
-}
-
-auto InitializePicker(HWND window)
-{
-    auto picker = Windows::Graphics::Capture::GraphicsCapturePicker();
-    auto initializer = picker.as<IInitializeWithWindow>();
-    check_hresult(initializer->Initialize(window));
-    return picker;
-}
 
 int CALLBACK WinMain(
     HINSTANCE instance,
@@ -137,16 +100,16 @@ int CALLBACK WinMain(
     WINRT_VERIFY(buttonHwnd);
 
     // Create a DispatcherQueue for our thread
-    auto controller = CreateDispatcherQueueController();
+    auto controller = CreateDispatcherQueueControllerForCurrentThread();
 
     // Initialize Composition
     auto compositor = Compositor();
-    auto target = CreateDesktopWindowTarget(compositor, hwnd);
+    auto target = CreateDesktopWindowTarget(compositor, hwnd, true);
     auto root = compositor.CreateContainerVisual();
     root.RelativeSizeAdjustment({ 1.0f, 1.0f });
     target.Root(root);
 
-    auto picker = InitializePicker(hwnd);
+    auto picker = CreateCapturePickerForHwnd(hwnd);
 
     // Enqueue our capture work on the dispatcher
     auto queue = controller.DispatcherQueue();

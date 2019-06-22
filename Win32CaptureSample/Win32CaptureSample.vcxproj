@@ -144,6 +144,7 @@
     <ClInclude Include="App.h" />
     <ClInclude Include="capture.interop.h" />
     <ClInclude Include="composition.interop.h" />
+    <ClInclude Include="dispatcherqueue.interop.h" />
     <ClInclude Include="d3dHelpers.h" />
     <ClInclude Include="direct3d11.interop.h" />
     <ClInclude Include="pch.h" />
