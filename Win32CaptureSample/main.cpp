@@ -1,52 +1,20 @@
 #include "pch.h"
 #include "App.h"
 #include "SimpleCapture.h"
-#include <ShObjIdl.h>
+#include "Win32WindowEnumeration.h"
 
 using namespace winrt;
 using namespace Windows::UI;
 using namespace Windows::UI::Composition;
-using namespace Windows::UI::Composition::Desktop;
-
-auto CreateDispatcherQueueController()
-{
-    namespace abi = ABI::Windows::System;
-
-    DispatcherQueueOptions options
-    {
-        sizeof(DispatcherQueueOptions),
-        DQTYPE_THREAD_CURRENT,
-        DQTAT_COM_STA
-    };
-
-    Windows::System::DispatcherQueueController controller{ nullptr };
-    check_hresult(CreateDispatcherQueueController(options, reinterpret_cast<abi::IDispatcherQueueController**>(put_abi(controller))));
-    return controller;
-}
-
-DesktopWindowTarget CreateDesktopWindowTarget(Compositor const& compositor, HWND window)
-{
-    namespace abi = ABI::Windows::UI::Composition::Desktop;
-
-    auto interop = compositor.as<abi::ICompositorDesktopInterop>();
-    DesktopWindowTarget target{ nullptr };
-    check_hresult(interop->CreateDesktopWindowTarget(window, true, reinterpret_cast<abi::IDesktopWindowTarget**>(put_abi(target))));
-    return target;
-}
-
-auto InitializePicker(HWND window)
-{
-    auto picker = Windows::Graphics::Capture::GraphicsCapturePicker();
-    auto initializer = picker.as<IInitializeWithWindow>();
-    check_hresult(initializer->Initialize(window));
-    return picker;
-}
 
 int CALLBACK WinMain(
     HINSTANCE instance,
     HINSTANCE previousInstance,
     LPSTR     cmdLine,
     int       cmdShow);
+
+auto g_app = std::make_shared<App>();
+auto g_windows = EnumerateWindows();
 
 LRESULT CALLBACK WndProc(
     HWND   hwnd,
@@ -60,6 +28,22 @@ int CALLBACK WinMain(
     LPSTR     cmdLine,
     int       cmdShow)
 {
+    // Initialize COM
+	init_apartment(apartment_type::single_threaded);
+
+    // Check to see that capture is supported
+    auto isCaptureSupported = winrt::Windows::Graphics::Capture::GraphicsCaptureSession::IsSupported();
+    if (!isCaptureSupported)
+    {
+        MessageBox(
+            NULL,
+            L"Screen capture is not supported on this device for this release of Windows!",
+            L"Win32CaptureSample",
+            MB_OK | MB_ICONERROR);
+
+        return 1;
+    }
+
     // Create the window
     WNDCLASSEX wcex = {};
     wcex.cbSize = sizeof(WNDCLASSEX);
@@ -74,7 +58,7 @@ int CALLBACK WinMain(
     wcex.lpszMenuName = NULL;
     wcex.lpszClassName = L"Win32CaptureSample";
     wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_APPLICATION));
-    WINRT_ASSERT(RegisterClassEx(&wcex));
+    WINRT_VERIFY(RegisterClassEx(&wcex));
 
     HWND hwnd = CreateWindow(
         L"Win32CaptureSample",
@@ -88,33 +72,66 @@ int CALLBACK WinMain(
         NULL,
         instance,
         NULL);
-    WINRT_ASSERT(hwnd);
+    WINRT_VERIFY(hwnd);
 
     ShowWindow(hwnd, cmdShow);
     UpdateWindow(hwnd);
 
+    // Create combo box
+    HWND comboBoxHwnd = CreateWindow(
+        WC_COMBOBOX,
+        L"",
+        CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_VSCROLL | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE,
+        10,
+        10,
+        200,
+        200,
+        hwnd,
+        NULL,
+        instance,
+        NULL);
+    WINRT_VERIFY(comboBoxHwnd);
+
+    // Populate combo box
+    for (auto& window : g_windows)
+    {
+        SendMessage(comboBoxHwnd, CB_ADDSTRING, 0, (LPARAM)window.Title().c_str());
+    }
+
+    // Create button
+    HWND buttonHwnd = CreateWindow(
+        WC_BUTTON,
+        L"Use Picker",
+        WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
+        10,
+        40,
+        200,
+        30,
+        hwnd,
+        NULL,
+        instance,
+        NULL);
+    WINRT_VERIFY(buttonHwnd);
+
     // Create a DispatcherQueue for our thread
-    auto controller = CreateDispatcherQueueController();
+    auto controller = CreateDispatcherQueueControllerForCurrentThread();
 
     // Initialize Composition
     auto compositor = Compositor();
-    auto target = CreateDesktopWindowTarget(compositor, hwnd);
-    auto root = compositor.CreateSpriteVisual();
+    auto target = CreateDesktopWindowTarget(compositor, hwnd, true);
+    auto root = compositor.CreateContainerVisual();
     root.RelativeSizeAdjustment({ 1.0f, 1.0f });
-    root.Brush(compositor.CreateColorBrush(Colors::CornflowerBlue()));
     target.Root(root);
 
-    // Create our app
-    auto app = std::make_shared<App>();
-    auto picker = InitializePicker(hwnd);
+    auto picker = CreateCapturePickerForHwnd(hwnd);
 
     // Enqueue our capture work on the dispatcher
     auto queue = controller.DispatcherQueue();
     auto success = queue.TryEnqueue([=]() -> void
     {
-        app->Run(root, picker);
+        g_app->Initialize(root, picker);
     });
-    WINRT_ASSERT(success);
+    WINRT_VERIFY(success);
 
     // Message pump
     MSG msg;
@@ -137,6 +154,26 @@ LRESULT CALLBACK WndProc(
     {
     case WM_DESTROY:
         PostQuitMessage(0);
+        break;
+    case WM_COMMAND:
+        {
+            auto command = HIWORD(wParam);
+            switch (command)
+            {
+            case CBN_SELCHANGE:
+                {
+                    auto index = SendMessage((HWND)lParam, CB_GETCURSEL, 0, 0);
+                    auto window = g_windows[index];
+                    g_app->StartCapture(window.Hwnd());
+                }
+                break;
+            case BN_CLICKED:
+                {
+                    auto ignored = g_app->StartCaptureWithPickerAsync();
+                }
+                break;
+            }
+        }
         break;
     default:
         return DefWindowProc(hwnd, msg, wParam, lParam);
