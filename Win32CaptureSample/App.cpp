@@ -45,7 +45,7 @@ void App::Initialize(
 
 void App::StartCapture(HWND hwnd)
 {
-	auto item = CreateCaptureItemForWindow(hwnd);
+    auto item = CreateCaptureItemForWindow(hwnd);
 
     StartCaptureFromItem(item);
 }

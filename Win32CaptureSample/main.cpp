@@ -29,7 +29,7 @@ int CALLBACK WinMain(
     int       cmdShow)
 {
     // Initialize COM
-	init_apartment(apartment_type::single_threaded);
+    init_apartment(apartment_type::single_threaded);
 
     // Check to see that capture is supported
     auto isCaptureSupported = winrt::Windows::Graphics::Capture::GraphicsCaptureSession::IsSupported();
