@@ -111,7 +111,21 @@ int CALLBACK WinMain(
     {
         SendMessage(comboBoxHwnd, CB_ADDSTRING, 0, (LPARAM)window.Title().c_str());
     }
-    //SendMessage(comboBoxHwnd, CB_SETCURSEL, 0, 0);
+
+    // Create button
+    HWND buttonHwnd = CreateWindow(
+        WC_BUTTON,
+        L"Use Picker",
+        WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
+        10,
+        40,
+        200,
+        30,
+        hwnd,
+        NULL,
+        instance,
+        NULL);
+    WINRT_VERIFY(buttonHwnd);
 
     // Create a DispatcherQueue for our thread
     auto controller = CreateDispatcherQueueController();
