@@ -10,9 +10,12 @@ using namespace Windows::UI::Composition;
 using namespace Windows::Graphics::Capture;
 
 void App::Initialize(
-    ContainerVisual root)
+    ContainerVisual root,
+    GraphicsCapturePicker picker)
 {
     auto queue = DispatcherQueue::GetForCurrentThread();
+
+    m_picker = picker;
 
     m_compositor = root.Compositor();
     m_root = m_compositor.CreateContainerVisual();
@@ -42,14 +45,24 @@ void App::Initialize(
 
 void App::StartCapture(HWND hwnd)
 {
-	if (m_capture.get() != nullptr)
-	{
-		m_capture->Close();
-		m_capture = nullptr;
-	}
-
 	auto item = CreateCaptureItemForWindow(hwnd);
 
+    StartCaptureFromItem(item);
+}
+
+IAsyncAction App::StartCaptureWithPickerAsync()
+{
+    auto item = co_await m_picker.PickSingleItemAsync();
+
+    if (item != nullptr)
+    {
+        StartCaptureFromItem(item);
+    }
+}
+
+void App::StartCaptureFromItem(
+    GraphicsCaptureItem item)
+{
     m_capture = std::make_unique<SimpleCapture>(m_device, item);
 
     auto surface = m_capture->CreateSurface(m_compositor);

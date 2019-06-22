@@ -5,6 +5,7 @@
 #include "Win32WindowEnumeration.h"
 
 using namespace winrt;
+using namespace Windows::System;
 using namespace Windows::UI;
 using namespace Windows::UI::Composition;
 using namespace Windows::UI::Composition::Desktop;
@@ -33,6 +34,14 @@ DesktopWindowTarget CreateDesktopWindowTarget(Compositor const& compositor, HWND
     DesktopWindowTarget target{ nullptr };
     check_hresult(interop->CreateDesktopWindowTarget(window, true, reinterpret_cast<abi::IDesktopWindowTarget**>(put_abi(target))));
     return target;
+}
+
+auto InitializePicker(HWND window)
+{
+    auto picker = Windows::Graphics::Capture::GraphicsCapturePicker();
+    auto initializer = picker.as<IInitializeWithWindow>();
+    check_hresult(initializer->Initialize(window));
+    return picker;
 }
 
 int CALLBACK WinMain(
@@ -137,11 +146,13 @@ int CALLBACK WinMain(
     root.RelativeSizeAdjustment({ 1.0f, 1.0f });
     target.Root(root);
 
+    auto picker = InitializePicker(hwnd);
+
     // Enqueue our capture work on the dispatcher
     auto queue = controller.DispatcherQueue();
     auto success = queue.TryEnqueue([=]() -> void
     {
-        g_app->Initialize(root);
+        g_app->Initialize(root, picker);
     });
     WINRT_VERIFY(success);
 
@@ -168,11 +179,23 @@ LRESULT CALLBACK WndProc(
         PostQuitMessage(0);
         break;
     case WM_COMMAND:
-        if (HIWORD(wParam) == CBN_SELCHANGE)
         {
-            auto index = SendMessage((HWND)lParam, CB_GETCURSEL, 0, 0);
-            auto window = g_windows[index];
-            g_app->StartCapture(window.Hwnd());
+            auto command = HIWORD(wParam);
+            switch (command)
+            {
+            case CBN_SELCHANGE:
+                {
+                    auto index = SendMessage((HWND)lParam, CB_GETCURSEL, 0, 0);
+                    auto window = g_windows[index];
+                    g_app->StartCapture(window.Hwnd());
+                }
+                break;
+            case BN_CLICKED:
+                {
+                    auto ignored = g_app->StartCaptureWithPickerAsync();
+                }
+                break;
+            }
         }
         break;
     default:
