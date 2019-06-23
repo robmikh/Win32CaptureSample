@@ -10,13 +10,9 @@ using namespace Windows::UI;
 using namespace Windows::UI::Composition;
 using namespace Windows::UI::Composition::Desktop;
 
-// Globals
-auto g_app = std::make_shared<App>();
-auto g_windows = EnumerateWindows();
-
 struct SampleWindow : DesktopWindow<SampleWindow>
 {
-    SampleWindow(HINSTANCE instance, int cmdShow) noexcept
+    SampleWindow(HINSTANCE instance, int cmdShow, std::shared_ptr<App> app)
     {
         WNDCLASSEX wcex = {};
         wcex.cbSize = sizeof(WNDCLASSEX);
@@ -52,6 +48,9 @@ struct SampleWindow : DesktopWindow<SampleWindow>
         ShowWindow(m_window, cmdShow);
         UpdateWindow(m_window);
 
+        m_app = app;
+        m_windows = EnumerateWindows();
+
         CreateControls(instance);
     }
 
@@ -78,13 +77,13 @@ struct SampleWindow : DesktopWindow<SampleWindow>
                 case CBN_SELCHANGE:
                 {
                     auto index = SendMessage((HWND)lparam, CB_GETCURSEL, 0, 0);
-                    auto window = g_windows[index];
-                    g_app->StartCapture(window.Hwnd());
+                    auto window = m_windows[index];
+                    m_app->StartCapture(window.Hwnd());
                 }
                 break;
                 case BN_CLICKED:
                 {
-                    auto ignored = g_app->StartCaptureWithPickerAsync();
+                    auto ignored = m_app->StartCaptureWithPickerAsync();
                 }
                 break;
                 }
@@ -117,7 +116,7 @@ private:
         WINRT_VERIFY(comboBoxHwnd);
 
         // Populate combo box
-        for (auto& window : g_windows)
+        for (auto& window : m_windows)
         {
             SendMessage(comboBoxHwnd, CB_ADDSTRING, 0, (LPARAM)window.Title().c_str());
         }
@@ -144,6 +143,8 @@ private:
 private:
     HWND m_comboBoxHwnd = NULL;
     HWND m_buttonHwnd = NULL;
+    std::vector<Window> m_windows;
+    std::shared_ptr<App> m_app;
 };
 
 int __stdcall WinMain(
@@ -168,8 +169,10 @@ int __stdcall WinMain(
         return 1;
     }
 
+    auto app = std::make_shared<App>();
+
     // Create Window
-    auto window = SampleWindow(instance, cmdShow);
+    auto window = SampleWindow(instance, cmdShow, app);
 
     // Create a DispatcherQueue for our thread
     auto controller = CreateDispatcherQueueControllerForCurrentThread();
@@ -189,7 +192,7 @@ int __stdcall WinMain(
     auto queue = controller.DispatcherQueue();
     auto success = queue.TryEnqueue([=]() -> void
     {
-        g_app->Initialize(root, picker);
+        app->Initialize(root, picker);
     });
     WINRT_VERIFY(success);
 
