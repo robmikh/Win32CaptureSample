@@ -16,5 +16,6 @@
     <ClInclude Include="Win32WindowEnumeration.h" />
     <ClInclude Include="capture.interop.h" />
     <ClInclude Include="dispatcherqueue.interop.h" />
+    <ClInclude Include="DesktopWindow.h" />
   </ItemGroup>
 </Project>
