@@ -136,8 +136,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="App.cpp" />
+    <ClCompile Include="EnumerationWindow.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="pch.cpp" />
+    <ClCompile Include="SampleWindow.cpp" />
     <ClCompile Include="SimpleCapture.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -148,9 +150,10 @@
     <ClInclude Include="dispatcherqueue.interop.h" />
     <ClInclude Include="d3dHelpers.h" />
     <ClInclude Include="direct3d11.interop.h" />
+    <ClInclude Include="EnumerationWindow.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="SampleWindow.h" />
     <ClInclude Include="SimpleCapture.h" />
-    <ClInclude Include="Win32WindowEnumeration.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

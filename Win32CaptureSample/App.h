@@ -1,6 +1,5 @@
 #pragma once
-
-class SimpleCapture;
+#include "SimpleCapture.h"
 
 class App
 {
