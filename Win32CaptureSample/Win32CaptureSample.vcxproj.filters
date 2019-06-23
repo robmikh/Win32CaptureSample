@@ -5,6 +5,8 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="App.cpp" />
     <ClCompile Include="SimpleCapture.cpp" />
+    <ClCompile Include="SampleWindow.cpp" />
+    <ClCompile Include="EnumerationWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -13,8 +15,13 @@
     <ClInclude Include="direct3d11.interop.h" />
     <ClInclude Include="App.h" />
     <ClInclude Include="SimpleCapture.h" />
-    <ClInclude Include="Win32WindowEnumeration.h" />
     <ClInclude Include="capture.interop.h" />
     <ClInclude Include="dispatcherqueue.interop.h" />
+    <ClInclude Include="DesktopWindow.h" />
+    <ClInclude Include="SampleWindow.h" />
+    <ClInclude Include="EnumerationWindow.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>

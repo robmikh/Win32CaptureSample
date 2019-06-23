@@ -1,16 +1,12 @@
 #pragma once
-
-class SimpleCapture;
+#include "SimpleCapture.h"
 
 class App
 {
 public:
-    App() {}
-    ~App() {}
-
-    void Initialize(
-        winrt::Windows::UI::Composition::ContainerVisual root,
+    App(winrt::Windows::UI::Composition::ContainerVisual root,
         winrt::Windows::Graphics::Capture::GraphicsCapturePicker picker);
+    ~App() {}
 
     void StartCapture(HWND hwnd);
     winrt::Windows::Foundation::IAsyncAction StartCaptureWithPickerAsync();

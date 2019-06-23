@@ -1,26 +1,6 @@
-#pragma once
+#include "pch.h"
+#include "EnumerationWindow.h"
 #include <dwmapi.h>
-
-struct Window
-{
-public:
-    Window(nullptr_t) {}
-    Window(HWND hwnd, std::wstring& title, std::wstring& className)
-    {
-        m_hwnd = hwnd;
-        m_title = title;
-        m_className = className;
-    }
-
-    HWND Hwnd() const noexcept { return m_hwnd; }
-    std::wstring Title() const noexcept { return m_title; }
-    std::wstring ClassName() const noexcept { return m_className; }
-
-private:
-    HWND m_hwnd;
-    std::wstring m_title;
-    std::wstring m_className;
-};
 
 std::wstring GetClassName(HWND hwnd)
 {
@@ -44,7 +24,7 @@ std::wstring GetWindowText(HWND hwnd)
     return title;
 }
 
-bool IsCapturableWindow(Window const& window)
+bool IsCapturableWindow(EnumerationWindow const& window)
 {
     HWND hwnd = window.Hwnd();
     HWND shellWindow = GetShellWindow();
@@ -94,23 +74,28 @@ BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lParam)
     auto class_name = GetClassName(hwnd);
     auto title = GetWindowText(hwnd);
 
-    auto window = Window(hwnd, title, class_name);
+    auto window = EnumerationWindow(hwnd, title, class_name);
 
     if (!IsCapturableWindow(window))
     {
         return TRUE;
     }
 
-    std::vector<Window>& windows = *reinterpret_cast<std::vector<Window>*>(lParam);
+    std::vector<EnumerationWindow>& windows = *reinterpret_cast<std::vector<EnumerationWindow>*>(lParam);
     windows.push_back(window);
 
     return TRUE;
 }
 
-const std::vector<Window> EnumerateWindows()
+const std::vector<EnumerationWindow> EnumerateWindows()
 {
-    std::vector<Window> windows;
+    std::vector<EnumerationWindow> windows;
     EnumWindows(EnumWindowsProc, reinterpret_cast<LPARAM>(&windows));
 
     return windows;
+}
+
+std::vector<EnumerationWindow> EnumerationWindow::EnumerateAllWindows()
+{
+    return EnumerateWindows();
 }
