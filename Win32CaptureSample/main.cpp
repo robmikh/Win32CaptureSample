@@ -5,9 +5,7 @@
 
 using namespace winrt;
 using namespace Windows::Graphics::Capture;
-using namespace Windows::UI;
 using namespace Windows::UI::Composition;
-using namespace Windows::UI::Composition::Desktop;
 
 int __stdcall WinMain(
     HINSTANCE instance,
@@ -31,32 +29,29 @@ int __stdcall WinMain(
         return 1;
     }
 
-    auto app = std::make_shared<App>();
-
-    // Create Window
-    auto window = SampleWindow(instance, cmdShow, app);
-
     // Create a DispatcherQueue for our thread
     auto controller = CreateDispatcherQueueControllerForCurrentThread();
 
     // Initialize Composition
     auto compositor = Compositor();
-    auto target = window.CreateWindowTarget(compositor);
     auto root = compositor.CreateContainerVisual();
     root.RelativeSizeAdjustment({ 1.0f, 1.0f });
-    target.Root(root);
 
-    // Create and initialize the picker
+    // Create the picker
     auto picker = GraphicsCapturePicker();
+
+    // Create the app
+    auto app = std::make_shared<App>(root, picker);
+
+    // Create the window
+    auto window = SampleWindow(instance, cmdShow, app);
+
+    // Initialize the picker with our window
     window.Initialize(picker);
 
-    // Enqueue our capture work on the dispatcher
-    auto queue = controller.DispatcherQueue();
-    auto success = queue.TryEnqueue([=]() -> void
-    {
-        app->Initialize(root, picker);
-    });
-    WINRT_VERIFY(success);
+    // Hookup the visual tree to the window
+    auto target = window.CreateWindowTarget(compositor);
+    target.Root(root);
 
     // Message pump
     MSG msg;

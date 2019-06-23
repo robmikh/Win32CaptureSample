@@ -10,12 +10,10 @@ using namespace Windows::UI;
 using namespace Windows::UI::Composition;
 using namespace Windows::Graphics::Capture;
 
-void App::Initialize(
+App::App(
     ContainerVisual root,
     GraphicsCapturePicker picker)
 {
-    auto queue = DispatcherQueue::GetForCurrentThread();
-
     m_picker = picker;
 
     m_compositor = root.Compositor();
