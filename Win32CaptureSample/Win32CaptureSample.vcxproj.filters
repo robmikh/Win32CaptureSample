@@ -21,4 +21,7 @@
     <ClInclude Include="SampleWindow.h" />
     <ClInclude Include="EnumerationWindow.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
 </Project>
