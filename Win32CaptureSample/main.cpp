@@ -36,6 +36,8 @@ int __stdcall WinMain(
     auto compositor = Compositor();
     auto root = compositor.CreateContainerVisual();
     root.RelativeSizeAdjustment({ 1.0f, 1.0f });
+    root.Size({ -220.0f, 0.0f });
+    root.Offset({ 220.0f, 0.0f, 0.0f });
 
     // Create the picker
     auto picker = GraphicsCapturePicker();
