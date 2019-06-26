@@ -12,6 +12,8 @@ public:
     void StartCaptureFromMonitorHandle(HMONITOR hmon);
     winrt::Windows::Foundation::IAsyncAction StartCaptureWithPickerAsync();
 
+    void StopCapture();
+
 private:
     void StartCaptureFromItem(winrt::Windows::Graphics::Capture::GraphicsCaptureItem item);
 

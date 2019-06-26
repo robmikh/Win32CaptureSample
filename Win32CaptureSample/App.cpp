@@ -76,3 +76,14 @@ void App::StartCaptureFromItem(
 
     m_capture->StartCapture();
 }
+
+void App::StopCapture()
+{
+    if (m_capture != nullptr)
+    {
+        m_capture->Close();
+        m_capture = nullptr;
+
+        m_brush.Surface(nullptr);
+    }
+}

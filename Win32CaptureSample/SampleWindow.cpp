@@ -73,17 +73,28 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
                     {
                         auto window = m_windows[index];
                         m_app->StartCaptureFromWindowHandle(window.Hwnd());
+
+                        SendMessage(m_monitorComboBoxHwnd, CB_SETCURSEL, -1, 0);
                     }
                     else if (hwnd == m_monitorComboBoxHwnd)
                     {
                         auto monitor = m_monitors[index];
                         m_app->StartCaptureFromMonitorHandle(monitor.Hmon());
+
+                        SendMessage(m_windowComboBoxHwnd, CB_SETCURSEL, -1, 0);
                     }
                 }
                 break;
             case BN_CLICKED:
                 {
+                    // Because we aren't tracking the async operation, we have no clue if
+                    // the user is going to select something from the picker or hit cancel.
+                    // To get around that, just stop capture whenever this button is clicked.
+                    m_app->StopCapture();
                     auto ignored = m_app->StartCaptureWithPickerAsync();
+
+                    SendMessage(m_monitorComboBoxHwnd, CB_SETCURSEL, -1, 0);
+                    SendMessage(m_windowComboBoxHwnd, CB_SETCURSEL, -1, 0);
                 }
                 break;
             }
