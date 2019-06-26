@@ -1,6 +1,7 @@
 #pragma once
 #include "DesktopWindow.h"
 #include "EnumerationWindow.h"
+#include "EnumerationMonitor.h"
 
 class App;
 
@@ -26,7 +27,9 @@ private:
 
 private:
     HWND m_windowComboBoxHwnd = NULL;
+    HWND m_monitorComboBoxHwnd = NULL;
     HWND m_buttonHwnd = NULL;
     std::vector<EnumerationWindow> m_windows;
+    std::vector<EnumerationMonitor> m_monitors;
     std::shared_ptr<App> m_app;
 };

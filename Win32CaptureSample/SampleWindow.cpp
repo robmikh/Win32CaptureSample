@@ -51,6 +51,7 @@ SampleWindow::SampleWindow(
 
     m_app = app;
     m_windows = EnumerationWindow::EnumerateAllWindows();
+    m_monitors = EnumerationMonitor::EnumerateAllMonitors();
 
     CreateControls(instance);
 }
@@ -72,6 +73,11 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
                     {
                         auto window = m_windows[index];
                         m_app->StartCaptureFromWindowHandle(window.Hwnd());
+                    }
+                    else if (hwnd == m_monitorComboBoxHwnd)
+                    {
+                        auto monitor = m_monitors[index];
+                        m_app->StartCaptureFromMonitorHandle(monitor.Hmon());
                     }
                 }
                 break;
@@ -114,13 +120,34 @@ void SampleWindow::CreateControls(HINSTANCE instance)
         SendMessage(windowComboBoxHwnd, CB_ADDSTRING, 0, (LPARAM)window.Title().c_str());
     }
 
+    // Create monitor combo box
+    HWND monitorComboBoxHwnd = CreateWindow(
+        WC_COMBOBOX,
+        L"",
+        CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_VSCROLL | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE,
+        10,
+        40,
+        200,
+        200,
+        m_window,
+        NULL,
+        instance,
+        NULL);
+    WINRT_VERIFY(monitorComboBoxHwnd);
+
+    // Populate combo box
+    for (auto& monitor : m_monitors)
+    {
+        SendMessage(monitorComboBoxHwnd, CB_ADDSTRING, 0, (LPARAM)monitor.DisplayName().c_str());
+    }
+
     // Create button
     HWND buttonHwnd = CreateWindow(
         WC_BUTTON,
         L"Use Picker",
         WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
         10,
-        40,
+        80,
         200,
         30,
         m_window,
@@ -130,6 +157,7 @@ void SampleWindow::CreateControls(HINSTANCE instance)
     WINRT_VERIFY(buttonHwnd);
 
     m_windowComboBoxHwnd = windowComboBoxHwnd;
+    m_monitorComboBoxHwnd = monitorComboBoxHwnd;
     m_buttonHwnd = buttonHwnd;
 }
 
