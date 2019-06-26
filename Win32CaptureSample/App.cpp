@@ -49,6 +49,13 @@ void App::StartCaptureFromWindowHandle(HWND hwnd)
     StartCaptureFromItem(item);
 }
 
+void App::StartCaptureFromMonitorHandle(HMONITOR hmon)
+{
+    auto item = CreateCaptureItemForMonitor(hmon);
+
+    StartCaptureFromItem(item);
+}
+
 IAsyncAction App::StartCaptureWithPickerAsync()
 {
     auto item = co_await m_picker.PickSingleItemAsync();

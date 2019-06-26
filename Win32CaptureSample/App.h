@@ -9,6 +9,7 @@ public:
     ~App() {}
 
     void StartCaptureFromWindowHandle(HWND hwnd);
+    void StartCaptureFromMonitorHandle(HMONITOR hmon);
     winrt::Windows::Foundation::IAsyncAction StartCaptureWithPickerAsync();
 
 private:
