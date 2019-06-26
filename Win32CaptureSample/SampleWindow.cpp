@@ -128,11 +128,14 @@ fire_and_forget SampleWindow::OnPickerButtonClicked()
 
 void SampleWindow::CreateControls(HINSTANCE instance)
 {
+    auto isWin32ProgrammaticPresent = winrt::Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", 8);
+    auto win32ProgrammaticStyle = isWin32ProgrammaticPresent ? 0 : WS_DISABLED;
+
     // Create window combo box
     HWND windowComboBoxHwnd = CreateWindow(
         WC_COMBOBOX,
         L"",
-        CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_VSCROLL | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE,
+        CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_VSCROLL | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE | win32ProgrammaticStyle,
         10,
         10,
         200,
@@ -153,7 +156,7 @@ void SampleWindow::CreateControls(HINSTANCE instance)
     HWND monitorComboBoxHwnd = CreateWindow(
         WC_COMBOBOX,
         L"",
-        CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_VSCROLL | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE,
+        CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_VSCROLL | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE | win32ProgrammaticStyle,
         10,
         45,
         200,
