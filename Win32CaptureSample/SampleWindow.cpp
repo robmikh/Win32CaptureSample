@@ -114,7 +114,7 @@ void SampleWindow::CreateControls(HINSTANCE instance)
         NULL);
     WINRT_VERIFY(windowComboBoxHwnd);
 
-    // Populate combo box
+    // Populate window combo box
     for (auto& window : m_windows)
     {
         SendMessage(windowComboBoxHwnd, CB_ADDSTRING, 0, (LPARAM)window.Title().c_str());
@@ -126,7 +126,7 @@ void SampleWindow::CreateControls(HINSTANCE instance)
         L"",
         CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_VSCROLL | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE,
         10,
-        40,
+        45,
         200,
         200,
         m_window,
@@ -135,7 +135,7 @@ void SampleWindow::CreateControls(HINSTANCE instance)
         NULL);
     WINRT_VERIFY(monitorComboBoxHwnd);
 
-    // Populate combo box
+    // Populate monitor combo box
     for (auto& monitor : m_monitors)
     {
         SendMessage(monitorComboBoxHwnd, CB_ADDSTRING, 0, (LPARAM)monitor.DisplayName().c_str());
