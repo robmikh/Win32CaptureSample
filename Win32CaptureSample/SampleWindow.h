@@ -24,6 +24,8 @@ struct SampleWindow : DesktopWindow<SampleWindow>
 
 private:
     void CreateControls(HINSTANCE instance);
+    void SetSubTitle(std::wstring text);
+    winrt::fire_and_forget OnPickerButtonClicked();
 
 private:
     HWND m_windowComboBoxHwnd = NULL;

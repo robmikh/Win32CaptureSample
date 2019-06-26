@@ -6,6 +6,7 @@
 
 using namespace winrt;
 using namespace Windows::Graphics::Capture;
+using namespace Windows::System;
 using namespace Windows::UI;
 using namespace Windows::UI::Composition;
 using namespace Windows::UI::Composition::Desktop;
@@ -72,15 +73,17 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
                     if (hwnd == m_windowComboBoxHwnd)
                     {
                         auto window = m_windows[index];
-                        m_app->StartCaptureFromWindowHandle(window.Hwnd());
+                        auto item = m_app->StartCaptureFromWindowHandle(window.Hwnd());
 
+                        SetSubTitle(std::wstring(item.DisplayName()));
                         SendMessage(m_monitorComboBoxHwnd, CB_SETCURSEL, -1, 0);
                     }
                     else if (hwnd == m_monitorComboBoxHwnd)
                     {
                         auto monitor = m_monitors[index];
-                        m_app->StartCaptureFromMonitorHandle(monitor.Hmon());
+                        auto item = m_app->StartCaptureFromMonitorHandle(monitor.Hmon());
 
+                        SetSubTitle(std::wstring(item.DisplayName()));
                         SendMessage(m_windowComboBoxHwnd, CB_SETCURSEL, -1, 0);
                     }
                 }
@@ -89,18 +92,12 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
                 {
                     if (hwnd == m_pickerButtonHwnd)
                     {
-                        // Because we aren't tracking the async operation, we have no clue if
-                        // the user is going to select something from the picker or hit cancel.
-                        // To get around that, just stop capture whenever this button is clicked.
-                        m_app->StopCapture();
-                        auto ignored = m_app->StartCaptureWithPickerAsync();
-
-                        SendMessage(m_monitorComboBoxHwnd, CB_SETCURSEL, -1, 0);
-                        SendMessage(m_windowComboBoxHwnd, CB_SETCURSEL, -1, 0);
+                        OnPickerButtonClicked();
                     }
                     else if (hwnd == m_stopButtonHwnd)
                     {
                         m_app->StopCapture();
+                        SetSubTitle(L"");
                         SendMessage(m_monitorComboBoxHwnd, CB_SETCURSEL, -1, 0);
                         SendMessage(m_windowComboBoxHwnd, CB_SETCURSEL, -1, 0);
                     }
@@ -115,6 +112,18 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
     }
 
     return 0;
+}
+
+fire_and_forget SampleWindow::OnPickerButtonClicked()
+{
+    auto selectedItem = co_await m_app->StartCaptureWithPickerAsync();
+
+    if (selectedItem)
+    {
+        SetSubTitle(std::wstring(selectedItem.DisplayName()));
+        SendMessage(m_monitorComboBoxHwnd, CB_SETCURSEL, -1, 0);
+        SendMessage(m_windowComboBoxHwnd, CB_SETCURSEL, -1, 0);
+    }
 }
 
 void SampleWindow::CreateControls(HINSTANCE instance)
@@ -197,3 +206,12 @@ void SampleWindow::CreateControls(HINSTANCE instance)
     m_stopButtonHwnd = stopButtonHwnd;
 }
 
+void SampleWindow::SetSubTitle(std::wstring text)
+{
+    std::wstring titleText(L"Win32CaptureSample");
+    if (!text.empty())
+    {
+        titleText += (L" - " + text);
+    }
+    SetWindowText(m_window, titleText.c_str());
+}
