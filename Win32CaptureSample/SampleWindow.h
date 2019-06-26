@@ -25,7 +25,7 @@ private:
     void CreateControls(HINSTANCE instance);
 
 private:
-    HWND m_comboBoxHwnd = NULL;
+    HWND m_windowComboBoxHwnd = NULL;
     HWND m_buttonHwnd = NULL;
     std::vector<EnumerationWindow> m_windows;
     std::shared_ptr<App> m_app;

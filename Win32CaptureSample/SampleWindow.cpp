@@ -62,13 +62,17 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
     case WM_COMMAND:
         {
             auto command = HIWORD(wparam);
+            auto hwnd = (HWND)lparam;
             switch (command)
             {
             case CBN_SELCHANGE:
                 {
-                    auto index = SendMessage((HWND)lparam, CB_GETCURSEL, 0, 0);
-                    auto window = m_windows[index];
-                    m_app->StartCapture(window.Hwnd());
+                    auto index = SendMessage(hwnd, CB_GETCURSEL, 0, 0);
+                    if (hwnd == m_windowComboBoxHwnd)
+                    {
+                        auto window = m_windows[index];
+                        m_app->StartCaptureFromWindowHandle(window.Hwnd());
+                    }
                 }
                 break;
             case BN_CLICKED:
@@ -89,8 +93,8 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
 
 void SampleWindow::CreateControls(HINSTANCE instance)
 {
-    // Create combo box
-    HWND comboBoxHwnd = CreateWindow(
+    // Create window combo box
+    HWND windowComboBoxHwnd = CreateWindow(
         WC_COMBOBOX,
         L"",
         CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_VSCROLL | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE,
@@ -102,12 +106,12 @@ void SampleWindow::CreateControls(HINSTANCE instance)
         NULL,
         instance,
         NULL);
-    WINRT_VERIFY(comboBoxHwnd);
+    WINRT_VERIFY(windowComboBoxHwnd);
 
     // Populate combo box
     for (auto& window : m_windows)
     {
-        SendMessage(comboBoxHwnd, CB_ADDSTRING, 0, (LPARAM)window.Title().c_str());
+        SendMessage(windowComboBoxHwnd, CB_ADDSTRING, 0, (LPARAM)window.Title().c_str());
     }
 
     // Create button
@@ -125,7 +129,7 @@ void SampleWindow::CreateControls(HINSTANCE instance)
         NULL);
     WINRT_VERIFY(buttonHwnd);
 
-    m_comboBoxHwnd = comboBoxHwnd;
+    m_windowComboBoxHwnd = windowComboBoxHwnd;
     m_buttonHwnd = buttonHwnd;
 }
 

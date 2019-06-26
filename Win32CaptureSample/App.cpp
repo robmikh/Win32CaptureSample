@@ -42,7 +42,7 @@ App::App(
     m_device = CreateDirect3DDevice(dxgiDevice.get());
 }
 
-void App::StartCapture(HWND hwnd)
+void App::StartCaptureFromWindowHandle(HWND hwnd)
 {
     auto item = CreateCaptureItemForWindow(hwnd);
 

@@ -8,7 +8,7 @@ public:
         winrt::Windows::Graphics::Capture::GraphicsCapturePicker picker);
     ~App() {}
 
-    void StartCapture(HWND hwnd);
+    void StartCaptureFromWindowHandle(HWND hwnd);
     winrt::Windows::Foundation::IAsyncAction StartCaptureWithPickerAsync();
 
 private:
