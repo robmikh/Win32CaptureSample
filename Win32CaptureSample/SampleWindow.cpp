@@ -90,6 +90,11 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
                     {
                         OnSnapshotButtonClicked();
                     }
+                    else if (hwnd == m_cursorCheckBoxHwnd)
+                    {
+                        auto value = SendMessage(m_cursorCheckBoxHwnd, BM_GETCHECK, 0, 0) == BST_CHECKED;
+                        m_app->IsCursorEnabled(value);
+                    }
                 }
                 break;
             }
@@ -129,6 +134,9 @@ void SampleWindow::CreateControls(HINSTANCE instance)
 {
     auto isWin32ProgrammaticPresent = winrt::Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", 8);
     auto win32ProgrammaticStyle = isWin32ProgrammaticPresent ? 0 : WS_DISABLED;
+
+    auto isCursorEnablePresent = winrt::Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", 9);
+    auto cursorEnableStyle = isCursorEnablePresent ? 0 : WS_DISABLED;
 
     // Create window combo box
     HWND windowComboBoxHwnd = CreateWindowW(WC_COMBOBOX, L"",
@@ -178,12 +186,22 @@ void SampleWindow::CreateControls(HINSTANCE instance)
         10, 200, 200, 30, m_window, nullptr, instance, nullptr);
     WINRT_VERIFY(snapshotButtonHwnd);
 
+    // Create cursor checkbox
+    HWND cursorCheckBoxHwnd = CreateWindow(WC_BUTTON, L"Enable Cursor",
+        WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_CHECKBOX | cursorEnableStyle,
+        10, 240, 200, 30, m_window, nullptr, instance, nullptr);
+    WINRT_VERIFY(cursorCheckBoxHwnd);
+
+    // The default state is true for cursor rendering
+    SendMessageW(cursorCheckBoxHwnd, BM_SETCHECK, TRUE, 0);
+
     m_windowComboBoxHwnd = windowComboBoxHwnd;
     m_monitorComboBoxHwnd = monitorComboBoxHwnd;
     m_pickerButtonHwnd = pickerButtonHwnd;
     m_stopButtonHwnd = stopButtonHwnd;
     m_currentSnapshotHwnd = currentSnapshotButtonHwnd;
     m_snapshotButtonHwnd = snapshotButtonHwnd;
+    m_cursorCheckBoxHwnd = cursorCheckBoxHwnd;
 }
 
 void SampleWindow::SetSubTitle(std::wstring const& text)

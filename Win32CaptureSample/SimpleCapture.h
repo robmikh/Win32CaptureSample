@@ -13,6 +13,8 @@ public:
         winrt::Windows::UI::Composition::Compositor const& compositor);
 
     void SaveNextFrame() { m_captureNextImage = true; }
+    bool IsCursorEnabled() { return true; }
+    void IsCursorEnabled(bool value) {}
 
     void Close();
 

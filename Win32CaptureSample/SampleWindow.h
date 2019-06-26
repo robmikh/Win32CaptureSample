@@ -35,6 +35,7 @@ private:
     HWND m_stopButtonHwnd = nullptr;
     HWND m_currentSnapshotHwnd = nullptr;
     HWND m_snapshotButtonHwnd = nullptr;
+    HWND m_cursorCheckBoxHwnd = nullptr;
     std::vector<EnumerationWindow> m_windows;
     std::vector<EnumerationMonitor> m_monitors;
     std::shared_ptr<App> m_app;

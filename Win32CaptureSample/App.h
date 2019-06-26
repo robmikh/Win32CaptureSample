@@ -15,6 +15,9 @@ public:
     winrt::Windows::Foundation::IAsyncOperation<winrt::Windows::Storage::StorageFile> TakeSnapshotAsync();
     void SnapshotCurrentCapture();
 
+    bool IsCursorEnabled();
+    void IsCursorEnabled(bool value);
+
     void StopCapture();
 
 private:

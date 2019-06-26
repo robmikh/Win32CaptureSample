@@ -181,3 +181,20 @@ void App::StopCapture()
         m_brush.Surface(nullptr);
     }
 }
+
+bool App::IsCursorEnabled()
+{
+    if (m_capture != nullptr)
+    {
+        return m_capture->IsCursorEnabled();
+    }
+    return false;
+}
+
+void App::IsCursorEnabled(bool value)
+{
+    if (m_capture != nullptr)
+    {
+        m_capture->IsCursorEnabled(value);
+    }
+}
