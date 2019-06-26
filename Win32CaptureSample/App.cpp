@@ -42,21 +42,35 @@ App::App(
     m_device = CreateDirect3DDevice(dxgiDevice.get());
 }
 
-void App::StartCapture(HWND hwnd)
+GraphicsCaptureItem App::StartCaptureFromWindowHandle(HWND hwnd)
 {
     auto item = CreateCaptureItemForWindow(hwnd);
 
     StartCaptureFromItem(item);
+
+    return item;
 }
 
-IAsyncAction App::StartCaptureWithPickerAsync()
+GraphicsCaptureItem App::StartCaptureFromMonitorHandle(HMONITOR hmon)
 {
+    auto item = CreateCaptureItemForMonitor(hmon);
+
+    StartCaptureFromItem(item);
+
+    return item;
+}
+
+IAsyncOperation<GraphicsCaptureItem> App::StartCaptureWithPickerAsync()
+{
+    auto result = false;
     auto item = co_await m_picker.PickSingleItemAsync();
 
     if (item != nullptr)
     {
         StartCaptureFromItem(item);
     }
+
+    co_return item;
 }
 
 void App::StartCaptureFromItem(
@@ -68,4 +82,15 @@ void App::StartCaptureFromItem(
     m_brush.Surface(surface);
 
     m_capture->StartCapture();
+}
+
+void App::StopCapture()
+{
+    if (m_capture != nullptr)
+    {
+        m_capture->Close();
+        m_capture = nullptr;
+
+        m_brush.Surface(nullptr);
+    }
 }

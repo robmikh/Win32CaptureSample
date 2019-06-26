@@ -1,6 +1,7 @@
 #pragma once
 #include "DesktopWindow.h"
 #include "EnumerationWindow.h"
+#include "EnumerationMonitor.h"
 
 class App;
 
@@ -23,10 +24,15 @@ struct SampleWindow : DesktopWindow<SampleWindow>
 
 private:
     void CreateControls(HINSTANCE instance);
+    void SetSubTitle(std::wstring text);
+    winrt::fire_and_forget OnPickerButtonClicked();
 
 private:
-    HWND m_comboBoxHwnd = NULL;
-    HWND m_buttonHwnd = NULL;
+    HWND m_windowComboBoxHwnd = NULL;
+    HWND m_monitorComboBoxHwnd = NULL;
+    HWND m_pickerButtonHwnd = NULL;
+    HWND m_stopButtonHwnd = NULL;
     std::vector<EnumerationWindow> m_windows;
+    std::vector<EnumerationMonitor> m_monitors;
     std::shared_ptr<App> m_app;
 };

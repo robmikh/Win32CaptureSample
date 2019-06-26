@@ -8,8 +8,11 @@ public:
         winrt::Windows::Graphics::Capture::GraphicsCapturePicker picker);
     ~App() {}
 
-    void StartCapture(HWND hwnd);
-    winrt::Windows::Foundation::IAsyncAction StartCaptureWithPickerAsync();
+    winrt::Windows::Graphics::Capture::GraphicsCaptureItem StartCaptureFromWindowHandle(HWND hwnd);
+    winrt::Windows::Graphics::Capture::GraphicsCaptureItem StartCaptureFromMonitorHandle(HMONITOR hmon);
+    winrt::Windows::Foundation::IAsyncOperation<winrt::Windows::Graphics::Capture::GraphicsCaptureItem> StartCaptureWithPickerAsync();
+
+    void StopCapture();
 
 private:
     void StartCaptureFromItem(winrt::Windows::Graphics::Capture::GraphicsCaptureItem item);

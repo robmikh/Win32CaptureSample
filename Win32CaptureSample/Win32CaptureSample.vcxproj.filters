@@ -7,6 +7,7 @@
     <ClCompile Include="SimpleCapture.cpp" />
     <ClCompile Include="SampleWindow.cpp" />
     <ClCompile Include="EnumerationWindow.cpp" />
+    <ClCompile Include="EnumerationMonitor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -20,6 +21,7 @@
     <ClInclude Include="DesktopWindow.h" />
     <ClInclude Include="SampleWindow.h" />
     <ClInclude Include="EnumerationWindow.h" />
+    <ClInclude Include="EnumerationMonitor.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
