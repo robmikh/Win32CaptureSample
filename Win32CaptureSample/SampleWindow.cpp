@@ -87,14 +87,23 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
                 break;
             case BN_CLICKED:
                 {
-                    // Because we aren't tracking the async operation, we have no clue if
-                    // the user is going to select something from the picker or hit cancel.
-                    // To get around that, just stop capture whenever this button is clicked.
-                    m_app->StopCapture();
-                    auto ignored = m_app->StartCaptureWithPickerAsync();
+                    if (hwnd == m_pickerButtonHwnd)
+                    {
+                        // Because we aren't tracking the async operation, we have no clue if
+                        // the user is going to select something from the picker or hit cancel.
+                        // To get around that, just stop capture whenever this button is clicked.
+                        m_app->StopCapture();
+                        auto ignored = m_app->StartCaptureWithPickerAsync();
 
-                    SendMessage(m_monitorComboBoxHwnd, CB_SETCURSEL, -1, 0);
-                    SendMessage(m_windowComboBoxHwnd, CB_SETCURSEL, -1, 0);
+                        SendMessage(m_monitorComboBoxHwnd, CB_SETCURSEL, -1, 0);
+                        SendMessage(m_windowComboBoxHwnd, CB_SETCURSEL, -1, 0);
+                    }
+                    else if (hwnd == m_stopButtonHwnd)
+                    {
+                        m_app->StopCapture();
+                        SendMessage(m_monitorComboBoxHwnd, CB_SETCURSEL, -1, 0);
+                        SendMessage(m_windowComboBoxHwnd, CB_SETCURSEL, -1, 0);
+                    }
                 }
                 break;
             }
@@ -152,8 +161,8 @@ void SampleWindow::CreateControls(HINSTANCE instance)
         SendMessage(monitorComboBoxHwnd, CB_ADDSTRING, 0, (LPARAM)monitor.DisplayName().c_str());
     }
 
-    // Create button
-    HWND buttonHwnd = CreateWindow(
+    // Create picker button
+    HWND pickerButtonHwnd = CreateWindow(
         WC_BUTTON,
         L"Use Picker",
         WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
@@ -165,10 +174,26 @@ void SampleWindow::CreateControls(HINSTANCE instance)
         NULL,
         instance,
         NULL);
-    WINRT_VERIFY(buttonHwnd);
+    WINRT_VERIFY(pickerButtonHwnd);
+
+    // Create picker button
+    HWND stopButtonHwnd = CreateWindow(
+        WC_BUTTON,
+        L"Stop Capture",
+        WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
+        10,
+        120,
+        200,
+        30,
+        m_window,
+        NULL,
+        instance,
+        NULL);
+    WINRT_VERIFY(stopButtonHwnd);
 
     m_windowComboBoxHwnd = windowComboBoxHwnd;
     m_monitorComboBoxHwnd = monitorComboBoxHwnd;
-    m_buttonHwnd = buttonHwnd;
+    m_pickerButtonHwnd = pickerButtonHwnd;
+    m_stopButtonHwnd = stopButtonHwnd;
 }
 
