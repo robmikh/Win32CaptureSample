@@ -15,7 +15,6 @@ namespace winrt
     using namespace Windows::UI::Composition;
 }
 
-
 SimpleCapture::SimpleCapture(winrt::IDirect3DDevice const& device, winrt::GraphicsCaptureItem const& item)
 {
     m_item = item;
@@ -25,7 +24,7 @@ SimpleCapture::SimpleCapture(winrt::IDirect3DDevice const& device, winrt::Graphi
     d3dDevice->GetImmediateContext(m_d3dContext.put());
 
     m_swapChain = CreateDXGISwapChain(d3dDevice, static_cast<uint32_t>(m_item.Size().Width), static_cast<uint32_t>(m_item.Size().Height),
-        static_cast<DXGI_FORMAT>(winrt::DirectXPixelFormat::B8G8R8A8UIntNormalized), 2);
+        DXGI_FORMAT_B8G8R8A8_UNORM, 2);
 
     m_framePool = winrt::Direct3D11CaptureFramePool::Create(m_device, winrt::DirectXPixelFormat::B8G8R8A8UIntNormalized, 2, m_item.Size());
     m_session = m_framePool.CreateCaptureSession(m_item);
@@ -68,12 +67,10 @@ bool SimpleCapture::TryResizeSwapChain(const winrt::Windows::Graphics::Capture::
     if ((contentSize.Width != m_lastSize.Width) ||
         (contentSize.Height != m_lastSize.Height))
     {
-        // The thing we have been capturing has changed size.
-        // We need to resize our swap chain first, then blit the pixels.
-        // After we do that, retire the frame and then recreate our frame pool.
+        // The thing we have been capturing has changed size, resize the swap chain to match.
         m_lastSize = contentSize;
         m_swapChain->ResizeBuffers(2, static_cast<uint32_t>(m_lastSize.Width), static_cast<uint32_t>(m_lastSize.Height),
-            static_cast<DXGI_FORMAT>(winrt::DirectXPixelFormat::B8G8R8A8UIntNormalized), 0);
+            DXGI_FORMAT_B8G8R8A8_UNORM, 0);
         return true;
     }
     return false;
@@ -81,40 +78,35 @@ bool SimpleCapture::TryResizeSwapChain(const winrt::Windows::Graphics::Capture::
 
 void SimpleCapture::OnFrameArrived(winrt::Direct3D11CaptureFramePool const& sender, winrt::Windows::Foundation::IInspectable const&)
 {
-    auto newSize = false;
+    auto swapChainResizedToFrame = false;
 
     {
         auto frame = sender.TryGetNextFrame();
-        newSize = TryResizeSwapChain(frame);
+        swapChainResizedToFrame = TryResizeSwapChain(frame);
 
         winrt::com_ptr<ID3D11Texture2D> backBuffer;
         winrt::check_hresult(m_swapChain->GetBuffer(0, winrt::guid_of<ID3D11Texture2D>(), backBuffer.put_void()));
         auto surfaceTexture = GetDXGIInterfaceFromObject<ID3D11Texture2D>(frame.Surface());
+        // copy surfaceTexture to backBuffer
         m_d3dContext->CopyResource(backBuffer.get(), surfaceTexture.get());
 
         if (m_captureNextImage)
         {
             m_captureNextImage = false;
-            try
-            {
-                DirectX::ScratchImage im;
-                winrt::check_hresult(DirectX::CaptureTexture(GetDXGIInterfaceFromObject<ID3D11Device>(m_device).get(),
-                    m_d3dContext.get(), surfaceTexture.get(), im));
-                const auto& realImage = *im.GetImage(0, 0, 0);
-                winrt::check_hresult(DirectX::SaveToWICFile(realImage, DirectX::WIC_FLAGS_NONE,
-                    GUID_ContainerFormatPng, L"output_tex3.png"));
-            }
-            catch (const winrt::hresult_error& ex)
-            {
-                ex;
-            }
+
+            DirectX::ScratchImage im;
+            winrt::check_hresult(DirectX::CaptureTexture(GetDXGIInterfaceFromObject<ID3D11Device>(m_device).get(),
+                m_d3dContext.get(), surfaceTexture.get(), im));
+            const auto& realImage = *im.GetImage(0, 0, 0);
+            winrt::check_hresult(DirectX::SaveToWICFile(realImage, DirectX::WIC_FLAGS_NONE,
+                GUID_ContainerFormatPng, L"output_tex3.png"));
         }
     }
 
     DXGI_PRESENT_PARAMETERS presentParameters{};
     m_swapChain->Present1(1, 0, &presentParameters);
 
-    if (newSize)
+    if (swapChainResizedToFrame)
     {
         m_framePool.Recreate(m_device, winrt::DirectXPixelFormat::B8G8R8A8UIntNormalized, 2, m_lastSize);
     }
