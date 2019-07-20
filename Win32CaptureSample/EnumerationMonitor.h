@@ -3,19 +3,16 @@
 struct EnumerationMonitor
 {
 public:
-    EnumerationMonitor(nullptr_t) {}
-    EnumerationMonitor(HMONITOR hmon, std::wstring& displayName)
-    {
-        m_hmon = hmon;
-        m_displayName = displayName;
-    }
+    static std::vector<EnumerationMonitor> EnumerateAllMonitors();
 
     HMONITOR Hmon() const noexcept { return m_hmon; }
     std::wstring DisplayName() const noexcept { return m_displayName; }
 
-    static std::vector<EnumerationMonitor> EnumerateAllMonitors();
-
 private:
-    HMONITOR m_hmon;
-    std::wstring m_displayName;
+    EnumerationMonitor(HMONITOR hmon, const std::wstring& displayName) : m_hmon(hmon), m_displayName(displayName)
+    {
+    }
+
+    const HMONITOR m_hmon;
+    const std::wstring m_displayName;
 };
