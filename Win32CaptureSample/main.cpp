@@ -11,6 +11,8 @@ using namespace Windows::UI::Composition;
 
 int __stdcall WinMain(HINSTANCE instance, HINSTANCE, PSTR cmdLine, int cmdShow)
 {
+    // SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2); // works but everything draws small
+
     init_apartment(apartment_type::single_threaded);
 
     // Check to see that capture is supported
@@ -24,7 +26,7 @@ int __stdcall WinMain(HINSTANCE instance, HINSTANCE, PSTR cmdLine, int cmdShow)
         return 1;
     }
 
-    // Create a DispatcherQueue for our thread
+    // Create the DispatcherQueue that the compositor needs to run
     auto controller = CreateDispatcherQueueControllerForCurrentThread();
 
     // Initialize Composition
@@ -34,17 +36,14 @@ int __stdcall WinMain(HINSTANCE instance, HINSTANCE, PSTR cmdLine, int cmdShow)
     root.Size({ -220.0f, 0.0f });
     root.Offset({ 220.0f, 0.0f, 0.0f });
 
-    // Create the picker
     auto picker = GraphicsCapturePicker();
 
-    // Create the app
     auto app = std::make_shared<App>(root, picker);
 
-    // Create the window
     auto window = SampleWindow(instance, cmdShow, app);
 
-    // Initialize the picker with our window
-    window.Initialize(picker);
+    // Provide the window handle to the picker (explict HWND initialization)
+    window.InitializeObejctWithWindowHandle(picker);
 
     // Hookup the visual tree to the window
     auto target = window.CreateWindowTarget(compositor);
