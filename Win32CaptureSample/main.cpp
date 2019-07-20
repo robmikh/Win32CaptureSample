@@ -42,7 +42,7 @@ int __stdcall WinMain(HINSTANCE instance, HINSTANCE, PSTR cmdLine, int cmdShow)
 
     auto window = SampleWindow(instance, cmdShow, app);
 
-    // Provide the window handle to the picker (explict HWND initialization)
+    // Provide the window handle to the picker (explicit HWND initialization)
     window.InitializeObjectWithWindowHandle(picker);
 
     // Hookup the visual tree to the window
@@ -51,7 +51,7 @@ int __stdcall WinMain(HINSTANCE instance, HINSTANCE, PSTR cmdLine, int cmdShow)
 
     // Message pump
     MSG msg;
-    while (GetMessage(&msg, nullptr, 0, 0))
+    while (GetMessageW(&msg, nullptr, 0, 0))
     {
         TranslateMessage(&msg);
         DispatchMessageW(&msg);

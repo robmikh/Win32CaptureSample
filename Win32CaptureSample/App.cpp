@@ -56,9 +56,8 @@ GraphicsCaptureItem App::StartCaptureFromMonitorHandle(HMONITOR hmon)
 
 IAsyncOperation<GraphicsCaptureItem> App::StartCaptureWithPickerAsync()
 {
-    auto result = false;
     auto item = co_await m_picker.PickSingleItemAsync();
-    if (item != nullptr)
+    if (item)
     {
         StartCaptureFromItem(item);
     }
@@ -70,21 +69,20 @@ void App::StartCaptureFromItem(GraphicsCaptureItem item)
 {
     m_capture = std::make_unique<SimpleCapture>(m_device, item);
 
-    m_capture->SaveNextFrame();
-
     auto surface = m_capture->CreateSurface(m_compositor);
     m_brush.Surface(surface);
+
+    m_capture->SaveNextFrame();
 
     m_capture->StartCapture();
 }
 
 void App::StopCapture()
 {
-    if (m_capture != nullptr)
+    if (m_capture)
     {
         m_capture->Close();
         m_capture = nullptr;
-
         m_brush.Surface(nullptr);
     }
 }
