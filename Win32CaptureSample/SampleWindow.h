@@ -14,7 +14,7 @@ struct SampleWindow : DesktopWindow<SampleWindow>
         return CreateDesktopWindowTarget(compositor, m_window, true);
     }
 
-    void InitializeObejctWithWindowHandle(winrt::Windows::Foundation::IUnknown const& object)
+    void InitializeObjectWithWindowHandle(winrt::Windows::Foundation::IUnknown const& object)
     {
         auto initializer = object.as<IInitializeWithWindow>();
         winrt::check_hresult(initializer->Initialize(m_window));
