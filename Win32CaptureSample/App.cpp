@@ -70,7 +70,7 @@ void App::StartCaptureFromItem(GraphicsCaptureItem item)
 {
     m_capture = std::make_unique<SimpleCapture>(m_device, item);
 
-    m_capture->CaptureAFrame();
+    m_capture->SaveNextFrame();
 
     auto surface = m_capture->CreateSurface(m_compositor);
     m_brush.Surface(surface);

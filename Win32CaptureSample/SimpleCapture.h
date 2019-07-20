@@ -12,7 +12,7 @@ public:
     winrt::Windows::UI::Composition::ICompositionSurface CreateSurface(
         winrt::Windows::UI::Composition::Compositor const& compositor);
 
-    void CaptureAFrame();
+    void SaveNextFrame() { m_captureNextImage = true; }
 
     void Close();
 
@@ -42,4 +42,5 @@ private:
     winrt::com_ptr<ID3D11DeviceContext> m_d3dContext{ nullptr };
 
     std::atomic<bool> m_closed = false;
+    std::atomic<bool> m_captureNextImage = false;
 };
