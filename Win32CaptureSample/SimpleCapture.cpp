@@ -60,31 +60,36 @@ void SimpleCapture::Close()
     }
 }
 
+bool SimpleCapture::TryResizeSwapChain(const winrt::Windows::Graphics::Capture::Direct3D11CaptureFrame& frame)
+{
+    auto const contentSize = frame.ContentSize();
+    if ((contentSize.Width != m_lastSize.Width) ||
+        (contentSize.Height != m_lastSize.Height))
+    {
+        // The thing we have been capturing has changed size.
+        // We need to resize our swap chain first, then blit the pixels.
+        // After we do that, retire the frame and then recreate our frame pool.
+        m_lastSize = contentSize;
+        m_swapChain->ResizeBuffers(2, static_cast<uint32_t>(m_lastSize.Width), static_cast<uint32_t>(m_lastSize.Height),
+            static_cast<DXGI_FORMAT>(DirectXPixelFormat::B8G8R8A8UIntNormalized), 0);
+        return true;
+    }
+    return false;
+}
+
+
 void SimpleCapture::OnFrameArrived(Direct3D11CaptureFramePool const& sender, winrt::Windows::Foundation::IInspectable const&)
 {
     auto newSize = false;
 
     {
         auto frame = sender.TryGetNextFrame();
+        newSize = TryResizeSwapChain(frame);
 
-        if ((frame.ContentSize().Width != m_lastSize.Width) ||
-            (frame.ContentSize().Height != m_lastSize.Height))
-        {
-            // The thing we have been capturing has changed size.
-            // We need to resize our swap chain first, then blit the pixels.
-            // After we do that, retire the frame and then recreate our frame pool.
-            newSize = true;
-            m_lastSize = frame.ContentSize();
-            m_swapChain->ResizeBuffers(2, static_cast<uint32_t>(m_lastSize.Width), static_cast<uint32_t>(m_lastSize.Height),
-                static_cast<DXGI_FORMAT>(DirectXPixelFormat::B8G8R8A8UIntNormalized), 0);
-        }
-
-        {
-            com_ptr<ID3D11Texture2D> backBuffer;
-            check_hresult(m_swapChain->GetBuffer(0, guid_of<ID3D11Texture2D>(), backBuffer.put_void()));
-            auto frameSurface = GetDXGIInterfaceFromObject<ID3D11Texture2D>(frame.Surface());
-            m_d3dContext->CopyResource(backBuffer.get(), frameSurface.get());
-        }
+        com_ptr<ID3D11Texture2D> backBuffer;
+        check_hresult(m_swapChain->GetBuffer(0, guid_of<ID3D11Texture2D>(), backBuffer.put_void()));
+        auto frameSurface = GetDXGIInterfaceFromObject<ID3D11Texture2D>(frame.Surface());
+        m_d3dContext->CopyResource(backBuffer.get(), frameSurface.get());
     }
 
     DXGI_PRESENT_PARAMETERS presentParameters{};
@@ -96,3 +101,7 @@ void SimpleCapture::OnFrameArrived(Direct3D11CaptureFramePool const& sender, win
     }
 }
 
+void SimpleCapture::CaptureAFrame()
+{
+    winrt::slim_condition_variable cv;
+}

@@ -10,9 +10,7 @@ using namespace Windows::UI;
 using namespace Windows::UI::Composition;
 using namespace Windows::Graphics::Capture;
 
-App::App(
-    ContainerVisual root,
-    GraphicsCapturePicker picker)
+App::App(ContainerVisual root, GraphicsCapturePicker picker)
 {
     m_picker = picker;
 
@@ -45,18 +43,14 @@ App::App(
 GraphicsCaptureItem App::StartCaptureFromWindowHandle(HWND hwnd)
 {
     auto item = CreateCaptureItemForWindow(hwnd);
-
     StartCaptureFromItem(item);
-
     return item;
 }
 
 GraphicsCaptureItem App::StartCaptureFromMonitorHandle(HMONITOR hmon)
 {
     auto item = CreateCaptureItemForMonitor(hmon);
-
     StartCaptureFromItem(item);
-
     return item;
 }
 
@@ -64,7 +58,6 @@ IAsyncOperation<GraphicsCaptureItem> App::StartCaptureWithPickerAsync()
 {
     auto result = false;
     auto item = co_await m_picker.PickSingleItemAsync();
-
     if (item != nullptr)
     {
         StartCaptureFromItem(item);
@@ -73,10 +66,11 @@ IAsyncOperation<GraphicsCaptureItem> App::StartCaptureWithPickerAsync()
     co_return item;
 }
 
-void App::StartCaptureFromItem(
-    GraphicsCaptureItem item)
+void App::StartCaptureFromItem(GraphicsCaptureItem item)
 {
     m_capture = std::make_unique<SimpleCapture>(m_device, item);
+
+    m_capture->CaptureAFrame();
 
     auto surface = m_capture->CreateSurface(m_compositor);
     m_brush.Surface(surface);

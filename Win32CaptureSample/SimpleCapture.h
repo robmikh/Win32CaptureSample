@@ -12,6 +12,8 @@ public:
     winrt::Windows::UI::Composition::ICompositionSurface CreateSurface(
         winrt::Windows::UI::Composition::Compositor const& compositor);
 
+    void CaptureAFrame();
+
     void Close();
 
 private:
@@ -26,6 +28,8 @@ private:
             throw winrt::hresult_error(RO_E_CLOSED);
         }
     }
+
+    bool TryResizeSwapChain(const winrt::Windows::Graphics::Capture::Direct3D11CaptureFrame& frame);
 
 private:
     winrt::Windows::Graphics::Capture::GraphicsCaptureItem m_item{ nullptr };
