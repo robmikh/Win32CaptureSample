@@ -7,25 +7,18 @@ using namespace winrt;
 using namespace Windows::Graphics::Capture;
 using namespace Windows::UI::Composition;
 
-int __stdcall WinMain(
-    HINSTANCE instance,
-    HINSTANCE previousInstance,
-    LPSTR     cmdLine,
-    int       cmdShow)
+int __stdcall WinMain(HINSTANCE instance, HINSTANCE, PSTR cmdLine, int cmdShow)
 {
-    // Initialize COM
     init_apartment(apartment_type::single_threaded);
 
     // Check to see that capture is supported
     auto isCaptureSupported = winrt::Windows::Graphics::Capture::GraphicsCaptureSession::IsSupported();
     if (!isCaptureSupported)
     {
-        MessageBox(
-            NULL,
+        MessageBoxW(nullptr,
             L"Screen capture is not supported on this device for this release of Windows!",
             L"Win32CaptureSample",
             MB_OK | MB_ICONERROR);
-
         return 1;
     }
 
@@ -57,11 +50,11 @@ int __stdcall WinMain(
 
     // Message pump
     MSG msg;
-    while (GetMessage(&msg, NULL, 0, 0))
+    while (GetMessage(&msg, nullptr, 0, 0))
     {
         TranslateMessage(&msg);
-        DispatchMessage(&msg);
+        DispatchMessageW(&msg);
     }
 
-    return msg.wParam;
+    return static_cast<int>(msg.wParam);
 }

@@ -27,6 +27,12 @@ inline void ResizeSurface(
     winrt::check_hresult(surfaceInterop->Resize(newSize));
 }
 
+// Do the type conversion from long -> float without warnings
+inline D2D1::Matrix3x2F Translation(const POINT& pt)
+{
+    return D2D1::Matrix3x2F::Translation(static_cast<float>(pt.x), static_cast<float>(pt.y));
+}
+
 inline auto SurfaceBeginDraw(
     winrt::Windows::UI::Composition::CompositionDrawingSurface const& surface)
 {
@@ -34,7 +40,7 @@ inline auto SurfaceBeginDraw(
     winrt::com_ptr<ID2D1DeviceContext> context;
     POINT offset = {};
     winrt::check_hresult(surfaceInterop->BeginDraw(nullptr, __uuidof(ID2D1DeviceContext), context.put_void(), &offset));
-    context->SetTransform(D2D1::Matrix3x2F::Translation(offset.x, offset.y));
+    context->SetTransform(Translation(offset));
     return context;
 }
 
