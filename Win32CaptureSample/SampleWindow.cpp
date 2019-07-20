@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "App.h"
 #include "SampleWindow.h"
-
 #include <CommCtrl.h>
 
 using namespace winrt;
@@ -108,6 +107,8 @@ fire_and_forget SampleWindow::OnPickerButtonClicked()
     }
 }
 
+// Not DPI aware but could be by multiplying the constants based on the monitor scale factor
+
 void SampleWindow::CreateControls(HINSTANCE instance)
 {
     auto isWin32ProgrammaticPresent = winrt::Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", 8);
@@ -122,7 +123,7 @@ void SampleWindow::CreateControls(HINSTANCE instance)
     // Populate window combo box
     for (auto& window : m_windows)
     {
-        SendMessage(windowComboBoxHwnd, CB_ADDSTRING, 0, (LPARAM)window.Title().c_str());
+        SendMessageW(windowComboBoxHwnd, CB_ADDSTRING, 0, (LPARAM)window.Title().c_str());
     }
 
     // Create monitor combo box
@@ -134,7 +135,7 @@ void SampleWindow::CreateControls(HINSTANCE instance)
     // Populate monitor combo box
     for (auto& monitor : m_monitors)
     {
-        SendMessage(monitorComboBoxHwnd, CB_ADDSTRING, 0, (LPARAM)monitor.DisplayName().c_str());
+        SendMessageW(monitorComboBoxHwnd, CB_ADDSTRING, 0, (LPARAM)monitor.DisplayName().c_str());
     }
 
     // Create picker button
