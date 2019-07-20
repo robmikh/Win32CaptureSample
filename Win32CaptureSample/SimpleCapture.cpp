@@ -77,7 +77,6 @@ bool SimpleCapture::TryResizeSwapChain(const winrt::Windows::Graphics::Capture::
     return false;
 }
 
-
 void SimpleCapture::OnFrameArrived(Direct3D11CaptureFramePool const& sender, winrt::Windows::Foundation::IInspectable const&)
 {
     auto newSize = false;
