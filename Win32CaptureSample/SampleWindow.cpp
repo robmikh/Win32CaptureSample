@@ -113,7 +113,11 @@ fire_and_forget SampleWindow::OnPickerButtonClicked()
 
 fire_and_forget SampleWindow::OnSnapshotButtonClicked()
 {
-	auto ignored = co_await m_app->TakeSnapshotAsync();
+	auto file = co_await m_app->TakeSnapshotAsync();
+	if (file != nullptr)
+	{
+		co_await Launcher::LaunchFileAsync(file);
+	}
 }
 
 // Not DPI aware but could be by multiplying the constants based on the monitor scale factor
