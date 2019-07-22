@@ -93,7 +93,7 @@ IAsyncOperation<StorageFile> App::TakeSnapshotAsync()
 	}
 
 	// Get the file stream
-	auto randomAccessStream = co_await file.OpenReadAsync();
+	auto randomAccessStream = co_await file.OpenAsync(FileAccessMode::ReadWrite);
 	auto stream = CreateStreamFromRandomAccessStream(randomAccessStream);
 
 	// Take the snapshot
@@ -121,7 +121,7 @@ IAsyncOperation<StorageFile> App::TakeSnapshotAsync()
 	params.DpiX = dpi;
 	params.DpiY = dpi;
 	params.PixelWidth = textureDesc.Width;
-	params.PixelWidth = textureDesc.Height;
+	params.PixelHeight = textureDesc.Height;
 
 	auto wicFactory = CreateWICFactory();
 	com_ptr<IWICBitmapEncoder> encoder;
