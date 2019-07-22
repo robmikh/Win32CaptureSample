@@ -82,6 +82,10 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
                         SendMessageW(m_monitorComboBoxHwnd, CB_SETCURSEL, -1, 0);
                         SendMessageW(m_windowComboBoxHwnd, CB_SETCURSEL, -1, 0);
                     }
+					else if (hwnd == m_snapshotButtonHwnd)
+					{
+						OnSnapshotButtonClicked();
+					}
                 }
                 break;
             }
@@ -107,8 +111,12 @@ fire_and_forget SampleWindow::OnPickerButtonClicked()
     }
 }
 
-// Not DPI aware but could be by multiplying the constants based on the monitor scale factor
+fire_and_forget SampleWindow::OnSnapshotButtonClicked()
+{
+	auto ignored = co_await m_app->TakeSnapshotAsync();
+}
 
+// Not DPI aware but could be by multiplying the constants based on the monitor scale factor
 void SampleWindow::CreateControls(HINSTANCE instance)
 {
     auto isWin32ProgrammaticPresent = winrt::Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", 8);
@@ -150,10 +158,26 @@ void SampleWindow::CreateControls(HINSTANCE instance)
         10, 120, 200, 30, m_window, nullptr, instance, nullptr);
     WINRT_VERIFY(stopButtonHwnd);
 
+	// Create snapshot button
+	HWND snapshotButtonHwnd = CreateWindow(
+		WC_BUTTON,
+		L"Take Snapshot",
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
+		10,
+		160,
+		200,
+		30,
+		m_window,
+		NULL,
+		instance,
+		NULL);
+	WINRT_VERIFY(snapshotButtonHwnd);
+
     m_windowComboBoxHwnd = windowComboBoxHwnd;
     m_monitorComboBoxHwnd = monitorComboBoxHwnd;
     m_pickerButtonHwnd = pickerButtonHwnd;
     m_stopButtonHwnd = stopButtonHwnd;
+	m_snapshotButtonHwnd = snapshotButtonHwnd;
 }
 
 void SampleWindow::SetSubTitle(const std::wstring& text)

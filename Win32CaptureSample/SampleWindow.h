@@ -26,11 +26,14 @@ private:
     void CreateControls(HINSTANCE instance);
     void SetSubTitle(const std::wstring& text);
     winrt::fire_and_forget OnPickerButtonClicked();
+	winrt::fire_and_forget OnSnapshotButtonClicked();
 
+private:
     HWND m_windowComboBoxHwnd = nullptr;
     HWND m_monitorComboBoxHwnd = nullptr;
     HWND m_pickerButtonHwnd = nullptr;
     HWND m_stopButtonHwnd = nullptr;
+	HWND m_snapshotButtonHwnd = nullptr;
     std::vector<EnumerationWindow> m_windows;
     std::vector<EnumerationMonitor> m_monitors;
     std::shared_ptr<App> m_app;
