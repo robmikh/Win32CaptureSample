@@ -66,7 +66,7 @@ void SimpleCapture::Close()
     }
 }
 
-bool SimpleCapture::TryResizeSwapChain(const winrt::Windows::Graphics::Capture::Direct3D11CaptureFrame& frame)
+bool SimpleCapture::TryResizeSwapChain(winrt::Direct3D11CaptureFrame const& frame)
 {
     auto const contentSize = frame.ContentSize();
     if ((contentSize.Width != m_lastSize.Width) ||
@@ -81,7 +81,7 @@ bool SimpleCapture::TryResizeSwapChain(const winrt::Windows::Graphics::Capture::
     return false;
 }
 
-void SimpleCapture::OnFrameArrived(winrt::Direct3D11CaptureFramePool const& sender, winrt::Windows::Foundation::IInspectable const&)
+void SimpleCapture::OnFrameArrived(winrt::Direct3D11CaptureFramePool const& sender, winrt::IInspectable const&)
 {
     auto swapChainResizedToFrame = false;
 

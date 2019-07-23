@@ -1,7 +1,5 @@
 #pragma once
-
 // taken from https://gist.github.com/kennykerr/2a5b5995d0b2d9a0b646218d6a6cecb7
-
 template <typename T>
 struct completion_source
 {

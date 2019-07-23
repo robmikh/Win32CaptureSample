@@ -15,9 +15,7 @@ using namespace Windows::UI;
 using namespace Windows::UI::Composition;
 
 IAsyncOperation<IDirect3DSurface>
-CaptureSnapshot::TakeAsync(
-	IDirect3DDevice const& device,
-	GraphicsCaptureItem const& item)
+CaptureSnapshot::TakeAsync(IDirect3DDevice const& device, GraphicsCaptureItem const& item)
 {
 	auto d3dDevice = GetDXGIInterfaceFromObject<ID3D11Device>(device);
 	com_ptr<ID3D11DeviceContext> d3dContext;

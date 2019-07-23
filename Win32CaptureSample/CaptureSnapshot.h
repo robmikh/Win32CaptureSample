@@ -9,5 +9,5 @@ public:
 			winrt::Windows::Graphics::Capture::GraphicsCaptureItem const& item);
 
 private:
-	CaptureSnapshot() {}
+    CaptureSnapshot() = delete;
 };
