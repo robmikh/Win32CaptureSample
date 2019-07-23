@@ -57,7 +57,7 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
                         auto item = m_app->StartCaptureFromWindowHandle(window.Hwnd());
 
                         SetSubTitle(std::wstring(item.DisplayName()));
-                        SendMessage(m_monitorComboBoxHwnd, CB_SETCURSEL, -1, 0);
+                        SendMessageW(m_monitorComboBoxHwnd, CB_SETCURSEL, -1, 0);
                     }
                     else if (hwnd == m_monitorComboBoxHwnd)
                     {
@@ -81,6 +81,14 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
                         SetSubTitle(L"");
                         SendMessageW(m_monitorComboBoxHwnd, CB_SETCURSEL, -1, 0);
                         SendMessageW(m_windowComboBoxHwnd, CB_SETCURSEL, -1, 0);
+                    }
+                    else if (hwnd == m_currentSnapshotHwnd)
+                    {
+                        m_app->SnapshotCurrentCapture();
+                    }
+                    else if (hwnd == m_snapshotButtonHwnd)
+                    {
+                        OnSnapshotButtonClicked();
                     }
                 }
                 break;
@@ -107,8 +115,16 @@ fire_and_forget SampleWindow::OnPickerButtonClicked()
     }
 }
 
-// Not DPI aware but could be by multiplying the constants based on the monitor scale factor
+fire_and_forget SampleWindow::OnSnapshotButtonClicked()
+{
+    auto file = co_await m_app->TakeSnapshotAsync();
+    if (file != nullptr)
+    {
+        co_await Launcher::LaunchFileAsync(file);
+    }
+}
 
+// Not DPI aware but could be by multiplying the constants based on the monitor scale factor
 void SampleWindow::CreateControls(HINSTANCE instance)
 {
     auto isWin32ProgrammaticPresent = winrt::Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", 8);
@@ -150,13 +166,27 @@ void SampleWindow::CreateControls(HINSTANCE instance)
         10, 120, 200, 30, m_window, nullptr, instance, nullptr);
     WINRT_VERIFY(stopButtonHwnd);
 
+    // Create current snapshot button
+    HWND currentSnapshotButtonHwnd = CreateWindowW(WC_BUTTON, L"Snapshot Current Capture",
+        WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
+        10, 160, 200, 30, m_window, nullptr, instance, nullptr);
+    WINRT_VERIFY(currentSnapshotButtonHwnd);
+
+    // Create independent snapshot button
+    HWND snapshotButtonHwnd = CreateWindowW(WC_BUTTON, L"Take Independent Snapshot",
+        WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
+        10, 200, 200, 30, m_window, nullptr, instance, nullptr);
+    WINRT_VERIFY(snapshotButtonHwnd);
+
     m_windowComboBoxHwnd = windowComboBoxHwnd;
     m_monitorComboBoxHwnd = monitorComboBoxHwnd;
     m_pickerButtonHwnd = pickerButtonHwnd;
     m_stopButtonHwnd = stopButtonHwnd;
+    m_currentSnapshotHwnd = currentSnapshotButtonHwnd;
+    m_snapshotButtonHwnd = snapshotButtonHwnd;
 }
 
-void SampleWindow::SetSubTitle(const std::wstring& text)
+void SampleWindow::SetSubTitle(std::wstring const& text)
 {
     std::wstring titleText(L"Win32CaptureSample");
     if (!text.empty())

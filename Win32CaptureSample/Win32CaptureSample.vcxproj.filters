@@ -8,6 +8,7 @@
     <ClCompile Include="SampleWindow.cpp" />
     <ClCompile Include="EnumerationWindow.cpp" />
     <ClCompile Include="EnumerationMonitor.cpp" />
+    <ClCompile Include="CaptureSnapshot.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -22,6 +23,9 @@
     <ClInclude Include="SampleWindow.h" />
     <ClInclude Include="EnumerationWindow.h" />
     <ClInclude Include="EnumerationMonitor.h" />
+    <ClInclude Include="completionSource.h" />
+    <ClInclude Include="CaptureSnapshot.h" />
+    <ClInclude Include="stream.interop.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

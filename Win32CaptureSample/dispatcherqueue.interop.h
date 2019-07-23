@@ -10,7 +10,7 @@ inline auto CreateDispatcherQueueControllerForCurrentThread()
     {
         sizeof(DispatcherQueueOptions),
         DQTYPE_THREAD_CURRENT,
-        DQTAT_COM_STA
+        DQTAT_COM_NONE
     };
 
     winrt::Windows::System::DispatcherQueueController controller{ nullptr };

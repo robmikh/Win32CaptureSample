@@ -26,6 +26,11 @@ SimpleCapture::SimpleCapture(winrt::IDirect3DDevice const& device, winrt::Graphi
     m_swapChain = CreateDXGISwapChain(d3dDevice, static_cast<uint32_t>(m_item.Size().Width), static_cast<uint32_t>(m_item.Size().Height),
         DXGI_FORMAT_B8G8R8A8_UNORM, 2);
 
+    // Creating our frame pool with 'Create' instead of 'CreateFreeThreaded'
+    // means that the frame pool's FrameArrived event is called on the thread
+    // the frame pool was created on. This also means that the creating thread
+    // must have a DispatcherQueue. If you use this method, it's best not to do
+    // it on the UI thread. 
     m_framePool = winrt::Direct3D11CaptureFramePool::Create(m_device, winrt::DirectXPixelFormat::B8G8R8A8UIntNormalized, 2, m_item.Size());
     m_session = m_framePool.CreateCaptureSession(m_item);
     m_lastSize = m_item.Size();
@@ -61,7 +66,7 @@ void SimpleCapture::Close()
     }
 }
 
-bool SimpleCapture::TryResizeSwapChain(const winrt::Windows::Graphics::Capture::Direct3D11CaptureFrame& frame)
+bool SimpleCapture::TryResizeSwapChain(winrt::Direct3D11CaptureFrame const& frame)
 {
     auto const contentSize = frame.ContentSize();
     if ((contentSize.Width != m_lastSize.Width) ||
@@ -76,7 +81,7 @@ bool SimpleCapture::TryResizeSwapChain(const winrt::Windows::Graphics::Capture::
     return false;
 }
 
-void SimpleCapture::OnFrameArrived(winrt::Direct3D11CaptureFramePool const& sender, winrt::Windows::Foundation::IInspectable const&)
+void SimpleCapture::OnFrameArrived(winrt::Direct3D11CaptureFramePool const& sender, winrt::IInspectable const&)
 {
     auto swapChainResizedToFrame = false;
 
@@ -99,7 +104,7 @@ void SimpleCapture::OnFrameArrived(winrt::Direct3D11CaptureFramePool const& send
                 m_d3dContext.get(), surfaceTexture.get(), im));
             const auto& realImage = *im.GetImage(0, 0, 0);
             winrt::check_hresult(DirectX::SaveToWICFile(realImage, DirectX::WIC_FLAGS_NONE,
-                GUID_ContainerFormatPng, L"output_tex3.png"));
+                GUID_ContainerFormatPng, L"output.png"));
         }
     }
 

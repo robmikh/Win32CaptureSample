@@ -5,7 +5,11 @@
 
 // WinRT
 #include <winrt/Windows.Foundation.h>
+#include <winrt/Windows.Foundation.Collections.h>
 #include <winrt/Windows.Foundation.Metadata.h>
+#include <winrt/Windows.Storage.h>
+#include <winrt/Windows.Storage.Pickers.h>
+#include <winrt/Windows.Storage.Streams.h>
 #include <winrt/Windows.System.h>
 #include <winrt/Windows.UI.h>
 #include <winrt/Windows.UI.Composition.h>
@@ -34,3 +38,5 @@
 #include "direct3d11.interop.h"
 #include "capture.interop.h"
 #include "dispatcherqueue.interop.h"
+#include "stream.interop.h"
+#include "completionSource.h"
