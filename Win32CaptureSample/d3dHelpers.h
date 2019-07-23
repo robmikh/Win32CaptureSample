@@ -45,7 +45,7 @@ private:
 
 inline auto CreateWICFactory()
 {
-    return winrt::create_instance<IWICImagingFactory2>(CLSID_WICImagingFactory);
+    return winrt::create_instance<IWICImagingFactory2>(CLSID_WICImagingFactory2);
 }
 
 inline auto CreateD2DDevice(winrt::com_ptr<ID2D1Factory1> const& factory, winrt::com_ptr<ID3D11Device> const& device)
