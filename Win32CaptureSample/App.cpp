@@ -17,6 +17,8 @@ App::App(ContainerVisual root, GraphicsCapturePicker picker, FileSavePicker save
 {
     m_capturePicker = capturePicker;
 	m_savePicker = savePicker;
+    m_mainThread = DispatcherQueue::GetForCurrentThread();
+    WINRT_VERIFY(m_mainThread != nullptr);
 
     m_compositor = root.Compositor();
     m_root = m_compositor.CreateContainerVisual();
@@ -67,7 +69,16 @@ IAsyncOperation<GraphicsCaptureItem> App::StartCaptureWithPickerAsync()
     auto item = co_await m_picker.PickSingleItemAsync();
     if (item)
     {
-        StartCaptureFromItem(item);
+        // We might resume on a different thread, so let's ask the main thread's
+        // dispatcher to do this work for us. This is important because SimpleCapture
+        // uses Direct3D11CaptureFramePool::Create, which requires the existence of
+        // a DispatcherQueue. See CaptureSnapshot for an example that uses 
+        // Direct3D11CaptureFramePool::CreateFreeThreaded, which doesn't now have this
+        // requirement. See the README if you're unsure of which version of 'Create' to use.
+        m_mainThread.TryEnqueue([=](auto&& ...)
+        {
+            StartCaptureFromItem(item);
+        });
     }
 
     co_return item;

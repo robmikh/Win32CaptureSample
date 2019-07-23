@@ -35,7 +35,7 @@ CaptureSnapshot::TakeAsync(
 	auto session = framePool.CreateCaptureSession(item);
 
 	auto completion = completion_source<IDirect3DSurface>();
-	framePool.FrameArrived([=, &completion](auto&& ...)
+	framePool.FrameArrived([session, d3dDevice, d3dContext, &completion](auto& framePool, auto&)
 	{
 		auto frame = framePool.TryGetNextFrame();
 		auto frameTexture = GetDXGIInterfaceFromObject<ID3D11Texture2D>(frame.Surface());

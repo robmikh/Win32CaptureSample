@@ -20,6 +20,7 @@ private:
     void StartCaptureFromItem(winrt::Windows::Graphics::Capture::GraphicsCaptureItem item);
 
 private:
+    winrt::Windows::System::DispatcherQueue m_mainThread{ nullptr };
     winrt::Windows::UI::Composition::Compositor m_compositor{ nullptr };
     winrt::Windows::UI::Composition::ContainerVisual m_root{ nullptr };
     winrt::Windows::UI::Composition::SpriteVisual m_content{ nullptr };
