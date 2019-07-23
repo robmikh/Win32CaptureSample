@@ -39,7 +39,7 @@ int __stdcall WinMain(HINSTANCE instance, HINSTANCE, PSTR cmdLine, int cmdShow)
 
     // Create the pickers
     auto capturePicker = GraphicsCapturePicker();
-	auto savePicker = FileSavePicker();
+    auto savePicker = FileSavePicker();
 
     // Create the app
     auto app = std::make_shared<App>(root, capturePicker, savePicker);

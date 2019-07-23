@@ -16,7 +16,7 @@ using namespace Windows::Graphics::Capture;
 App::App(ContainerVisual root, GraphicsCapturePicker capturePicker, FileSavePicker savePicker)
 {
     m_capturePicker = capturePicker;
-	m_savePicker = savePicker;
+    m_savePicker = savePicker;
     m_mainThread = DispatcherQueue::GetForCurrentThread();
     WINRT_VERIFY(m_mainThread != nullptr);
 
@@ -86,72 +86,72 @@ IAsyncOperation<GraphicsCaptureItem> App::StartCaptureWithPickerAsync()
 
 IAsyncOperation<StorageFile> App::TakeSnapshotAsync()
 {
-	// First, get a GraphicsCaptureItem. Here we're using the picker, but
-	// this would also work for any other type of GraphicsCaptureItem.
-	auto item = co_await m_capturePicker.PickSingleItemAsync();
-	if (item == nullptr)
-	{
-		// The user decided not to capture anything.
-		co_return nullptr;
-	}
+    // First, get a GraphicsCaptureItem. Here we're using the picker, but
+    // this would also work for any other type of GraphicsCaptureItem.
+    auto item = co_await m_capturePicker.PickSingleItemAsync();
+    if (item == nullptr)
+    {
+        // The user decided not to capture anything.
+        co_return nullptr;
+    }
 
-	// Ask the user where they want to save the snapshot.
-	m_savePicker.SuggestedStartLocation(PickerLocationId::PicturesLibrary);
-	m_savePicker.SuggestedFileName(L"snapshot");
-	m_savePicker.DefaultFileExtension(L".png");
-	m_savePicker.FileTypeChoices().Clear();
-	m_savePicker.FileTypeChoices().Insert(L"PNG image", single_threaded_vector<hstring>({ L".png" }));
-	auto file = co_await m_savePicker.PickSaveFileAsync();
-	if (file == nullptr)
-	{
-		co_return nullptr;
-	}
+    // Ask the user where they want to save the snapshot.
+    m_savePicker.SuggestedStartLocation(PickerLocationId::PicturesLibrary);
+    m_savePicker.SuggestedFileName(L"snapshot");
+    m_savePicker.DefaultFileExtension(L".png");
+    m_savePicker.FileTypeChoices().Clear();
+    m_savePicker.FileTypeChoices().Insert(L"PNG image", single_threaded_vector<hstring>({ L".png" }));
+    auto file = co_await m_savePicker.PickSaveFileAsync();
+    if (file == nullptr)
+    {
+        co_return nullptr;
+    }
 
-	// Get the file stream
-	auto randomAccessStream = co_await file.OpenAsync(FileAccessMode::ReadWrite);
-	auto stream = CreateStreamFromRandomAccessStream(randomAccessStream);
+    // Get the file stream
+    auto randomAccessStream = co_await file.OpenAsync(FileAccessMode::ReadWrite);
+    auto stream = CreateStreamFromRandomAccessStream(randomAccessStream);
 
-	// Take the snapshot
-	auto frame = co_await CaptureSnapshot::TakeAsync(m_device, item);
-	auto frameTexture = GetDXGIInterfaceFromObject<ID3D11Texture2D>(frame);
-	D3D11_TEXTURE2D_DESC textureDesc = {};
-	frameTexture->GetDesc(&textureDesc);
-	auto dxgiFrameTexture = frameTexture.as<IDXGISurface>();
+    // Take the snapshot
+    auto frame = co_await CaptureSnapshot::TakeAsync(m_device, item);
+    auto frameTexture = GetDXGIInterfaceFromObject<ID3D11Texture2D>(frame);
+    D3D11_TEXTURE2D_DESC textureDesc = {};
+    frameTexture->GetDesc(&textureDesc);
+    auto dxgiFrameTexture = frameTexture.as<IDXGISurface>();
 
-	// Get a D2D bitmap for our snapshot
+    // Get a D2D bitmap for our snapshot
     // TODO: Since this sample doesn't use D2D any other way, it may be better to map 
     //       the pixels manually and hand them to WIC. However, using d2d is easier for now.
-	com_ptr<ID2D1Bitmap1> d2dBitmap;
-	check_hresult(m_d2dContext->CreateBitmapFromDxgiSurface(dxgiFrameTexture.get(), nullptr, d2dBitmap.put()));
+    com_ptr<ID2D1Bitmap1> d2dBitmap;
+    check_hresult(m_d2dContext->CreateBitmapFromDxgiSurface(dxgiFrameTexture.get(), nullptr, d2dBitmap.put()));
 
-	// Encode the snapshot
-	// TODO: dpi?
-	auto dpi = 96.0f;
-	WICImageParameters params = {};
-	params.PixelFormat.format = DXGI_FORMAT_B8G8R8A8_UNORM;
-	params.PixelFormat.alphaMode = D2D1_ALPHA_MODE_PREMULTIPLIED;
-	params.DpiX = dpi;
-	params.DpiY = dpi;
-	params.PixelWidth = textureDesc.Width;
-	params.PixelHeight = textureDesc.Height;
+    // Encode the snapshot
+    // TODO: dpi?
+    auto dpi = 96.0f;
+    WICImageParameters params = {};
+    params.PixelFormat.format = DXGI_FORMAT_B8G8R8A8_UNORM;
+    params.PixelFormat.alphaMode = D2D1_ALPHA_MODE_PREMULTIPLIED;
+    params.DpiX = dpi;
+    params.DpiY = dpi;
+    params.PixelWidth = textureDesc.Width;
+    params.PixelHeight = textureDesc.Height;
 
-	auto wicFactory = CreateWICFactory();
-	com_ptr<IWICBitmapEncoder> encoder;
-	check_hresult(wicFactory->CreateEncoder(GUID_ContainerFormatPng, nullptr, encoder.put()));
-	check_hresult(encoder->Initialize(stream.get(), WICBitmapEncoderNoCache));
+    auto wicFactory = CreateWICFactory();
+    com_ptr<IWICBitmapEncoder> encoder;
+    check_hresult(wicFactory->CreateEncoder(GUID_ContainerFormatPng, nullptr, encoder.put()));
+    check_hresult(encoder->Initialize(stream.get(), WICBitmapEncoderNoCache));
 
-	com_ptr<IWICBitmapFrameEncode> wicFrame;
-	com_ptr<IPropertyBag2> frameProperties;
-	check_hresult(encoder->CreateNewFrame(wicFrame.put(), frameProperties.put()));
-	check_hresult(wicFrame->Initialize(frameProperties.get()));
+    com_ptr<IWICBitmapFrameEncode> wicFrame;
+    com_ptr<IPropertyBag2> frameProperties;
+    check_hresult(encoder->CreateNewFrame(wicFrame.put(), frameProperties.put()));
+    check_hresult(wicFrame->Initialize(frameProperties.get()));
 
-	com_ptr<IWICImageEncoder> imageEncoder;
-	check_hresult(wicFactory->CreateImageEncoder(m_d2dDevice.get(), imageEncoder.put()));
-	check_hresult(imageEncoder->WriteFrame(d2dBitmap.get(), wicFrame.get(), &params));
-	check_hresult(wicFrame->Commit());
-	check_hresult(encoder->Commit());
+    com_ptr<IWICImageEncoder> imageEncoder;
+    check_hresult(wicFactory->CreateImageEncoder(m_d2dDevice.get(), imageEncoder.put()));
+    check_hresult(imageEncoder->WriteFrame(d2dBitmap.get(), wicFrame.get(), &params));
+    check_hresult(wicFrame->Commit());
+    check_hresult(encoder->Commit());
 
-	co_return file;
+    co_return file;
 }
 
 void App::SnapshotCurrentCapture()

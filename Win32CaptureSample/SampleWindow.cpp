@@ -86,10 +86,10 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
                     {
                         m_app->SnapshotCurrentCapture();
                     }
-					else if (hwnd == m_snapshotButtonHwnd)
-					{
-						OnSnapshotButtonClicked();
-					}
+                    else if (hwnd == m_snapshotButtonHwnd)
+                    {
+                        OnSnapshotButtonClicked();
+                    }
                 }
                 break;
             }
@@ -117,11 +117,11 @@ fire_and_forget SampleWindow::OnPickerButtonClicked()
 
 fire_and_forget SampleWindow::OnSnapshotButtonClicked()
 {
-	auto file = co_await m_app->TakeSnapshotAsync();
-	if (file != nullptr)
-	{
-		co_await Launcher::LaunchFileAsync(file);
-	}
+    auto file = co_await m_app->TakeSnapshotAsync();
+    if (file != nullptr)
+    {
+        co_await Launcher::LaunchFileAsync(file);
+    }
 }
 
 // Not DPI aware but could be by multiplying the constants based on the monitor scale factor
@@ -166,11 +166,11 @@ void SampleWindow::CreateControls(HINSTANCE instance)
         10, 120, 200, 30, m_window, nullptr, instance, nullptr);
     WINRT_VERIFY(stopButtonHwnd);
 
-	// Create current snapshot button
-	HWND currentSnapshotButtonHwnd = CreateWindowW(WC_BUTTON, L"Snapshot Current Capture",
-		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
-		10, 160, 200, 30, m_window, nullptr, instance, nullptr);
-	WINRT_VERIFY(currentSnapshotButtonHwnd);
+    // Create current snapshot button
+    HWND currentSnapshotButtonHwnd = CreateWindowW(WC_BUTTON, L"Snapshot Current Capture",
+        WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
+        10, 160, 200, 30, m_window, nullptr, instance, nullptr);
+    WINRT_VERIFY(currentSnapshotButtonHwnd);
 
     // Create independent snapshot button
     HWND snapshotButtonHwnd = CreateWindowW(WC_BUTTON, L"Take Independent Snapshot",
@@ -183,7 +183,7 @@ void SampleWindow::CreateControls(HINSTANCE instance)
     m_pickerButtonHwnd = pickerButtonHwnd;
     m_stopButtonHwnd = stopButtonHwnd;
     m_currentSnapshotHwnd = currentSnapshotButtonHwnd;
-	m_snapshotButtonHwnd = snapshotButtonHwnd;
+    m_snapshotButtonHwnd = snapshotButtonHwnd;
 }
 
 void SampleWindow::SetSubTitle(std::wstring const& text)
