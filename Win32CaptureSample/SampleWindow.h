@@ -14,7 +14,7 @@ struct SampleWindow : DesktopWindow<SampleWindow>
         return CreateDesktopWindowTarget(compositor, m_window, true);
     }
 
-    void Initialize(winrt::Windows::Foundation::IUnknown const& object)
+    void InitializeObjectWithWindowHandle(winrt::Windows::Foundation::IUnknown const& object)
     {
         auto initializer = object.as<IInitializeWithWindow>();
         winrt::check_hresult(initializer->Initialize(m_window));
@@ -24,14 +24,13 @@ struct SampleWindow : DesktopWindow<SampleWindow>
 
 private:
     void CreateControls(HINSTANCE instance);
-    void SetSubTitle(std::wstring text);
+    void SetSubTitle(const std::wstring& text);
     winrt::fire_and_forget OnPickerButtonClicked();
 
-private:
-    HWND m_windowComboBoxHwnd = NULL;
-    HWND m_monitorComboBoxHwnd = NULL;
-    HWND m_pickerButtonHwnd = NULL;
-    HWND m_stopButtonHwnd = NULL;
+    HWND m_windowComboBoxHwnd = nullptr;
+    HWND m_monitorComboBoxHwnd = nullptr;
+    HWND m_pickerButtonHwnd = nullptr;
+    HWND m_stopButtonHwnd = nullptr;
     std::vector<EnumerationWindow> m_windows;
     std::vector<EnumerationMonitor> m_monitors;
     std::shared_ptr<App> m_app;

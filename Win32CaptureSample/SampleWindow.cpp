@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "App.h"
 #include "SampleWindow.h"
-
 #include <CommCtrl.h>
 
 using namespace winrt;
@@ -11,40 +10,22 @@ using namespace Windows::UI;
 using namespace Windows::UI::Composition;
 using namespace Windows::UI::Composition::Desktop;
 
-SampleWindow::SampleWindow(
-    HINSTANCE instance,
-    int cmdShow,
-    std::shared_ptr<App> app)
+SampleWindow::SampleWindow(HINSTANCE instance, int cmdShow, std::shared_ptr<App> app)
 {
-    WNDCLASSEX wcex = {};
-    wcex.cbSize = sizeof(WNDCLASSEX);
+    WNDCLASSEX wcex = { sizeof(wcex) };
     wcex.style = CS_HREDRAW | CS_VREDRAW;
     wcex.lpfnWndProc = WndProc;
-    wcex.cbClsExtra = 0;
-    wcex.cbWndExtra = 0;
     wcex.hInstance = instance;
-    wcex.hIcon = LoadIcon(instance, MAKEINTRESOURCE(IDI_APPLICATION));
-    wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
+    wcex.hIcon = LoadIconW(instance, IDI_APPLICATION);
+    wcex.hCursor = LoadCursorW(nullptr, IDC_ARROW);
     wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-    wcex.lpszMenuName = NULL;
     wcex.lpszClassName = L"Win32CaptureSample";
-    wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_APPLICATION));
-    WINRT_VERIFY(RegisterClassEx(&wcex));
+    wcex.hIconSm = LoadIconW(wcex.hInstance, IDI_APPLICATION);
+    WINRT_VERIFY(RegisterClassExW(&wcex));
     WINRT_ASSERT(!m_window);
 
-    WINRT_VERIFY(CreateWindow(
-        L"Win32CaptureSample",
-        L"Win32CaptureSample",
-        WS_OVERLAPPEDWINDOW,
-        CW_USEDEFAULT,
-        CW_USEDEFAULT,
-        800,
-        600,
-        NULL,
-        NULL,
-        instance,
-        this));
-
+    WINRT_VERIFY(CreateWindowW(L"Win32CaptureSample", L"Win32CaptureSample", WS_OVERLAPPEDWINDOW, 
+        CW_USEDEFAULT, CW_USEDEFAULT, 800, 600, nullptr, nullptr, instance, this));
     WINRT_ASSERT(m_window);
 
     ShowWindow(m_window, cmdShow);
@@ -69,7 +50,7 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
             {
             case CBN_SELCHANGE:
                 {
-                    auto index = SendMessage(hwnd, CB_GETCURSEL, 0, 0);
+                    auto index = SendMessageW(hwnd, CB_GETCURSEL, 0, 0);
                     if (hwnd == m_windowComboBoxHwnd)
                     {
                         auto window = m_windows[index];
@@ -84,7 +65,7 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
                         auto item = m_app->StartCaptureFromMonitorHandle(monitor.Hmon());
 
                         SetSubTitle(std::wstring(item.DisplayName()));
-                        SendMessage(m_windowComboBoxHwnd, CB_SETCURSEL, -1, 0);
+                        SendMessageW(m_windowComboBoxHwnd, CB_SETCURSEL, -1, 0);
                     }
                 }
                 break;
@@ -98,8 +79,8 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
                     {
                         m_app->StopCapture();
                         SetSubTitle(L"");
-                        SendMessage(m_monitorComboBoxHwnd, CB_SETCURSEL, -1, 0);
-                        SendMessage(m_windowComboBoxHwnd, CB_SETCURSEL, -1, 0);
+                        SendMessageW(m_monitorComboBoxHwnd, CB_SETCURSEL, -1, 0);
+                        SendMessageW(m_windowComboBoxHwnd, CB_SETCURSEL, -1, 0);
                     }
                 }
                 break;
@@ -121,10 +102,12 @@ fire_and_forget SampleWindow::OnPickerButtonClicked()
     if (selectedItem)
     {
         SetSubTitle(std::wstring(selectedItem.DisplayName()));
-        SendMessage(m_monitorComboBoxHwnd, CB_SETCURSEL, -1, 0);
-        SendMessage(m_windowComboBoxHwnd, CB_SETCURSEL, -1, 0);
+        SendMessageW(m_monitorComboBoxHwnd, CB_SETCURSEL, -1, 0);
+        SendMessageW(m_windowComboBoxHwnd, CB_SETCURSEL, -1, 0);
     }
 }
+
+// Not DPI aware but could be by multiplying the constants based on the monitor scale factor
 
 void SampleWindow::CreateControls(HINSTANCE instance)
 {
@@ -132,75 +115,39 @@ void SampleWindow::CreateControls(HINSTANCE instance)
     auto win32ProgrammaticStyle = isWin32ProgrammaticPresent ? 0 : WS_DISABLED;
 
     // Create window combo box
-    HWND windowComboBoxHwnd = CreateWindow(
-        WC_COMBOBOX,
-        L"",
+    HWND windowComboBoxHwnd = CreateWindowW(WC_COMBOBOX, L"",
         CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_VSCROLL | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE | win32ProgrammaticStyle,
-        10,
-        10,
-        200,
-        200,
-        m_window,
-        NULL,
-        instance,
-        NULL);
+        10, 10, 200, 200, m_window, nullptr, instance, nullptr);
     WINRT_VERIFY(windowComboBoxHwnd);
 
     // Populate window combo box
     for (auto& window : m_windows)
     {
-        SendMessage(windowComboBoxHwnd, CB_ADDSTRING, 0, (LPARAM)window.Title().c_str());
+        SendMessageW(windowComboBoxHwnd, CB_ADDSTRING, 0, (LPARAM)window.Title().c_str());
     }
 
     // Create monitor combo box
-    HWND monitorComboBoxHwnd = CreateWindow(
-        WC_COMBOBOX,
-        L"",
+    HWND monitorComboBoxHwnd = CreateWindowW(WC_COMBOBOX, L"",
         CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_VSCROLL | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE | win32ProgrammaticStyle,
-        10,
-        45,
-        200,
-        200,
-        m_window,
-        NULL,
-        instance,
-        NULL);
+        10, 45, 200, 200, m_window, nullptr, instance, nullptr);
     WINRT_VERIFY(monitorComboBoxHwnd);
 
     // Populate monitor combo box
     for (auto& monitor : m_monitors)
     {
-        SendMessage(monitorComboBoxHwnd, CB_ADDSTRING, 0, (LPARAM)monitor.DisplayName().c_str());
+        SendMessageW(monitorComboBoxHwnd, CB_ADDSTRING, 0, (LPARAM)monitor.DisplayName().c_str());
     }
 
     // Create picker button
-    HWND pickerButtonHwnd = CreateWindow(
-        WC_BUTTON,
-        L"Use Picker",
+    HWND pickerButtonHwnd = CreateWindowW(WC_BUTTON, L"Use Picker",
         WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
-        10,
-        80,
-        200,
-        30,
-        m_window,
-        NULL,
-        instance,
-        NULL);
+        10, 80, 200, 30, m_window, nullptr, instance, nullptr);
     WINRT_VERIFY(pickerButtonHwnd);
 
     // Create picker button
-    HWND stopButtonHwnd = CreateWindow(
-        WC_BUTTON,
-        L"Stop Capture",
+    HWND stopButtonHwnd = CreateWindowW(WC_BUTTON, L"Stop Capture",
         WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
-        10,
-        120,
-        200,
-        30,
-        m_window,
-        NULL,
-        instance,
-        NULL);
+        10, 120, 200, 30, m_window, nullptr, instance, nullptr);
     WINRT_VERIFY(stopButtonHwnd);
 
     m_windowComboBoxHwnd = windowComboBoxHwnd;
@@ -209,12 +156,12 @@ void SampleWindow::CreateControls(HINSTANCE instance)
     m_stopButtonHwnd = stopButtonHwnd;
 }
 
-void SampleWindow::SetSubTitle(std::wstring text)
+void SampleWindow::SetSubTitle(const std::wstring& text)
 {
     std::wstring titleText(L"Win32CaptureSample");
     if (!text.empty())
     {
         titleText += (L" - " + text);
     }
-    SetWindowText(m_window, titleText.c_str());
+    SetWindowTextW(m_window, titleText.c_str());
 }

@@ -3,33 +3,30 @@
 #include "App.h"
 #include "SampleWindow.h"
 
+#pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
+
 using namespace winrt;
 using namespace Windows::Graphics::Capture;
 using namespace Windows::UI::Composition;
 
-int __stdcall WinMain(
-    HINSTANCE instance,
-    HINSTANCE previousInstance,
-    LPSTR     cmdLine,
-    int       cmdShow)
+int __stdcall WinMain(HINSTANCE instance, HINSTANCE, PSTR cmdLine, int cmdShow)
 {
-    // Initialize COM
+    // SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2); // works but everything draws small
+
     init_apartment(apartment_type::single_threaded);
 
     // Check to see that capture is supported
     auto isCaptureSupported = winrt::Windows::Graphics::Capture::GraphicsCaptureSession::IsSupported();
     if (!isCaptureSupported)
     {
-        MessageBox(
-            NULL,
+        MessageBoxW(nullptr,
             L"Screen capture is not supported on this device for this release of Windows!",
             L"Win32CaptureSample",
             MB_OK | MB_ICONERROR);
-
         return 1;
     }
 
-    // Create a DispatcherQueue for our thread
+    // Create the DispatcherQueue that the compositor needs to run
     auto controller = CreateDispatcherQueueControllerForCurrentThread();
 
     // Initialize Composition
@@ -39,17 +36,14 @@ int __stdcall WinMain(
     root.Size({ -220.0f, 0.0f });
     root.Offset({ 220.0f, 0.0f, 0.0f });
 
-    // Create the picker
     auto picker = GraphicsCapturePicker();
 
-    // Create the app
     auto app = std::make_shared<App>(root, picker);
 
-    // Create the window
     auto window = SampleWindow(instance, cmdShow, app);
 
-    // Initialize the picker with our window
-    window.Initialize(picker);
+    // Provide the window handle to the picker (explicit HWND initialization)
+    window.InitializeObjectWithWindowHandle(picker);
 
     // Hookup the visual tree to the window
     auto target = window.CreateWindowTarget(compositor);
@@ -57,11 +51,11 @@ int __stdcall WinMain(
 
     // Message pump
     MSG msg;
-    while (GetMessage(&msg, NULL, 0, 0))
+    while (GetMessageW(&msg, nullptr, 0, 0))
     {
         TranslateMessage(&msg);
-        DispatchMessage(&msg);
+        DispatchMessageW(&msg);
     }
 
-    return msg.wParam;
+    return static_cast<int>(msg.wParam);
 }
