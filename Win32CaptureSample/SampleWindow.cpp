@@ -57,7 +57,7 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
                         auto item = m_app->StartCaptureFromWindowHandle(window.Hwnd());
 
                         SetSubTitle(std::wstring(item.DisplayName()));
-                        SendMessage(m_monitorComboBoxHwnd, CB_SETCURSEL, -1, 0);
+                        SendMessageW(m_monitorComboBoxHwnd, CB_SETCURSEL, -1, 0);
                     }
                     else if (hwnd == m_monitorComboBoxHwnd)
                     {
@@ -163,18 +163,9 @@ void SampleWindow::CreateControls(HINSTANCE instance)
     WINRT_VERIFY(stopButtonHwnd);
 
 	// Create snapshot button
-	HWND snapshotButtonHwnd = CreateWindow(
-		WC_BUTTON,
-		L"Take Snapshot",
+	HWND snapshotButtonHwnd = CreateWindowW(WC_BUTTON, L"Take Snapshot",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
-		10,
-		160,
-		200,
-		30,
-		m_window,
-		NULL,
-		instance,
-		NULL);
+		10, 160, 200, 30, m_window, nullptr, instance, nullptr);
 	WINRT_VERIFY(snapshotButtonHwnd);
 
     m_windowComboBoxHwnd = windowComboBoxHwnd;
@@ -184,7 +175,7 @@ void SampleWindow::CreateControls(HINSTANCE instance)
 	m_snapshotButtonHwnd = snapshotButtonHwnd;
 }
 
-void SampleWindow::SetSubTitle(const std::wstring& text)
+void SampleWindow::SetSubTitle(std::wstring const& text)
 {
     std::wstring titleText(L"Win32CaptureSample");
     if (!text.empty())

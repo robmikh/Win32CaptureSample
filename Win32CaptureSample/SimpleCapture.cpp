@@ -104,7 +104,7 @@ void SimpleCapture::OnFrameArrived(winrt::Direct3D11CaptureFramePool const& send
                 m_d3dContext.get(), surfaceTexture.get(), im));
             const auto& realImage = *im.GetImage(0, 0, 0);
             winrt::check_hresult(DirectX::SaveToWICFile(realImage, DirectX::WIC_FLAGS_NONE,
-                GUID_ContainerFormatPng, L"output_tex3.png"));
+                GUID_ContainerFormatPng, L"output.png"));
         }
     }
 
