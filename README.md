@@ -15,3 +15,10 @@ For the most part, using the API is the same between Win32 and UWP. However, the
 
 1. The `GraphicsCapturePicker` won't be able to infer your window in a Win32 application, so you'll have to QI for [`IInitializeWithWindow`](https://msdn.microsoft.com/en-us/library/windows/desktop/hh706981(v=vs.85).aspx) and provide your window's HWND.
 2. `Direct3D11CaptureFramePool` requires a `DispatcherQueue` much like the Composition APIs. You'll need to create a dispatcher for your thread. Alternatively you can use `Direct3D11CaptureFramePool::CreateFreeThreaded` to create the frame pool. Doing so will remove the `DispatcherQueue` requirement, but the `FrameArrived` event will be called from an arbitrary thread.
+
+## Create vs CreateFreeThreaded
+You might have noticed that there are two ways to create the `Direct3D11CaptureFramePool` in the code (`SimpleCapture::SimpleCapture` and `CaptureSnapshot::TakeAsync`). As the name suggests, the method you use to create the frame pool dictates its threading behavior.
+
+Creating the frame pool using `Direct3D11CaptureFramePool::Create` ensures that the frame pool's `FrameArrived` event will always call you back on the thread the frame pool was created on. In order to do this, the frame pool requires that a `DispatcherQueue` be associated with the thread, much like the `Windows.UI.Composition.Compositor` object.
+
+Creating the frame pool using `Direct3D11CaptureFramePool::CreateFreeThreaded`, on the other hand, does not require the presence of a `DispatcherQueue`. However, in return, the frame pool's `FrameArrived` event will call you back on an arbitrary thread. Additionally, your callback must be agile (this should only effect those using the raw WinRT ABI).
