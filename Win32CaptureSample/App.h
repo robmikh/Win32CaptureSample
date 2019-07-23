@@ -30,4 +30,8 @@ private:
 
     winrt::Windows::Graphics::DirectX::Direct3D11::IDirect3DDevice m_device{ nullptr };
     std::unique_ptr<SimpleCapture> m_capture{ nullptr };
+
+    winrt::com_ptr<ID2D1Factory1> m_d2dFactory;
+    winrt::com_ptr<ID2D1Device> m_d2dDevice;
+    winrt::com_ptr<ID2D1DeviceContext> m_d2dContext;
 };

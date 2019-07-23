@@ -42,6 +42,10 @@ App::App(ContainerVisual root, GraphicsCapturePicker picker, FileSavePicker save
     auto d3dDevice = CreateD3DDevice();
     auto dxgiDevice = d3dDevice.as<IDXGIDevice>();
     m_device = CreateDirect3DDevice(dxgiDevice.get());
+
+    m_d2dFactory = CreateD2DFactory();
+    m_d2dDevice = CreateD2DDevice(m_d2dFactory, d3dDevice);
+    check_hresult(m_d2dDevice->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_NONE, m_d2dContext.put()));
 }
 
 GraphicsCaptureItem App::StartCaptureFromWindowHandle(HWND hwnd)
@@ -103,14 +107,11 @@ IAsyncOperation<StorageFile> App::TakeSnapshotAsync()
 	frameTexture->GetDesc(&textureDesc);
 	auto dxgiFrameTexture = frameTexture.as<IDXGISurface>();
 
-	// Setup d2d
-	auto d3dDevice = GetDXGIInterfaceFromObject<ID3D11Device>(m_device);
-	auto d2dFactory = CreateD2DFactory();
-	auto d2dDevice = CreateD2DDevice(d2dFactory, d3dDevice);
-	com_ptr<ID2D1DeviceContext> d2dContext;
-	check_hresult(d2dDevice->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_NONE, d2dContext.put()));
+	// Get a D2D bitmap for our snapshot
+    // TODO: Since this sample doesn't use D2D any other way, it may be better to map 
+    //       the pixels manually and hand them to WIC. However, using d2d is easier for now.
 	com_ptr<ID2D1Bitmap1> d2dBitmap;
-	check_hresult(d2dContext->CreateBitmapFromDxgiSurface(dxgiFrameTexture.get(), nullptr, d2dBitmap.put()));
+	check_hresult(m_d2dContext->CreateBitmapFromDxgiSurface(dxgiFrameTexture.get(), nullptr, d2dBitmap.put()));
 
 	// Encode the snapshot
 	// TODO: dpi?
@@ -134,7 +135,7 @@ IAsyncOperation<StorageFile> App::TakeSnapshotAsync()
 	check_hresult(wicFrame->Initialize(frameProperties.get()));
 
 	com_ptr<IWICImageEncoder> imageEncoder;
-	check_hresult(wicFactory->CreateImageEncoder(d2dDevice.get(), imageEncoder.put()));
+	check_hresult(wicFactory->CreateImageEncoder(m_d2dDevice.get(), imageEncoder.put()));
 	check_hresult(imageEncoder->WriteFrame(d2dBitmap.get(), wicFrame.get(), &params));
 	check_hresult(wicFrame->Commit());
 	check_hresult(encoder->Commit());
