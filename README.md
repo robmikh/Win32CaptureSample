@@ -19,6 +19,6 @@ For the most part, using the API is the same between Win32 and UWP. However, the
 ## Create vs CreateFreeThreaded
 You might have noticed that there are two ways to create the `Direct3D11CaptureFramePool` in the code (`SimpleCapture::SimpleCapture` and `CaptureSnapshot::TakeAsync`). As the name suggests, the method you use to create the frame pool dictates its threading behavior.
 
-Creating the frame pool using `Direct3D11CaptureFramePool::Create` ensures that the frame pool's `FrameArrived` event will always call you back on the thread the frame pool was created on. In order to do this, the frame pool requires that a `DispatcherQueue` be associated with the thread, much like the `Windows.UI.Composition.Compositor` object.
+Creating the frame pool using `Direct3D11CaptureFramePool::Create` ensures that the frame pool's `FrameArrived` event will always call you back on the thread the frame pool was created on. In order to do this, the frame pool requires that a `DispatcherQueue` be associated with the thread, much like the `Windows::UI::Composition::Compositor` object.
 
 Creating the frame pool using `Direct3D11CaptureFramePool::CreateFreeThreaded`, on the other hand, does not require the presence of a `DispatcherQueue`. However, in return, the frame pool's `FrameArrived` event will call you back on an arbitrary thread. Additionally, your callback must be agile (this should only effect those using the raw WinRT ABI).
