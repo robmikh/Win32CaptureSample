@@ -13,7 +13,7 @@ using namespace Windows::UI;
 using namespace Windows::UI::Composition;
 using namespace Windows::Graphics::Capture;
 
-App::App(ContainerVisual root, GraphicsCapturePicker picker, FileSavePicker savePicker)
+App::App(ContainerVisual root, GraphicsCapturePicker capturePicker, FileSavePicker savePicker)
 {
     m_capturePicker = capturePicker;
 	m_savePicker = savePicker;
@@ -66,7 +66,7 @@ GraphicsCaptureItem App::StartCaptureFromMonitorHandle(HMONITOR hmon)
 
 IAsyncOperation<GraphicsCaptureItem> App::StartCaptureWithPickerAsync()
 {
-    auto item = co_await m_picker.PickSingleItemAsync();
+    auto item = co_await m_capturePicker.PickSingleItemAsync();
     if (item)
     {
         // We might resume on a different thread, so let's ask the main thread's
