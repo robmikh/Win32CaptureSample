@@ -82,6 +82,10 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
                         SendMessageW(m_monitorComboBoxHwnd, CB_SETCURSEL, -1, 0);
                         SendMessageW(m_windowComboBoxHwnd, CB_SETCURSEL, -1, 0);
                     }
+                    else if (hwnd == m_currentSnapshotHwnd)
+                    {
+                        m_app->SnapshotCurrentCapture();
+                    }
 					else if (hwnd == m_snapshotButtonHwnd)
 					{
 						OnSnapshotButtonClicked();
@@ -162,16 +166,23 @@ void SampleWindow::CreateControls(HINSTANCE instance)
         10, 120, 200, 30, m_window, nullptr, instance, nullptr);
     WINRT_VERIFY(stopButtonHwnd);
 
-	// Create snapshot button
-	HWND snapshotButtonHwnd = CreateWindowW(WC_BUTTON, L"Take Snapshot",
+	// Create current snapshot button
+	HWND currentSnapshotButtonHwnd = CreateWindowW(WC_BUTTON, L"Snapshot Current Capture",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
 		10, 160, 200, 30, m_window, nullptr, instance, nullptr);
-	WINRT_VERIFY(snapshotButtonHwnd);
+	WINRT_VERIFY(currentSnapshotButtonHwnd);
+
+    // Create independent snapshot button
+    HWND snapshotButtonHwnd = CreateWindowW(WC_BUTTON, L"Take Independent Snapshot",
+        WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
+        10, 200, 200, 30, m_window, nullptr, instance, nullptr);
+    WINRT_VERIFY(snapshotButtonHwnd);
 
     m_windowComboBoxHwnd = windowComboBoxHwnd;
     m_monitorComboBoxHwnd = monitorComboBoxHwnd;
     m_pickerButtonHwnd = pickerButtonHwnd;
     m_stopButtonHwnd = stopButtonHwnd;
+    m_currentSnapshotHwnd = currentSnapshotButtonHwnd;
 	m_snapshotButtonHwnd = snapshotButtonHwnd;
 }
 

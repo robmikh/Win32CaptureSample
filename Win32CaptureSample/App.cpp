@@ -154,14 +154,20 @@ IAsyncOperation<StorageFile> App::TakeSnapshotAsync()
 	co_return file;
 }
 
+void App::SnapshotCurrentCapture()
+{
+    if (m_capture)
+    {
+        m_capture->SaveNextFrame();
+    }
+}
+
 void App::StartCaptureFromItem(GraphicsCaptureItem item)
 {
     m_capture = std::make_unique<SimpleCapture>(m_device, item);
 
     auto surface = m_capture->CreateSurface(m_compositor);
     m_brush.Surface(surface);
-
-    m_capture->SaveNextFrame();
 
     m_capture->StartCapture();
 }

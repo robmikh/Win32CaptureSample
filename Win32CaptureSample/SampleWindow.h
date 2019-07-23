@@ -33,6 +33,7 @@ private:
     HWND m_monitorComboBoxHwnd = nullptr;
     HWND m_pickerButtonHwnd = nullptr;
     HWND m_stopButtonHwnd = nullptr;
+    HWND m_currentSnapshotHwnd = nullptr;
 	HWND m_snapshotButtonHwnd = nullptr;
     std::vector<EnumerationWindow> m_windows;
     std::vector<EnumerationMonitor> m_monitors;
