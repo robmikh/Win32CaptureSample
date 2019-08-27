@@ -22,6 +22,7 @@ private:
     void OnFrameArrived(
         winrt::Windows::Graphics::Capture::Direct3D11CaptureFramePool const& sender,
         winrt::Windows::Foundation::IInspectable const& args);
+    void TakeSnapshot(winrt::com_ptr<ID3D11Texture2D> const& frame);
 
     inline void CheckClosed()
     {
