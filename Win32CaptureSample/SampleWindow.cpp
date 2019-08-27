@@ -58,7 +58,7 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
 
                         SetSubTitle(std::wstring(item.DisplayName()));
                         SendMessageW(m_monitorComboBoxHwnd, CB_SETCURSEL, -1, 0);
-						SendMessageW(m_cursorCheckBoxHwnd, BM_SETCHECK, BST_CHECKED, 0);
+                        SendMessageW(m_cursorCheckBoxHwnd, BM_SETCHECK, BST_CHECKED, 0);
                     }
                     else if (hwnd == m_monitorComboBoxHwnd)
                     {
@@ -67,7 +67,7 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
 
                         SetSubTitle(std::wstring(item.DisplayName()));
                         SendMessageW(m_windowComboBoxHwnd, CB_SETCURSEL, -1, 0);
-						SendMessageW(m_cursorCheckBoxHwnd, BM_SETCHECK, BST_CHECKED, 0);
+                        SendMessageW(m_cursorCheckBoxHwnd, BM_SETCHECK, BST_CHECKED, 0);
                     }
                 }
                 break;
@@ -83,7 +83,7 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
                         SetSubTitle(L"");
                         SendMessageW(m_monitorComboBoxHwnd, CB_SETCURSEL, -1, 0);
                         SendMessageW(m_windowComboBoxHwnd, CB_SETCURSEL, -1, 0);
-						SendMessageW(m_cursorCheckBoxHwnd, BM_SETCHECK, BST_CHECKED, 0);
+                        SendMessageW(m_cursorCheckBoxHwnd, BM_SETCHECK, BST_CHECKED, 0);
                     }
                     else if (hwnd == m_currentSnapshotHwnd)
                     {
@@ -95,7 +95,7 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
                     }
                     else if (hwnd == m_cursorCheckBoxHwnd)
                     {
-                        auto value = SendMessage(m_cursorCheckBoxHwnd, BM_GETCHECK, 0, 0) == BST_CHECKED;
+                        auto value = SendMessageW(m_cursorCheckBoxHwnd, BM_GETCHECK, 0, 0) == BST_CHECKED;
                         m_app->IsCursorEnabled(value);
                     }
                 }
@@ -120,7 +120,7 @@ fire_and_forget SampleWindow::OnPickerButtonClicked()
         SetSubTitle(std::wstring(selectedItem.DisplayName()));
         SendMessageW(m_monitorComboBoxHwnd, CB_SETCURSEL, -1, 0);
         SendMessageW(m_windowComboBoxHwnd, CB_SETCURSEL, -1, 0);
-		SendMessageW(m_cursorCheckBoxHwnd, BM_SETCHECK, BST_CHECKED, 0);
+        SendMessageW(m_cursorCheckBoxHwnd, BM_SETCHECK, BST_CHECKED, 0);
     }
 }
 
