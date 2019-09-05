@@ -98,6 +98,11 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
                         auto value = SendMessageW(m_cursorCheckBoxHwnd, BM_GETCHECK, 0, 0) == BST_CHECKED;
                         m_app->IsCursorEnabled(value);
                     }
+                    else if (hwnd == m_captureExcludeCheckBoxHwnd)
+                    {
+                        auto value = SendMessageW(m_captureExcludeCheckBoxHwnd, BM_GETCHECK, 0, 0) == BST_CHECKED;
+                        winrt::check_bool(SetWindowDisplayAffinity(m_window, value ? WDA_EXCLUDEFROMCAPTURE : WDA_NONE));
+                    }
                 }
                 break;
             }
@@ -141,6 +146,9 @@ void SampleWindow::CreateControls(HINSTANCE instance)
 
     auto isCursorEnablePresent = winrt::Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", 9);
     auto cursorEnableStyle = isCursorEnablePresent ? 0 : WS_DISABLED;
+
+    auto isWin32CaptureExcludePresent = winrt::Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", 9);
+    auto win32CaptureExcludeStyle = isWin32CaptureExcludePresent ? 0 : WS_DISABLED;
 
     // Create window combo box
     HWND windowComboBoxHwnd = CreateWindowW(WC_COMBOBOX, L"",
@@ -199,6 +207,15 @@ void SampleWindow::CreateControls(HINSTANCE instance)
     // The default state is true for cursor rendering
     SendMessageW(cursorCheckBoxHwnd, BM_SETCHECK, BST_CHECKED, 0);
 
+    // Create capture exclude checkbox
+    HWND captureExcludeCheckBoxHwnd = CreateWindowW(WC_BUTTON, L"Exclude this window",
+        WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_AUTOCHECKBOX | win32CaptureExcludeStyle,
+        10, 280, 200, 30, m_window, nullptr, instance, nullptr);
+    WINRT_VERIFY(captureExcludeCheckBoxHwnd);
+
+    // The default state is false for capture exclusion
+    SendMessageW(captureExcludeCheckBoxHwnd, BM_SETCHECK, BST_UNCHECKED, 0);
+
     m_windowComboBoxHwnd = windowComboBoxHwnd;
     m_monitorComboBoxHwnd = monitorComboBoxHwnd;
     m_pickerButtonHwnd = pickerButtonHwnd;
@@ -206,6 +223,7 @@ void SampleWindow::CreateControls(HINSTANCE instance)
     m_currentSnapshotHwnd = currentSnapshotButtonHwnd;
     m_snapshotButtonHwnd = snapshotButtonHwnd;
     m_cursorCheckBoxHwnd = cursorCheckBoxHwnd;
+    m_captureExcludeCheckBoxHwnd = captureExcludeCheckBoxHwnd;
 }
 
 void SampleWindow::SetSubTitle(std::wstring const& text)
