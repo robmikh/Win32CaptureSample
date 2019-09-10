@@ -168,7 +168,7 @@ void SampleWindow::CreateControls(HINSTANCE instance)
 
     // Create current snapshot button
     HWND currentSnapshotButtonHwnd = CreateWindowW(WC_BUTTON, L"Snapshot Current Capture",
-        WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
+        WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON | WS_DISABLED,
         10, 160, 200, 30, m_window, nullptr, instance, nullptr);
     WINRT_VERIFY(currentSnapshotButtonHwnd);
 
