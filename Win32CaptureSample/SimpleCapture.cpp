@@ -15,23 +15,24 @@ namespace winrt
     using namespace Windows::UI::Composition;
 }
 
-SimpleCapture::SimpleCapture(winrt::IDirect3DDevice const& device, winrt::GraphicsCaptureItem const& item)
+SimpleCapture::SimpleCapture(winrt::IDirect3DDevice const& device, winrt::GraphicsCaptureItem const& item, winrt::DirectXPixelFormat pixelFormat)
 {
     m_item = item;
     m_device = device;
+    m_pixelFormat = pixelFormat;
 
     auto d3dDevice = GetDXGIInterfaceFromObject<ID3D11Device>(m_device);
     d3dDevice->GetImmediateContext(m_d3dContext.put());
 
     m_swapChain = CreateDXGISwapChain(d3dDevice, static_cast<uint32_t>(m_item.Size().Width), static_cast<uint32_t>(m_item.Size().Height),
-        DXGI_FORMAT_B8G8R8A8_UNORM, 2);
+        static_cast<DXGI_FORMAT>(m_pixelFormat), 2);
 
     // Creating our frame pool with 'Create' instead of 'CreateFreeThreaded'
     // means that the frame pool's FrameArrived event is called on the thread
     // the frame pool was created on. This also means that the creating thread
     // must have a DispatcherQueue. If you use this method, it's best not to do
     // it on the UI thread. 
-    m_framePool = winrt::Direct3D11CaptureFramePool::Create(m_device, winrt::DirectXPixelFormat::B8G8R8A8UIntNormalized, 2, m_item.Size());
+    m_framePool = winrt::Direct3D11CaptureFramePool::Create(m_device, m_pixelFormat, 2, m_item.Size());
     m_session = m_framePool.CreateCaptureSession(m_item);
     m_lastSize = m_item.Size();
     m_framePool.FrameArrived({ this, &SimpleCapture::OnFrameArrived });
@@ -74,8 +75,8 @@ bool SimpleCapture::TryResizeSwapChain(winrt::Direct3D11CaptureFrame const& fram
     {
         // The thing we have been capturing has changed size, resize the swap chain to match.
         m_lastSize = contentSize;
-        m_swapChain->ResizeBuffers(2, static_cast<uint32_t>(m_lastSize.Width), static_cast<uint32_t>(m_lastSize.Height),
-            DXGI_FORMAT_B8G8R8A8_UNORM, 0);
+        winrt::check_hresult(m_swapChain->ResizeBuffers(2, static_cast<uint32_t>(m_lastSize.Width), static_cast<uint32_t>(m_lastSize.Height),
+            static_cast<DXGI_FORMAT>(m_pixelFormat), 0));
         return true;
     }
     return false;
@@ -107,7 +108,7 @@ void SimpleCapture::OnFrameArrived(winrt::Direct3D11CaptureFramePool const& send
 
     if (swapChainResizedToFrame)
     {
-        m_framePool.Recreate(m_device, winrt::DirectXPixelFormat::B8G8R8A8UIntNormalized, 2, m_lastSize);
+        m_framePool.Recreate(m_device, m_pixelFormat, 2, m_lastSize);
     }
 }
 

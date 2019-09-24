@@ -12,6 +12,7 @@ using namespace Windows::Foundation;
 using namespace Windows::UI;
 using namespace Windows::UI::Composition;
 using namespace Windows::Graphics::Capture;
+using namespace Windows::Graphics::DirectX;
 
 App::App(ContainerVisual root, GraphicsCapturePicker capturePicker, FileSavePicker savePicker)
 {
@@ -164,7 +165,7 @@ void App::SnapshotCurrentCapture()
 
 void App::StartCaptureFromItem(GraphicsCaptureItem item)
 {
-    m_capture = std::make_unique<SimpleCapture>(m_device, item);
+    m_capture = std::make_unique<SimpleCapture>(m_device, item, DirectXPixelFormat::B8G8R8A8UIntNormalized);
 
     auto surface = m_capture->CreateSurface(m_compositor);
     m_brush.Surface(surface);
