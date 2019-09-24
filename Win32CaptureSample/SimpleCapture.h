@@ -14,6 +14,7 @@ public:
         winrt::Windows::UI::Composition::Compositor const& compositor);
 
     void SaveNextFrame() { m_captureNextImage = true; }
+    winrt::Windows::Graphics::Capture::GraphicsCaptureItem CaptureItem() { return m_item; }
 
     void Close();
 

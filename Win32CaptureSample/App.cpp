@@ -165,7 +165,7 @@ void App::SnapshotCurrentCapture()
 
 void App::StartCaptureFromItem(GraphicsCaptureItem item)
 {
-    m_capture = std::make_unique<SimpleCapture>(m_device, item, DirectXPixelFormat::B8G8R8A8UIntNormalized);
+    m_capture = std::make_unique<SimpleCapture>(m_device, item, m_pixelFormat);
 
     auto surface = m_capture->CreateSurface(m_compositor);
     m_brush.Surface(surface);
@@ -180,5 +180,16 @@ void App::StopCapture()
         m_capture->Close();
         m_capture = nullptr;
         m_brush.Surface(nullptr);
+    }
+}
+
+void App::PixelFormat(DirectXPixelFormat pixelFormat)
+{
+    m_pixelFormat = pixelFormat;
+    if (m_capture)
+    {
+        auto item = m_capture->CaptureItem();
+        StopCapture();
+        StartCaptureFromItem(item);
     }
 }

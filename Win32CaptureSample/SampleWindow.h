@@ -28,6 +28,12 @@ private:
     winrt::fire_and_forget OnPickerButtonClicked();
     winrt::fire_and_forget OnSnapshotButtonClicked();
 
+    struct PixelFormatData
+    {
+        std::wstring Name;
+        winrt::Windows::Graphics::DirectX::DirectXPixelFormat PixelFormat;
+    };
+
 private:
     HWND m_windowComboBoxHwnd = nullptr;
     HWND m_monitorComboBoxHwnd = nullptr;
@@ -35,7 +41,9 @@ private:
     HWND m_stopButtonHwnd = nullptr;
     HWND m_currentSnapshotHwnd = nullptr;
     HWND m_snapshotButtonHwnd = nullptr;
+    HWND m_pixelFormatComboBoxHwnd = nullptr;
     std::vector<EnumerationWindow> m_windows;
     std::vector<EnumerationMonitor> m_monitors;
+    std::vector<PixelFormatData> m_pixelFormats;
     std::shared_ptr<App> m_app;
 };

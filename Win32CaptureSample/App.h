@@ -14,6 +14,8 @@ public:
     winrt::Windows::Foundation::IAsyncOperation<winrt::Windows::Graphics::Capture::GraphicsCaptureItem> StartCaptureWithPickerAsync();
     winrt::Windows::Foundation::IAsyncOperation<winrt::Windows::Storage::StorageFile> TakeSnapshotAsync();
     void SnapshotCurrentCapture();
+    winrt::Windows::Graphics::DirectX::DirectXPixelFormat PixelFormat() { return m_pixelFormat; }
+    void PixelFormat(winrt::Windows::Graphics::DirectX::DirectXPixelFormat pixelFormat);
 
     void StopCapture();
 
@@ -32,6 +34,7 @@ private:
 
     winrt::Windows::Graphics::DirectX::Direct3D11::IDirect3DDevice m_device{ nullptr };
     std::unique_ptr<SimpleCapture> m_capture{ nullptr };
+    winrt::Windows::Graphics::DirectX::DirectXPixelFormat m_pixelFormat = winrt::Windows::Graphics::DirectX::DirectXPixelFormat::B8G8R8A8UIntNormalized;
 
     winrt::com_ptr<ID2D1Factory1> m_d2dFactory;
     winrt::com_ptr<ID2D1Device> m_d2dDevice;
