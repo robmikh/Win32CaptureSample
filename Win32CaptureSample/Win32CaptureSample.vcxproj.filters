@@ -6,9 +6,9 @@
     <ClCompile Include="App.cpp" />
     <ClCompile Include="SimpleCapture.cpp" />
     <ClCompile Include="SampleWindow.cpp" />
-    <ClCompile Include="EnumerationMonitor.cpp" />
     <ClCompile Include="CaptureSnapshot.cpp" />
     <ClCompile Include="WindowList.cpp" />
+    <ClCompile Include="MonitorList.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -21,11 +21,11 @@
     <ClInclude Include="dispatcherqueue.interop.h" />
     <ClInclude Include="DesktopWindow.h" />
     <ClInclude Include="SampleWindow.h" />
-    <ClInclude Include="EnumerationMonitor.h" />
     <ClInclude Include="completionSource.h" />
     <ClInclude Include="CaptureSnapshot.h" />
     <ClInclude Include="stream.interop.h" />
     <ClInclude Include="WindowList.h" />
+    <ClInclude Include="MonitorList.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

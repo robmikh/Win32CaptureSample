@@ -138,8 +138,8 @@
   <ItemGroup>
     <ClCompile Include="App.cpp" />
     <ClCompile Include="CaptureSnapshot.cpp" />
-    <ClCompile Include="EnumerationMonitor.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="MonitorList.cpp" />
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="SampleWindow.cpp" />
     <ClCompile Include="SimpleCapture.cpp" />
@@ -155,7 +155,7 @@
     <ClInclude Include="dispatcherqueue.interop.h" />
     <ClInclude Include="d3dHelpers.h" />
     <ClInclude Include="direct3d11.interop.h" />
-    <ClInclude Include="EnumerationMonitor.h" />
+    <ClInclude Include="MonitorList.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="SampleWindow.h" />
     <ClInclude Include="SimpleCapture.h" />

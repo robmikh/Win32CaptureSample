@@ -2,6 +2,7 @@
 #include "App.h"
 #include "SampleWindow.h"
 #include "WindowList.h"
+#include "MonitorList.h"
 #include <CommCtrl.h>
 
 using namespace winrt;
@@ -39,15 +40,15 @@ SampleWindow::SampleWindow(HINSTANCE instance, int cmdShow, std::shared_ptr<App>
     UpdateWindow(m_window);
 
     m_app = app;
-    m_windowList = std::make_unique<WindowList>();
-    m_monitors = EnumerationMonitor::EnumerateAllMonitors();
+    m_windows = std::make_unique<WindowList>();
+    m_monitors = std::make_unique<MonitorList>();
 
     CreateControls(instance);
 }
 
 SampleWindow::~SampleWindow()
 {
-    m_windowList.reset();
+    m_windows.reset();
 }
 
 LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LPARAM const lparam)
@@ -65,7 +66,7 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
                 auto index = SendMessageW(hwnd, CB_GETCURSEL, 0, 0);
                 if (hwnd == m_windowComboBoxHwnd)
                 {
-                    auto window = m_windowList->GetCurrentWindows()[index];
+                    auto window = m_windows->GetCurrentWindows()[index];
                     m_itemClosedRevoker.revoke();
                     auto item = m_app->StartCaptureFromWindowHandle(window.WindowHandle);
                     m_itemClosedRevoker = item.Closed(auto_revoke, { this, &SampleWindow::OnCaptureItemClosed });
@@ -75,9 +76,9 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
                 }
                 else if (hwnd == m_monitorComboBoxHwnd)
                 {
-                    auto monitor = m_monitors[index];
+                    auto monitor = m_monitors->GetCurrentMonitors()[index];
                     m_itemClosedRevoker.revoke();
-                    auto item = m_app->StartCaptureFromMonitorHandle(monitor.Hmon());
+                    auto item = m_app->StartCaptureFromMonitorHandle(monitor.MonitorHandle);
                     m_itemClosedRevoker = item.Closed(auto_revoke, { this, &SampleWindow::OnCaptureItemClosed });
 
                     SetSubTitle(std::wstring(item.DisplayName()));
@@ -110,14 +111,7 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
     break;
     case WM_DISPLAYCHANGE:
     {
-        // TODO: Preserve selected index if still valid
-        winrt::check_hresult(SendMessageW(m_monitorComboBoxHwnd, CB_RESETCONTENT, 0, 0));
-        m_monitors = EnumerationMonitor::EnumerateAllMonitors();
-        // Populate monitor combo box
-        for (auto& monitor : m_monitors)
-        {
-            SendMessageW(m_monitorComboBoxHwnd, CB_ADDSTRING, 0, (LPARAM)monitor.DisplayName().c_str());
-        }
+        m_monitors->Update();
     }
     break;
     default:
@@ -164,7 +158,7 @@ void SampleWindow::CreateControls(HINSTANCE instance)
     WINRT_VERIFY(windowComboBoxHwnd);
 
     // Populate window combo box and register for updates
-    m_windowList->RegisterComboBoxForUpdates(windowComboBoxHwnd);
+    m_windows->RegisterComboBoxForUpdates(windowComboBoxHwnd);
 
     // Create monitor combo box
     HWND monitorComboBoxHwnd = CreateWindowW(WC_COMBOBOX, L"",
@@ -173,10 +167,7 @@ void SampleWindow::CreateControls(HINSTANCE instance)
     WINRT_VERIFY(monitorComboBoxHwnd);
 
     // Populate monitor combo box
-    for (auto& monitor : m_monitors)
-    {
-        SendMessageW(monitorComboBoxHwnd, CB_ADDSTRING, 0, (LPARAM)monitor.DisplayName().c_str());
-    }
+    m_monitors->RegisterComboBoxForUpdates(monitorComboBoxHwnd);
 
     // Create picker button
     HWND pickerButtonHwnd = CreateWindowW(WC_BUTTON, L"Use Picker",

@@ -1,9 +1,9 @@
 #pragma once
 #include "DesktopWindow.h"
-#include "EnumerationMonitor.h"
 
 class App;
 class WindowList;
+class MonitorList;
 
 struct SampleWindow : DesktopWindow<SampleWindow>
 {
@@ -41,8 +41,8 @@ private:
     HWND m_stopButtonHwnd = nullptr;
     HWND m_currentSnapshotHwnd = nullptr;
     HWND m_snapshotButtonHwnd = nullptr;
-    std::unique_ptr<WindowList> m_windowList;
-    std::vector<EnumerationMonitor> m_monitors;
+    std::unique_ptr<WindowList> m_windows;
+    std::unique_ptr<MonitorList> m_monitors;
     std::shared_ptr<App> m_app;
     winrt::Windows::Graphics::Capture::GraphicsCaptureItem::Closed_revoker m_itemClosedRevoker;
 };
