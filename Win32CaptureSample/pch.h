@@ -3,6 +3,8 @@
 #include <Unknwn.h>
 #include <inspectable.h>
 
+#include <wil/cppwinrt.h>
+
 // WinRT
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Foundation.Collections.h>
@@ -25,12 +27,18 @@
 // STL
 #include <atomic>
 #include <memory>
+#include <algorithm>
+#include <unordered_set>
+#include <vector>
 
 // D3D
 #include <d3d11_4.h>
 #include <dxgi1_6.h>
 #include <d2d1_3.h>
 #include <wincodec.h>
+
+// WIL
+#include <wil/resource.h>
 
 // Helpers
 #include "composition.interop.h"

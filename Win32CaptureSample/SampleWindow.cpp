@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "App.h"
 #include "SampleWindow.h"
+#include "WindowList.h"
 #include <CommCtrl.h>
 
 using namespace winrt;
@@ -38,10 +39,15 @@ SampleWindow::SampleWindow(HINSTANCE instance, int cmdShow, std::shared_ptr<App>
     UpdateWindow(m_window);
 
     m_app = app;
-    m_windows = EnumerationWindow::EnumerateAllWindows();
+    m_windowList = std::make_unique<WindowList>();
     m_monitors = EnumerationMonitor::EnumerateAllMonitors();
 
     CreateControls(instance);
+}
+
+SampleWindow::~SampleWindow()
+{
+    m_windowList.reset();
 }
 
 LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LPARAM const lparam)
@@ -59,8 +65,8 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
                     auto index = SendMessageW(hwnd, CB_GETCURSEL, 0, 0);
                     if (hwnd == m_windowComboBoxHwnd)
                     {
-                        auto window = m_windows[index];
-                        auto item = m_app->StartCaptureFromWindowHandle(window.Hwnd());
+                        auto window = m_windowList->GetCurrentWindows()[index];
+                        auto item = m_app->StartCaptureFromWindowHandle(window.WindowHandle);
 
                         SetSubTitle(std::wstring(item.DisplayName()));
                         SendMessageW(m_monitorComboBoxHwnd, CB_SETCURSEL, -1, 0);
@@ -142,11 +148,8 @@ void SampleWindow::CreateControls(HINSTANCE instance)
         10, 10, 200, 200, m_window, nullptr, instance, nullptr);
     WINRT_VERIFY(windowComboBoxHwnd);
 
-    // Populate window combo box
-    for (auto& window : m_windows)
-    {
-        SendMessageW(windowComboBoxHwnd, CB_ADDSTRING, 0, (LPARAM)window.Title().c_str());
-    }
+    // Populate window combo box and register for updates
+    m_windowList->RegisterComboBoxForUpdates(windowComboBoxHwnd);
 
     // Create monitor combo box
     HWND monitorComboBoxHwnd = CreateWindowW(WC_COMBOBOX, L"",

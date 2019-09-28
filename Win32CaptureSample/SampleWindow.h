@@ -1,9 +1,9 @@
 #pragma once
 #include "DesktopWindow.h"
-#include "EnumerationWindow.h"
 #include "EnumerationMonitor.h"
 
 class App;
+class WindowList;
 
 struct SampleWindow : DesktopWindow<SampleWindow>
 {
@@ -11,6 +11,7 @@ struct SampleWindow : DesktopWindow<SampleWindow>
     static void RegisterWindowClass();
 
     SampleWindow(HINSTANCE instance, int cmdShow, std::shared_ptr<App> app);
+    ~SampleWindow();
 
     winrt::Windows::UI::Composition::Desktop::DesktopWindowTarget CreateWindowTarget(winrt::Windows::UI::Composition::Compositor const& compositor)
     {
@@ -38,7 +39,7 @@ private:
     HWND m_stopButtonHwnd = nullptr;
     HWND m_currentSnapshotHwnd = nullptr;
     HWND m_snapshotButtonHwnd = nullptr;
-    std::vector<EnumerationWindow> m_windows;
+    std::unique_ptr<WindowList> m_windowList;
     std::vector<EnumerationMonitor> m_monitors;
     std::shared_ptr<App> m_app;
 };
