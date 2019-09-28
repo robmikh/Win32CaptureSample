@@ -1,5 +1,4 @@
 #include "pch.h"
-#include "EnumerationWindow.h"
 #include "App.h"
 #include "SimpleCapture.h"
 #include "CaptureSnapshot.h"
