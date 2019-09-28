@@ -27,6 +27,8 @@ int __stdcall WinMain(HINSTANCE instance, HINSTANCE, PSTR cmdLine, int cmdShow)
         return 1;
     }
 
+    SampleWindow::RegisterWindowClass();
+
     // Create the DispatcherQueue that the compositor needs to run
     auto controller = CreateDispatcherQueueControllerForCurrentThread();
 

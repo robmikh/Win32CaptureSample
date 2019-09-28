@@ -1,13 +1,17 @@
 #pragma once
 #include "DesktopWindow.h"
-#include "EnumerationWindow.h"
-#include "EnumerationMonitor.h"
 
 class App;
+class WindowList;
+class MonitorList;
 
 struct SampleWindow : DesktopWindow<SampleWindow>
 {
+    static const std::wstring ClassName;
+    static void RegisterWindowClass();
+
     SampleWindow(HINSTANCE instance, int cmdShow, std::shared_ptr<App> app);
+    ~SampleWindow();
 
     winrt::Windows::UI::Composition::Desktop::DesktopWindowTarget CreateWindowTarget(winrt::Windows::UI::Composition::Compositor const& compositor)
     {
@@ -27,6 +31,8 @@ private:
     void SetSubTitle(std::wstring const& text);
     winrt::fire_and_forget OnPickerButtonClicked();
     winrt::fire_and_forget OnSnapshotButtonClicked();
+    void StopCapture();
+    void OnCaptureItemClosed(winrt::Windows::Graphics::Capture::GraphicsCaptureItem const&, winrt::Windows::Foundation::IInspectable const&);
 
 private:
     HWND m_windowComboBoxHwnd = nullptr;
@@ -35,7 +41,8 @@ private:
     HWND m_stopButtonHwnd = nullptr;
     HWND m_currentSnapshotHwnd = nullptr;
     HWND m_snapshotButtonHwnd = nullptr;
-    std::vector<EnumerationWindow> m_windows;
-    std::vector<EnumerationMonitor> m_monitors;
+    std::unique_ptr<WindowList> m_windows;
+    std::unique_ptr<MonitorList> m_monitors;
     std::shared_ptr<App> m_app;
+    winrt::Windows::Graphics::Capture::GraphicsCaptureItem::Closed_revoker m_itemClosedRevoker;
 };
