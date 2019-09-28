@@ -90,6 +90,11 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
                     SetSubTitle(std::wstring(item.DisplayName()));
                     SendMessageW(m_windowComboBoxHwnd, CB_SETCURSEL, -1, 0);
                 }
+                else if (hwnd == m_pixelFormatComboBoxHwnd)
+                {
+                    auto pixelFormatData = m_pixelFormats[index];
+                    m_app->PixelFormat(pixelFormatData.PixelFormat);
+                }
             }
             break;
         case BN_CLICKED:
