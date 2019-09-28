@@ -66,7 +66,9 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
                     if (hwnd == m_windowComboBoxHwnd)
                     {
                         auto window = m_windowList->GetCurrentWindows()[index];
+                        m_itemClosedRevoker.revoke();
                         auto item = m_app->StartCaptureFromWindowHandle(window.WindowHandle);
+                        m_itemClosedRevoker = item.Closed(auto_revoke, { this, &SampleWindow::OnCaptureItemClosed });
 
                         SetSubTitle(std::wstring(item.DisplayName()));
                         SendMessageW(m_monitorComboBoxHwnd, CB_SETCURSEL, -1, 0);
@@ -74,7 +76,9 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
                     else if (hwnd == m_monitorComboBoxHwnd)
                     {
                         auto monitor = m_monitors[index];
+                        m_itemClosedRevoker.revoke();
                         auto item = m_app->StartCaptureFromMonitorHandle(monitor.Hmon());
+                        m_itemClosedRevoker = item.Closed(auto_revoke, { this, &SampleWindow::OnCaptureItemClosed });
 
                         SetSubTitle(std::wstring(item.DisplayName()));
                         SendMessageW(m_windowComboBoxHwnd, CB_SETCURSEL, -1, 0);
@@ -89,10 +93,7 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
                     }
                     else if (hwnd == m_stopButtonHwnd)
                     {
-                        m_app->StopCapture();
-                        SetSubTitle(L"");
-                        SendMessageW(m_monitorComboBoxHwnd, CB_SETCURSEL, -1, 0);
-                        SendMessageW(m_windowComboBoxHwnd, CB_SETCURSEL, -1, 0);
+                        StopCapture();
                     }
                     else if (hwnd == m_currentSnapshotHwnd)
                     {
@@ -121,6 +122,8 @@ fire_and_forget SampleWindow::OnPickerButtonClicked()
 
     if (selectedItem)
     {
+        m_itemClosedRevoker.revoke();
+        m_itemClosedRevoker = selectedItem.Closed(auto_revoke, { this, &SampleWindow::OnCaptureItemClosed });
         SetSubTitle(std::wstring(selectedItem.DisplayName()));
         SendMessageW(m_monitorComboBoxHwnd, CB_SETCURSEL, -1, 0);
         SendMessageW(m_windowComboBoxHwnd, CB_SETCURSEL, -1, 0);
@@ -203,4 +206,17 @@ void SampleWindow::SetSubTitle(std::wstring const& text)
         titleText += (L" - " + text);
     }
     SetWindowTextW(m_window, titleText.c_str());
+}
+
+void SampleWindow::StopCapture()
+{
+    m_app->StopCapture();
+    SetSubTitle(L"");
+    SendMessageW(m_monitorComboBoxHwnd, CB_SETCURSEL, -1, 0);
+    SendMessageW(m_windowComboBoxHwnd, CB_SETCURSEL, -1, 0);
+}
+
+void SampleWindow::OnCaptureItemClosed(GraphicsCaptureItem const&, winrt::Windows::Foundation::IInspectable const&)
+{
+    StopCapture();
 }

@@ -31,6 +31,8 @@ private:
     void SetSubTitle(std::wstring const& text);
     winrt::fire_and_forget OnPickerButtonClicked();
     winrt::fire_and_forget OnSnapshotButtonClicked();
+    void StopCapture();
+    void OnCaptureItemClosed(winrt::Windows::Graphics::Capture::GraphicsCaptureItem const&, winrt::Windows::Foundation::IInspectable const&);
 
 private:
     HWND m_windowComboBoxHwnd = nullptr;
@@ -42,4 +44,5 @@ private:
     std::unique_ptr<WindowList> m_windowList;
     std::vector<EnumerationMonitor> m_monitors;
     std::shared_ptr<App> m_app;
+    winrt::Windows::Graphics::Capture::GraphicsCaptureItem::Closed_revoker m_itemClosedRevoker;
 };
