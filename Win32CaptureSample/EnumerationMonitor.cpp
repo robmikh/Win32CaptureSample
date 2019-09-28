@@ -7,11 +7,7 @@ std::vector<EnumerationMonitor> EnumerationMonitor::EnumerateAllMonitors()
     EnumDisplayMonitors(nullptr, nullptr, [](HMONITOR hmon, HDC, LPRECT, LPARAM lparam)
     {
         MONITORINFOEX monitorInfo = { sizeof(monitorInfo) };
-        if (!GetMonitorInfoW(hmon, &monitorInfo))
-        {
-            winrt::check_hresult(GetLastError());
-        }
-
+        winrt::check_bool(GetMonitorInfo(hmon, &monitorInfo));
         std::wstring displayName(monitorInfo.szDevice);
 
         auto& monitors = *reinterpret_cast<std::vector<EnumerationMonitor>*>(lparam);

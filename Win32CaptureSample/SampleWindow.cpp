@@ -55,59 +55,71 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
     switch (message)
     {
     case WM_COMMAND:
+    {
+        auto command = HIWORD(wparam);
+        auto hwnd = (HWND)lparam;
+        switch (command)
         {
-            auto command = HIWORD(wparam);
-            auto hwnd = (HWND)lparam;
-            switch (command)
+        case CBN_SELCHANGE:
             {
-            case CBN_SELCHANGE:
+                auto index = SendMessageW(hwnd, CB_GETCURSEL, 0, 0);
+                if (hwnd == m_windowComboBoxHwnd)
                 {
-                    auto index = SendMessageW(hwnd, CB_GETCURSEL, 0, 0);
-                    if (hwnd == m_windowComboBoxHwnd)
-                    {
-                        auto window = m_windowList->GetCurrentWindows()[index];
-                        m_itemClosedRevoker.revoke();
-                        auto item = m_app->StartCaptureFromWindowHandle(window.WindowHandle);
-                        m_itemClosedRevoker = item.Closed(auto_revoke, { this, &SampleWindow::OnCaptureItemClosed });
+                    auto window = m_windowList->GetCurrentWindows()[index];
+                    m_itemClosedRevoker.revoke();
+                    auto item = m_app->StartCaptureFromWindowHandle(window.WindowHandle);
+                    m_itemClosedRevoker = item.Closed(auto_revoke, { this, &SampleWindow::OnCaptureItemClosed });
 
-                        SetSubTitle(std::wstring(item.DisplayName()));
-                        SendMessageW(m_monitorComboBoxHwnd, CB_SETCURSEL, -1, 0);
-                    }
-                    else if (hwnd == m_monitorComboBoxHwnd)
-                    {
-                        auto monitor = m_monitors[index];
-                        m_itemClosedRevoker.revoke();
-                        auto item = m_app->StartCaptureFromMonitorHandle(monitor.Hmon());
-                        m_itemClosedRevoker = item.Closed(auto_revoke, { this, &SampleWindow::OnCaptureItemClosed });
-
-                        SetSubTitle(std::wstring(item.DisplayName()));
-                        SendMessageW(m_windowComboBoxHwnd, CB_SETCURSEL, -1, 0);
-                    }
+                    SetSubTitle(std::wstring(item.DisplayName()));
+                    SendMessageW(m_monitorComboBoxHwnd, CB_SETCURSEL, -1, 0);
                 }
-                break;
-            case BN_CLICKED:
+                else if (hwnd == m_monitorComboBoxHwnd)
                 {
-                    if (hwnd == m_pickerButtonHwnd)
-                    {
-                        OnPickerButtonClicked();
-                    }
-                    else if (hwnd == m_stopButtonHwnd)
-                    {
-                        StopCapture();
-                    }
-                    else if (hwnd == m_currentSnapshotHwnd)
-                    {
-                        m_app->SnapshotCurrentCapture();
-                    }
-                    else if (hwnd == m_snapshotButtonHwnd)
-                    {
-                        OnSnapshotButtonClicked();
-                    }
+                    auto monitor = m_monitors[index];
+                    m_itemClosedRevoker.revoke();
+                    auto item = m_app->StartCaptureFromMonitorHandle(monitor.Hmon());
+                    m_itemClosedRevoker = item.Closed(auto_revoke, { this, &SampleWindow::OnCaptureItemClosed });
+
+                    SetSubTitle(std::wstring(item.DisplayName()));
+                    SendMessageW(m_windowComboBoxHwnd, CB_SETCURSEL, -1, 0);
                 }
-                break;
             }
+            break;
+        case BN_CLICKED:
+            {
+                if (hwnd == m_pickerButtonHwnd)
+                {
+                    OnPickerButtonClicked();
+                }
+                else if (hwnd == m_stopButtonHwnd)
+                {
+                    StopCapture();
+                }
+                else if (hwnd == m_currentSnapshotHwnd)
+                {
+                    m_app->SnapshotCurrentCapture();
+                }
+                else if (hwnd == m_snapshotButtonHwnd)
+                {
+                    OnSnapshotButtonClicked();
+                }
+            }
+            break;
         }
-        break;
+    }
+    break;
+    case WM_DISPLAYCHANGE:
+    {
+        // TODO: Preserve selected index if still valid
+        winrt::check_hresult(SendMessageW(m_monitorComboBoxHwnd, CB_RESETCONTENT, 0, 0));
+        m_monitors = EnumerationMonitor::EnumerateAllMonitors();
+        // Populate monitor combo box
+        for (auto& monitor : m_monitors)
+        {
+            SendMessageW(m_monitorComboBoxHwnd, CB_ADDSTRING, 0, (LPARAM)monitor.DisplayName().c_str());
+        }
+    }
+    break;
     default:
         return base_type::MessageHandler(message, wparam, lparam);
         break;
