@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "WindowList.h"
-#include <dwmapi.h>
 
 bool IsCapturableWindow(const WindowInfo const& window)
 {

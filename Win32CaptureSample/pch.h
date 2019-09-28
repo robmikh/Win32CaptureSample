@@ -37,6 +37,9 @@
 #include <d2d1_3.h>
 #include <wincodec.h>
 
+// DWM
+#include <dwmapi.h>
+
 // WIL
 #include <wil/resource.h>
 
