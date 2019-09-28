@@ -13,10 +13,15 @@ struct WindowInfo
         std::wstring title(titleLength, 0);
         GetWindowTextW(WindowHandle, title.data(), titleLength);
         Title = title;
+        auto classNameLength = 256;
+        std::wstring className(classNameLength, 0);
+        GetClassNameW(WindowHandle, className.data(), classNameLength);
+        ClassName = className;
     }
 
     HWND WindowHandle;
     std::wstring Title;
+    std::wstring ClassName;
 
     bool operator==(const WindowInfo& info) { return WindowHandle == info.WindowHandle; }
     bool operator!=(const WindowInfo& info) { return !(*this == info); }

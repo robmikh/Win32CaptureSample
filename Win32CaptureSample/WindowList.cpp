@@ -4,45 +4,31 @@
 
 bool IsCapturableWindow(const WindowInfo const& window)
 {
-    auto hwnd = window.WindowHandle;
-    auto shellWindow = GetShellWindow();
-
-    auto title = window.Title;
-
-    if (hwnd == shellWindow)
+    if (window.Title.empty() || window.WindowHandle == GetShellWindow() ||
+        !IsWindowVisible(window.WindowHandle) || GetAncestor(window.WindowHandle, GA_ROOT) != window.WindowHandle)
     {
         return false;
     }
 
-    if (title.length() == 0)
-    {
-        return false;
-    }
-
-    if (!IsWindowVisible(hwnd))
-    {
-        return false;
-    }
-
-    if (GetAncestor(hwnd, GA_ROOT) != hwnd)
-    {
-        return false;
-    }
-
-    LONG style = GetWindowLongW(hwnd, GWL_STYLE);
+    LONG style = GetWindowLongW(window.WindowHandle, GWL_STYLE);
     if (!((style & WS_DISABLED) != WS_DISABLED))
     {
         return false;
     }
 
-    DWORD cloaked = FALSE;
-    if (SUCCEEDED(DwmGetWindowAttribute(hwnd, DWMWA_CLOAKED, &cloaked, sizeof(cloaked))) && (cloaked == DWM_CLOAKED_SHELL))
+    // Check to see if the window is cloaked if it's a UWP
+    if (wcscmp(window.ClassName.c_str(), L"Windows.UI.Core.CoreWindow") == 0 ||
+        wcscmp(window.ClassName.c_str(), L"ApplicationFrameWindow") == 0)
     {
-        return false;
+        DWORD cloaked = FALSE;
+        if (SUCCEEDED(DwmGetWindowAttribute(window.WindowHandle, DWMWA_CLOAKED, &cloaked, sizeof(cloaked))) && (cloaked == DWM_CLOAKED_SHELL))
+        {
+            return false;
+        }
     }
 
     // Unfortunate work-around. Not sure how to avoid this.
-    if (wcscmp(title.c_str(), L"Task View") == 0)
+    if (wcscmp(window.Title.c_str(), L"Task View") == 0)
     {
         return false;
     }
@@ -78,7 +64,6 @@ WindowList::WindowList()
         return TRUE;
     }, reinterpret_cast<LPARAM>(this));
     
-    // TODO: Handle desktop switching (new windows)
     m_eventHook.reset(SetWinEventHook(EVENT_OBJECT_DESTROY, /*EVENT_OBJECT_SHOW*/EVENT_OBJECT_UNCLOAKED, nullptr,
         [](HWINEVENTHOOK eventHook, DWORD event, HWND hwnd, LONG objectId, LONG childId, DWORD eventThreadId, DWORD eventTimeInMilliseconds)
         {
@@ -141,7 +126,7 @@ bool WindowList::RemoveWindow(WindowInfo const& info)
         {
             winrt::check_hresult(SendMessageW(comboBox, CB_DELETESTRING, index, 0));
         }
-        return index >= 0;
+        return true;
     }
     return false;
 }
