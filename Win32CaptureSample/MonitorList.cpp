@@ -21,7 +21,6 @@ MonitorList::MonitorList()
 
 void MonitorList::Update()
 {
-    OutputDebugStringW(L"\nUpdate called:\n");
     auto monitors = EnumerateAllMonitors();
     std::map<HMONITOR, MonitorInfo> newMonitors;
     for (auto& monitor : monitors)
