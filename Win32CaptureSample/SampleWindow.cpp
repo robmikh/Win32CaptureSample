@@ -10,8 +10,11 @@ using namespace Windows::UI;
 using namespace Windows::UI::Composition;
 using namespace Windows::UI::Composition::Desktop;
 
-SampleWindow::SampleWindow(HINSTANCE instance, int cmdShow, std::shared_ptr<App> app)
+const std::wstring SampleWindow::ClassName = L"Win32CaptureSample";
+
+void SampleWindow::RegisterWindowClass()
 {
+    auto instance = winrt::check_pointer(GetModuleHandleW(nullptr));
     WNDCLASSEX wcex = { sizeof(wcex) };
     wcex.style = CS_HREDRAW | CS_VREDRAW;
     wcex.lpfnWndProc = WndProc;
@@ -19,12 +22,15 @@ SampleWindow::SampleWindow(HINSTANCE instance, int cmdShow, std::shared_ptr<App>
     wcex.hIcon = LoadIconW(instance, IDI_APPLICATION);
     wcex.hCursor = LoadCursorW(nullptr, IDC_ARROW);
     wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-    wcex.lpszClassName = L"Win32CaptureSample";
+    wcex.lpszClassName = ClassName.c_str();
     wcex.hIconSm = LoadIconW(wcex.hInstance, IDI_APPLICATION);
-    WINRT_VERIFY(RegisterClassExW(&wcex));
-    WINRT_ASSERT(!m_window);
+    winrt::check_bool(RegisterClassExW(&wcex));
+}
 
-    WINRT_VERIFY(CreateWindowW(L"Win32CaptureSample", L"Win32CaptureSample", WS_OVERLAPPEDWINDOW, 
+SampleWindow::SampleWindow(HINSTANCE instance, int cmdShow, std::shared_ptr<App> app)
+{
+    WINRT_ASSERT(!m_window);
+    WINRT_VERIFY(CreateWindowW(ClassName.c_str(), L"Win32CaptureSample", WS_OVERLAPPEDWINDOW,
         CW_USEDEFAULT, CW_USEDEFAULT, 800, 600, nullptr, nullptr, instance, this));
     WINRT_ASSERT(m_window);
 

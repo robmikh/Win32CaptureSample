@@ -7,6 +7,9 @@ class App;
 
 struct SampleWindow : DesktopWindow<SampleWindow>
 {
+    static const std::wstring ClassName;
+    static void RegisterWindowClass();
+
     SampleWindow(HINSTANCE instance, int cmdShow, std::shared_ptr<App> app);
 
     winrt::Windows::UI::Composition::Desktop::DesktopWindowTarget CreateWindowTarget(winrt::Windows::UI::Composition::Compositor const& compositor)
