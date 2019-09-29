@@ -26,8 +26,14 @@ bool IsCapturableWindow(const WindowInfo const& window)
         return false;
     }
 
-    LONG style = GetWindowLongW(window.WindowHandle, GWL_STYLE);
-    if (!((style & WS_DISABLED) != WS_DISABLED))
+    auto style = GetWindowLongW(window.WindowHandle, GWL_STYLE);
+    if (style & WS_DISABLED)
+    {
+        return false;
+    }
+
+    auto exStyle = GetWindowLongW(window.WindowHandle, GWL_EXSTYLE);
+    if (exStyle & WS_EX_TOOLWINDOW)    // No tooltips
     {
         return false;
     }
@@ -41,12 +47,6 @@ bool IsCapturableWindow(const WindowInfo const& window)
         {
             return false;
         }
-    }
-
-    // No tooltips
-    if (GetWindowLongW(window.WindowHandle, GWL_EXSTYLE) & WS_EX_TOOLWINDOW)
-    {
-        return false;
     }
 
     // Unfortunate work-around. Not sure how to avoid this.
