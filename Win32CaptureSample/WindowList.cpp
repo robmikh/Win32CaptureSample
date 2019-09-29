@@ -9,7 +9,7 @@ bool inline MatchTitleAndClassName(const WindowInfo const& window, std::wstring 
 
 bool IsKnownBlockedWindow(const WindowInfo const& window)
 {
-    return 
+    return
         // Task View
         MatchTitleAndClassName(window, L"Task View", L"Windows.UI.Core.CoreWindow") ||
         // XAML Islands
@@ -41,6 +41,12 @@ bool IsCapturableWindow(const WindowInfo const& window)
         {
             return false;
         }
+    }
+
+    // No tooltips
+    if (GetWindowLongW(window.WindowHandle, GWL_EXSTYLE) & WS_EX_TOOLWINDOW)
+    {
+        return false;
     }
 
     // Unfortunate work-around. Not sure how to avoid this.
