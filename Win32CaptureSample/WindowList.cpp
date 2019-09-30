@@ -9,7 +9,7 @@ bool inline MatchTitleAndClassName(const WindowInfo const& window, std::wstring 
 
 bool IsKnownBlockedWindow(const WindowInfo const& window)
 {
-    return 
+    return
         // Task View
         MatchTitleAndClassName(window, L"Task View", L"Windows.UI.Core.CoreWindow") ||
         // XAML Islands
@@ -26,8 +26,14 @@ bool IsCapturableWindow(const WindowInfo const& window)
         return false;
     }
 
-    LONG style = GetWindowLongW(window.WindowHandle, GWL_STYLE);
-    if (!((style & WS_DISABLED) != WS_DISABLED))
+    auto style = GetWindowLongW(window.WindowHandle, GWL_STYLE);
+    if (style & WS_DISABLED)
+    {
+        return false;
+    }
+
+    auto exStyle = GetWindowLongW(window.WindowHandle, GWL_EXSTYLE);
+    if (exStyle & WS_EX_TOOLWINDOW)    // No tooltips
     {
         return false;
     }
