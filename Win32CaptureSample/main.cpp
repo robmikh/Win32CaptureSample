@@ -1,5 +1,4 @@
 #include "pch.h"
-#include "SimpleCapture.h"
 #include "App.h"
 #include "SampleWindow.h"
 

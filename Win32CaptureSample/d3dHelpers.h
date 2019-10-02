@@ -125,3 +125,55 @@ inline auto CreateDXGISwapChain(winrt::com_ptr<ID3D11Device> const& device,
 
     return CreateDXGISwapChain(device, &desc);
 }
+
+inline auto CreateDXGISwapChainForWindow(winrt::com_ptr<ID3D11Device> const& device, const DXGI_SWAP_CHAIN_DESC1* desc, HWND window)
+{
+    auto dxgiDevice = device.as<IDXGIDevice2>();
+    winrt::com_ptr<IDXGIAdapter> adapter;
+    winrt::check_hresult(dxgiDevice->GetParent(winrt::guid_of<IDXGIAdapter>(), adapter.put_void()));
+    winrt::com_ptr<IDXGIFactory2> factory;
+    winrt::check_hresult(adapter->GetParent(winrt::guid_of<IDXGIFactory2>(), factory.put_void()));
+
+    winrt::com_ptr<IDXGISwapChain1> swapchain;
+    winrt::check_hresult(factory->CreateSwapChainForHwnd(device.get(), window, desc, nullptr, nullptr, swapchain.put()));
+    return swapchain;
+}
+
+inline auto CreateDXGISwapChainForWindow(winrt::com_ptr<ID3D11Device> const& device,
+    uint32_t width, uint32_t height, DXGI_FORMAT format, uint32_t bufferCount, HWND window)
+{
+    DXGI_SWAP_CHAIN_DESC1 desc = {};
+    desc.Width = width;
+    desc.Height = height;
+    desc.Format = format;
+    desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+    desc.SampleDesc.Count = 1;
+    desc.SampleDesc.Quality = 0;
+    desc.BufferCount = bufferCount;
+    desc.Scaling = DXGI_SCALING_NONE;
+    desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
+    desc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
+
+    return CreateDXGISwapChainForWindow(device, &desc, window);
+}
+
+inline auto CopyD3DTexture(winrt::com_ptr<ID3D11Device> const& device, winrt::com_ptr<ID3D11Texture2D> const& texture, bool asStagingTexture)
+{
+    winrt::com_ptr<ID3D11DeviceContext> context;
+    device->GetImmediateContext(context.put());
+
+    D3D11_TEXTURE2D_DESC desc = {};
+    texture->GetDesc(&desc);
+    // Clear flags that we don't need
+    desc.Usage = asStagingTexture ? D3D11_USAGE_STAGING : D3D11_USAGE_DEFAULT;
+    desc.BindFlags = asStagingTexture ? 0 : D3D11_BIND_SHADER_RESOURCE;
+    desc.CPUAccessFlags = asStagingTexture ? D3D11_CPU_ACCESS_READ : 0;
+    desc.MiscFlags = 0;
+
+    // Create and fill the texture copy
+    winrt::com_ptr<ID3D11Texture2D> textureCopy;
+    winrt::check_hresult(device->CreateTexture2D(&desc, nullptr, textureCopy.put()));
+    context->CopyResource(textureCopy.get(), texture.get());
+
+    return textureCopy;
+}

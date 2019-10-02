@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "App.h"
-#include "SimpleCapture.h"
 #include "CaptureSnapshot.h"
 
 using namespace winrt;
@@ -10,7 +9,9 @@ using namespace Windows::System;
 using namespace Windows::Foundation;
 using namespace Windows::UI;
 using namespace Windows::UI::Composition;
+using namespace Windows::UI::Popups;
 using namespace Windows::Graphics::Capture;
+using namespace Windows::Graphics::DirectX;
 
 App::App(ContainerVisual root, GraphicsCapturePicker capturePicker, FileSavePicker savePicker)
 {
@@ -44,9 +45,7 @@ App::App(ContainerVisual root, GraphicsCapturePicker capturePicker, FileSavePick
     auto dxgiDevice = d3dDevice.as<IDXGIDevice>();
     m_device = CreateDirect3DDevice(dxgiDevice.get());
 
-    m_d2dFactory = CreateD2DFactory();
-    m_d2dDevice = CreateD2DDevice(m_d2dFactory, d3dDevice);
-    check_hresult(m_d2dDevice->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_NONE, m_d2dContext.put()));
+    m_encoder = std::make_unique<SimpleImageEncoder>(m_device);
 }
 
 GraphicsCaptureItem App::StartCaptureFromWindowHandle(HWND hwnd)
@@ -100,55 +99,50 @@ IAsyncOperation<StorageFile> App::TakeSnapshotAsync()
     m_savePicker.DefaultFileExtension(L".png");
     m_savePicker.FileTypeChoices().Clear();
     m_savePicker.FileTypeChoices().Insert(L"PNG image", single_threaded_vector<hstring>({ L".png" }));
+    m_savePicker.FileTypeChoices().Insert(L"JPG image", single_threaded_vector<hstring>({ L".jpg" }));
+    m_savePicker.FileTypeChoices().Insert(L"JXR image", single_threaded_vector<hstring>({ L".jxr" }));
     auto file = co_await m_savePicker.PickSaveFileAsync();
     if (file == nullptr)
     {
         co_return nullptr;
     }
 
+    // Decide on the pixel format depending on the image type
+    auto fileExtension = file.FileType();
+    SimpleImageEncoder::SupportedFormats fileFormat;
+    DirectXPixelFormat pixelFormat;
+    if (fileExtension == L".png")
+    {
+        fileFormat = SimpleImageEncoder::SupportedFormats::Png;
+        pixelFormat = DirectXPixelFormat::B8G8R8A8UIntNormalized;
+    }
+    else if (fileExtension == L".jpg" || fileExtension == L".jpeg")
+    {
+        fileFormat = SimpleImageEncoder::SupportedFormats::Jpg;
+        pixelFormat = DirectXPixelFormat::B8G8R8A8UIntNormalized;
+    }
+    else if (fileExtension == L".jxr")
+    {
+        fileFormat = SimpleImageEncoder::SupportedFormats::Jxr;
+        pixelFormat = DirectXPixelFormat::R16G16B16A16Float;
+    }
+    else
+    {
+        // Unsupported
+        auto dialog = MessageDialog(L"Unsupported file format!");
+
+        co_await dialog.ShowAsync();
+        co_return nullptr;
+    }
+
     // Get the file stream
-    auto randomAccessStream = co_await file.OpenAsync(FileAccessMode::ReadWrite);
-    auto stream = CreateStreamFromRandomAccessStream(randomAccessStream);
+    auto stream = co_await file.OpenAsync(FileAccessMode::ReadWrite);
 
     // Take the snapshot
-    auto frame = co_await CaptureSnapshot::TakeAsync(m_device, item);
-    auto frameTexture = GetDXGIInterfaceFromObject<ID3D11Texture2D>(frame);
-    D3D11_TEXTURE2D_DESC textureDesc = {};
-    frameTexture->GetDesc(&textureDesc);
-    auto dxgiFrameTexture = frameTexture.as<IDXGISurface>();
-
-    // Get a D2D bitmap for our snapshot
-    // TODO: Since this sample doesn't use D2D any other way, it may be better to map 
-    //       the pixels manually and hand them to WIC. However, using d2d is easier for now.
-    com_ptr<ID2D1Bitmap1> d2dBitmap;
-    check_hresult(m_d2dContext->CreateBitmapFromDxgiSurface(dxgiFrameTexture.get(), nullptr, d2dBitmap.put()));
-
-    // Encode the snapshot
-    // TODO: dpi?
-    auto dpi = 96.0f;
-    WICImageParameters params = {};
-    params.PixelFormat.format = DXGI_FORMAT_B8G8R8A8_UNORM;
-    params.PixelFormat.alphaMode = D2D1_ALPHA_MODE_PREMULTIPLIED;
-    params.DpiX = dpi;
-    params.DpiY = dpi;
-    params.PixelWidth = textureDesc.Width;
-    params.PixelHeight = textureDesc.Height;
-
-    auto wicFactory = CreateWICFactory();
-    com_ptr<IWICBitmapEncoder> encoder;
-    check_hresult(wicFactory->CreateEncoder(GUID_ContainerFormatPng, nullptr, encoder.put()));
-    check_hresult(encoder->Initialize(stream.get(), WICBitmapEncoderNoCache));
-
-    com_ptr<IWICBitmapFrameEncode> wicFrame;
-    com_ptr<IPropertyBag2> frameProperties;
-    check_hresult(encoder->CreateNewFrame(wicFrame.put(), frameProperties.put()));
-    check_hresult(wicFrame->Initialize(frameProperties.get()));
-
-    com_ptr<IWICImageEncoder> imageEncoder;
-    check_hresult(wicFactory->CreateImageEncoder(m_d2dDevice.get(), imageEncoder.put()));
-    check_hresult(imageEncoder->WriteFrame(d2dBitmap.get(), wicFrame.get(), &params));
-    check_hresult(wicFrame->Commit());
-    check_hresult(encoder->Commit());
+    auto frame = co_await CaptureSnapshot::TakeAsync(m_device, item, pixelFormat);
+    
+    // Encode the image
+    m_encoder->EncodeImage(frame, stream, fileFormat);
 
     co_return file;
 }
@@ -163,7 +157,7 @@ void App::SnapshotCurrentCapture()
 
 void App::StartCaptureFromItem(GraphicsCaptureItem item)
 {
-    m_capture = std::make_unique<SimpleCapture>(m_device, item);
+    m_capture = std::make_unique<SimpleCapture>(m_device, item, m_pixelFormat);
 
     auto surface = m_capture->CreateSurface(m_compositor);
     m_brush.Surface(surface);
@@ -178,5 +172,16 @@ void App::StopCapture()
         m_capture->Close();
         m_capture = nullptr;
         m_brush.Surface(nullptr);
+    }
+}
+
+void App::PixelFormat(DirectXPixelFormat pixelFormat)
+{
+    m_pixelFormat = pixelFormat;
+    if (m_capture)
+    {
+        auto item = m_capture->CaptureItem();
+        StopCapture();
+        StartCaptureFromItem(item);
     }
 }

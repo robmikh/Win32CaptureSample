@@ -1,6 +1,23 @@
 #include "pch.h"
 #include "WindowList.h"
 
+bool inline MatchTitleAndClassName(const WindowInfo const& window, std::wstring const& title, std::wstring const& className)
+{
+    return wcscmp(window.Title.c_str(), title.c_str()) == 0 &&
+        wcscmp(window.ClassName.c_str(), className.c_str()) == 0;
+}
+
+bool IsKnownBlockedWindow(const WindowInfo const& window)
+{
+    return
+        // Task View
+        MatchTitleAndClassName(window, L"Task View", L"Windows.UI.Core.CoreWindow") ||
+        // XAML Islands
+        MatchTitleAndClassName(window, L"DesktopWindowXamlSource", L"Windows.UI.Core.CoreWindow") ||
+        // XAML Popups
+        MatchTitleAndClassName(window, L"PopupHost", L"Xaml_WindowedPopupClass");
+}
+
 bool IsCapturableWindow(const WindowInfo const& window)
 {
     if (window.Title.empty() || window.WindowHandle == GetShellWindow() ||
@@ -9,8 +26,14 @@ bool IsCapturableWindow(const WindowInfo const& window)
         return false;
     }
 
-    LONG style = GetWindowLongW(window.WindowHandle, GWL_STYLE);
-    if (!((style & WS_DISABLED) != WS_DISABLED))
+    auto style = GetWindowLongW(window.WindowHandle, GWL_STYLE);
+    if (style & WS_DISABLED)
+    {
+        return false;
+    }
+
+    auto exStyle = GetWindowLongW(window.WindowHandle, GWL_EXSTYLE);
+    if (exStyle & WS_EX_TOOLWINDOW)    // No tooltips
     {
         return false;
     }
@@ -27,7 +50,7 @@ bool IsCapturableWindow(const WindowInfo const& window)
     }
 
     // Unfortunate work-around. Not sure how to avoid this.
-    if (wcscmp(window.Title.c_str(), L"Task View") == 0)
+    if (IsKnownBlockedWindow(window))
     {
         return false;
     }
