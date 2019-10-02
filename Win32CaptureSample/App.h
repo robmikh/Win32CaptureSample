@@ -1,5 +1,6 @@
 #pragma once
 #include "SimpleCapture.h"
+#include "SimpleImageEncoder.h"
 
 class App
 {
@@ -36,7 +37,5 @@ private:
     std::unique_ptr<SimpleCapture> m_capture{ nullptr };
     winrt::Windows::Graphics::DirectX::DirectXPixelFormat m_pixelFormat = winrt::Windows::Graphics::DirectX::DirectXPixelFormat::B8G8R8A8UIntNormalized;
 
-    winrt::com_ptr<ID2D1Factory1> m_d2dFactory;
-    winrt::com_ptr<ID2D1Device> m_d2dDevice;
-    winrt::com_ptr<ID2D1DeviceContext> m_d2dContext;
+    std::unique_ptr<SimpleImageEncoder> m_encoder{ nullptr };
 };
