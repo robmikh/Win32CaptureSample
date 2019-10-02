@@ -118,6 +118,14 @@ void SimpleCapture::TakeSnapshot(winrt::com_ptr<ID3D11Texture2D> const& frame)
     winrt::check_hresult(DirectX::CaptureTexture(GetDXGIInterfaceFromObject<ID3D11Device>(m_device).get(),
         m_d3dContext.get(), frame.get(), im));
     const auto& realImage = *im.GetImage(0, 0, 0);
-    winrt::check_hresult(DirectX::SaveToWICFile(realImage, DirectX::WIC_FLAGS_NONE,
-        GUID_ContainerFormatPng, L"output.png"));
+	if (m_pixelFormat == winrt::DirectXPixelFormat::R16G16B16A16Float)
+	{
+		winrt::check_hresult(DirectX::SaveToWICFile(realImage, DirectX::WIC_FLAGS_NONE,
+			GUID_ContainerFormatWmp, L"output.jxr"));
+	}
+	else // BGRA8
+	{
+		winrt::check_hresult(DirectX::SaveToWICFile(realImage, DirectX::WIC_FLAGS_NONE,
+			GUID_ContainerFormatPng, L"output.png"));
+	}
 }

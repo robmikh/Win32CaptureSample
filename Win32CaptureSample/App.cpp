@@ -95,12 +95,20 @@ IAsyncOperation<StorageFile> App::TakeSnapshotAsync()
         co_return nullptr;
     }
 
+	auto isHDR = m_pixelFormat == DirectXPixelFormat::R16G16B16A16Float;
     // Ask the user where they want to save the snapshot.
     m_savePicker.SuggestedStartLocation(PickerLocationId::PicturesLibrary);
     m_savePicker.SuggestedFileName(L"snapshot");
-    m_savePicker.DefaultFileExtension(L".png");
+    m_savePicker.DefaultFileExtension(isHDR ? L".jxr" : L".png");
     m_savePicker.FileTypeChoices().Clear();
-    m_savePicker.FileTypeChoices().Insert(L"PNG image", single_threaded_vector<hstring>({ L".png" }));
+	if (isHDR)
+	{
+		m_savePicker.FileTypeChoices().Insert(L"JXR image", single_threaded_vector<hstring>({ L".jxr" }));
+	}
+	else
+	{
+		m_savePicker.FileTypeChoices().Insert(L"PNG image", single_threaded_vector<hstring>({ L".png" }));
+	}
     auto file = co_await m_savePicker.PickSaveFileAsync();
     if (file == nullptr)
     {
@@ -112,7 +120,7 @@ IAsyncOperation<StorageFile> App::TakeSnapshotAsync()
     auto stream = CreateStreamFromRandomAccessStream(randomAccessStream);
 
     // Take the snapshot
-    auto frame = co_await CaptureSnapshot::TakeAsync(m_device, item);
+    auto frame = co_await CaptureSnapshot::TakeAsync(m_device, item, m_pixelFormat);
     auto frameTexture = GetDXGIInterfaceFromObject<ID3D11Texture2D>(frame);
     D3D11_TEXTURE2D_DESC textureDesc = {};
     frameTexture->GetDesc(&textureDesc);
@@ -128,7 +136,7 @@ IAsyncOperation<StorageFile> App::TakeSnapshotAsync()
     // TODO: dpi?
     auto dpi = 96.0f;
     WICImageParameters params = {};
-    params.PixelFormat.format = DXGI_FORMAT_B8G8R8A8_UNORM;
+    params.PixelFormat.format = static_cast<DXGI_FORMAT>(m_pixelFormat);
     params.PixelFormat.alphaMode = D2D1_ALPHA_MODE_PREMULTIPLIED;
     params.DpiX = dpi;
     params.DpiY = dpi;
@@ -137,13 +145,15 @@ IAsyncOperation<StorageFile> App::TakeSnapshotAsync()
 
     auto wicFactory = CreateWICFactory();
     com_ptr<IWICBitmapEncoder> encoder;
-    check_hresult(wicFactory->CreateEncoder(GUID_ContainerFormatPng, nullptr, encoder.put()));
+    check_hresult(wicFactory->CreateEncoder(isHDR ? GUID_ContainerFormatWmp : GUID_ContainerFormatPng, nullptr, encoder.put()));
     check_hresult(encoder->Initialize(stream.get(), WICBitmapEncoderNoCache));
 
     com_ptr<IWICBitmapFrameEncode> wicFrame;
     com_ptr<IPropertyBag2> frameProperties;
     check_hresult(encoder->CreateNewFrame(wicFrame.put(), frameProperties.put()));
     check_hresult(wicFrame->Initialize(frameProperties.get()));
+	auto wicPixelFormat = isHDR ? GUID_WICPixelFormat64bppRGBAHalf : GUID_WICPixelFormat32bppBGRA;
+	check_hresult(wicFrame->SetPixelFormat(&wicPixelFormat));
 
     com_ptr<IWICImageEncoder> imageEncoder;
     check_hresult(wicFactory->CreateImageEncoder(m_d2dDevice.get(), imageEncoder.put()));
