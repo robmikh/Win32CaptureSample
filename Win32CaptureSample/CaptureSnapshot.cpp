@@ -15,7 +15,7 @@ using namespace Windows::UI;
 using namespace Windows::UI::Composition;
 
 IAsyncOperation<IDirect3DSurface>
-CaptureSnapshot::TakeAsync(IDirect3DDevice const& device, GraphicsCaptureItem const& item)
+CaptureSnapshot::TakeAsync(IDirect3DDevice const& device, GraphicsCaptureItem const& item, DirectXPixelFormat const& pixelFormat)
 {
     auto d3dDevice = GetDXGIInterfaceFromObject<ID3D11Device>(device);
     com_ptr<ID3D11DeviceContext> d3dContext;
@@ -27,7 +27,7 @@ CaptureSnapshot::TakeAsync(IDirect3DDevice const& device, GraphicsCaptureItem co
     // DispatcherQueue requirement.
     auto framePool = Direct3D11CaptureFramePool::CreateFreeThreaded(
         device,
-        DirectXPixelFormat::B8G8R8A8UIntNormalized,
+        pixelFormat,
         1,
         item.Size());
     auto session = framePool.CreateCaptureSession(item);
