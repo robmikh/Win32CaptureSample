@@ -261,3 +261,4 @@ __pycache__/
 *.pyc
 
 Win32CaptureSample/output.png
+/Win32CaptureSample/output.jxr
