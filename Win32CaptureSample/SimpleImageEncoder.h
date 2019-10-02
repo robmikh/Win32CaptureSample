@@ -23,4 +23,5 @@ private:
     winrt::com_ptr<ID2D1Factory1> m_d2dFactory;
     winrt::com_ptr<ID2D1Device> m_d2dDevice;
     winrt::com_ptr<ID2D1DeviceContext> m_d2dContext;
+	winrt::com_ptr<IWICImagingFactory2> m_wicFactory;
 };

@@ -37,6 +37,7 @@ SimpleImageEncoder::SimpleImageEncoder(winrt::IDirect3DDevice const& device)
     m_d2dFactory = CreateD2DFactory();
     m_d2dDevice = CreateD2DDevice(m_d2dFactory, d3dDevice);
     winrt::check_hresult(m_d2dDevice->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_NONE, m_d2dContext.put()));
+	m_wicFactory = CreateWICFactory();
 }
 
 void SimpleImageEncoder::EncodeImage(winrt::IDirect3DSurface const& surface, winrt::IRandomAccessStream const& stream, SupportedFormats const& format)
@@ -66,10 +67,9 @@ void SimpleImageEncoder::EncodeImage(winrt::IDirect3DSurface const& surface, win
     params.DpiY = dpi;
     params.PixelWidth = textureDesc.Width;
     params.PixelHeight = textureDesc.Height;
-
-    auto wicFactory = CreateWICFactory();
+    
     winrt::com_ptr<IWICBitmapEncoder> encoder;
-    winrt::check_hresult(wicFactory->CreateEncoder(wicSettings.ContainerFormat, nullptr, encoder.put()));
+    winrt::check_hresult(m_wicFactory->CreateEncoder(wicSettings.ContainerFormat, nullptr, encoder.put()));
     winrt::check_hresult(encoder->Initialize(abiStream.get(), WICBitmapEncoderNoCache));
 
     winrt::com_ptr<IWICBitmapFrameEncode> wicFrame;
@@ -80,7 +80,7 @@ void SimpleImageEncoder::EncodeImage(winrt::IDirect3DSurface const& surface, win
     winrt::check_hresult(wicFrame->SetPixelFormat(&wicPixelFormat));
 
     winrt::com_ptr<IWICImageEncoder> imageEncoder;
-    winrt::check_hresult(wicFactory->CreateImageEncoder(m_d2dDevice.get(), imageEncoder.put()));
+    winrt::check_hresult(m_wicFactory->CreateImageEncoder(m_d2dDevice.get(), imageEncoder.put()));
     winrt::check_hresult(imageEncoder->WriteFrame(d2dBitmap.get(), wicFrame.get(), &params));
     winrt::check_hresult(wicFrame->Commit());
     winrt::check_hresult(encoder->Commit());
