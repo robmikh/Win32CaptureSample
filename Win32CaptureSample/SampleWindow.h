@@ -34,6 +34,12 @@ private:
     void StopCapture();
     void OnCaptureItemClosed(winrt::Windows::Graphics::Capture::GraphicsCaptureItem const&, winrt::Windows::Foundation::IInspectable const&);
 
+    struct PixelFormatData
+    {
+        std::wstring Name;
+        winrt::Windows::Graphics::DirectX::DirectXPixelFormat PixelFormat;
+    };
+
 private:
     HWND m_windowComboBoxHwnd = nullptr;
     HWND m_monitorComboBoxHwnd = nullptr;
@@ -41,8 +47,10 @@ private:
     HWND m_stopButtonHwnd = nullptr;
     HWND m_currentSnapshotHwnd = nullptr;
     HWND m_snapshotButtonHwnd = nullptr;
+    HWND m_pixelFormatComboBoxHwnd = nullptr;
     std::unique_ptr<WindowList> m_windows;
     std::unique_ptr<MonitorList> m_monitors;
+    std::vector<PixelFormatData> m_pixelFormats;
     std::shared_ptr<App> m_app;
     winrt::Windows::Graphics::Capture::GraphicsCaptureItem::Closed_revoker m_itemClosedRevoker;
 };

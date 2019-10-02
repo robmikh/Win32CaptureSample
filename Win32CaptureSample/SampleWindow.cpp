@@ -11,6 +11,7 @@ using namespace Windows::System;
 using namespace Windows::UI;
 using namespace Windows::UI::Composition;
 using namespace Windows::UI::Composition::Desktop;
+using namespace Windows::Graphics::DirectX;
 
 const std::wstring SampleWindow::ClassName = L"Win32CaptureSample";
 
@@ -42,6 +43,11 @@ SampleWindow::SampleWindow(HINSTANCE instance, int cmdShow, std::shared_ptr<App>
     m_app = app;
     m_windows = std::make_unique<WindowList>();
     m_monitors = std::make_unique<MonitorList>();
+    m_pixelFormats = 
+    {
+        { L"B8G8R8A8UIntNormalized", DirectXPixelFormat::B8G8R8A8UIntNormalized },
+        { L"R16G16B16A16Float", DirectXPixelFormat::R16G16B16A16Float }
+    };
 
     CreateControls(instance);
 }
@@ -83,6 +89,11 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
 
                     SetSubTitle(std::wstring(item.DisplayName()));
                     SendMessageW(m_windowComboBoxHwnd, CB_SETCURSEL, -1, 0);
+                }
+                else if (hwnd == m_pixelFormatComboBoxHwnd)
+                {
+                    auto pixelFormatData = m_pixelFormats[index];
+                    m_app->PixelFormat(pixelFormatData.PixelFormat);
                 }
             }
             break;
@@ -193,12 +204,28 @@ void SampleWindow::CreateControls(HINSTANCE instance)
         10, 200, 200, 30, m_window, nullptr, instance, nullptr);
     WINRT_VERIFY(snapshotButtonHwnd);
 
+    // Create pixel format combo box
+    HWND pixelFormatComboBox = CreateWindowW(WC_COMBOBOX, L"",
+        CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_VSCROLL | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE,
+        10, 240, 200, 200, m_window, nullptr, instance, nullptr);
+    WINRT_VERIFY(pixelFormatComboBox);
+
+    // Populate pixel format combo box
+    for (auto& pixelFormat : m_pixelFormats)
+    {
+        SendMessageW(pixelFormatComboBox, CB_ADDSTRING, 0, (LPARAM)pixelFormat.Name.c_str());
+    }
+    
+    // The default pixel format is BGRA8
+    SendMessageW(pixelFormatComboBox, CB_SETCURSEL, 0, 0);
+
     m_windowComboBoxHwnd = windowComboBoxHwnd;
     m_monitorComboBoxHwnd = monitorComboBoxHwnd;
     m_pickerButtonHwnd = pickerButtonHwnd;
     m_stopButtonHwnd = stopButtonHwnd;
     m_currentSnapshotHwnd = currentSnapshotButtonHwnd;
     m_snapshotButtonHwnd = snapshotButtonHwnd;
+    m_pixelFormatComboBoxHwnd = pixelFormatComboBox;
 }
 
 void SampleWindow::SetSubTitle(std::wstring const& text)
