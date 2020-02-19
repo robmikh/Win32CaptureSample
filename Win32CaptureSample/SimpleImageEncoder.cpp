@@ -28,6 +28,7 @@ WICSettings GetWICSettingsForFormat(SimpleImageEncoder::SupportedFormats format)
     case SimpleImageEncoder::SupportedFormats::Jxr:
         return { GUID_ContainerFormatWmp, GUID_WICPixelFormat64bppRGBAHalf };
     }
+    throw winrt::hresult_invalid_argument();
 }
 
 SimpleImageEncoder::SimpleImageEncoder(winrt::IDirect3DDevice const& device)

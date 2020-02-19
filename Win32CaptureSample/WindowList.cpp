@@ -1,13 +1,13 @@
 #include "pch.h"
 #include "WindowList.h"
 
-bool inline MatchTitleAndClassName(const WindowInfo const& window, std::wstring const& title, std::wstring const& className)
+bool inline MatchTitleAndClassName(WindowInfo const& window, std::wstring const& title, std::wstring const& className)
 {
     return wcscmp(window.Title.c_str(), title.c_str()) == 0 &&
         wcscmp(window.ClassName.c_str(), className.c_str()) == 0;
 }
 
-bool IsKnownBlockedWindow(const WindowInfo const& window)
+bool IsKnownBlockedWindow(WindowInfo const& window)
 {
     return
         // Task View
@@ -18,7 +18,7 @@ bool IsKnownBlockedWindow(const WindowInfo const& window)
         MatchTitleAndClassName(window, L"PopupHost", L"Xaml_WindowedPopupClass");
 }
 
-bool IsCapturableWindow(const WindowInfo const& window)
+bool IsCapturableWindow(WindowInfo const& window)
 {
     if (window.Title.empty() || window.WindowHandle == GetShellWindow() ||
         !IsWindowVisible(window.WindowHandle) || GetAncestor(window.WindowHandle, GA_ROOT) != window.WindowHandle)
@@ -123,7 +123,7 @@ void WindowList::AddWindow(WindowInfo const& info)
         m_seenWindows.insert(info.WindowHandle);
         for (auto& comboBox : m_comboBoxes)
         {
-            winrt::check_hresult(SendMessageW(comboBox, CB_ADDSTRING, 0, (LPARAM)info.Title.c_str()));
+            winrt::check_hresult(static_cast<const int32_t>(SendMessageW(comboBox, CB_ADDSTRING, 0, (LPARAM)info.Title.c_str())));
         }
     }
 }
@@ -146,7 +146,7 @@ bool WindowList::RemoveWindow(WindowInfo const& info)
         m_windows.erase(m_windows.begin() + index);
         for (auto& comboBox : m_comboBoxes)
         {
-            winrt::check_hresult(SendMessageW(comboBox, CB_DELETESTRING, index, 0));
+            winrt::check_hresult(static_cast<const int32_t>(SendMessageW(comboBox, CB_DELETESTRING, index, 0)));
         }
         return true;
     }
@@ -155,9 +155,9 @@ bool WindowList::RemoveWindow(WindowInfo const& info)
 
 void WindowList::ForceUpdateComboBox(HWND comboBoxHandle)
 {
-    winrt::check_hresult(SendMessageW(comboBoxHandle, CB_RESETCONTENT, 0, 0));
+    winrt::check_hresult(static_cast<const int32_t>(SendMessageW(comboBoxHandle, CB_RESETCONTENT, 0, 0)));
     for (auto& window : m_windows)
     {
-        winrt::check_hresult(SendMessageW(comboBoxHandle, CB_ADDSTRING, 0, (LPARAM)window.Title.c_str()));
+        winrt::check_hresult(static_cast<const int32_t>(SendMessageW(comboBoxHandle, CB_ADDSTRING, 0, (LPARAM)window.Title.c_str())));
     }
 }
