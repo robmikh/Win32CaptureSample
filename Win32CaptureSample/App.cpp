@@ -67,16 +67,14 @@ IAsyncOperation<GraphicsCaptureItem> App::StartCaptureWithPickerAsync()
     auto item = co_await m_capturePicker.PickSingleItemAsync();
     if (item)
     {
-        // We might resume on a different thread, so let's ask the main thread's
-        // dispatcher to do this work for us. This is important because SimpleCapture
-        // uses Direct3D11CaptureFramePool::Create, which requires the existence of
+        // We might resume on a different thread, so let's resume execution on the
+        // main thread. This is important because SimpleCapture uses 
+        // Direct3D11CaptureFramePool::Create, which requires the existence of
         // a DispatcherQueue. See CaptureSnapshot for an example that uses 
         // Direct3D11CaptureFramePool::CreateFreeThreaded, which doesn't now have this
         // requirement. See the README if you're unsure of which version of 'Create' to use.
-        m_mainThread.TryEnqueue([=](auto&& ...)
-        {
-            StartCaptureFromItem(item);
-        });
+        co_await m_mainThread;
+        StartCaptureFromItem(item);
     }
 
     co_return item;
