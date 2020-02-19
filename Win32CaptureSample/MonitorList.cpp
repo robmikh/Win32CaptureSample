@@ -50,7 +50,7 @@ void MonitorList::Update()
         m_monitors.erase(m_monitors.begin() + removalIndex);
         for (auto& comboBox : m_comboBoxes)
         {
-            winrt::check_hresult(SendMessageW(comboBox, CB_DELETESTRING, removalIndex, 0));
+            winrt::check_hresult(static_cast<const int32_t>(SendMessageW(comboBox, CB_DELETESTRING, removalIndex, 0)));
         }
     }
 
@@ -61,16 +61,16 @@ void MonitorList::Update()
         m_monitors.push_back(monitor);
         for (auto& comboBox : m_comboBoxes)
         {
-            winrt::check_hresult(SendMessageW(comboBox, CB_ADDSTRING, 0, (LPARAM)monitor.DisplayName.c_str()));
+            winrt::check_hresult(static_cast<const int32_t>(SendMessageW(comboBox, CB_ADDSTRING, 0, (LPARAM)monitor.DisplayName.c_str())));
         }
     }
 }
 
 void MonitorList::ForceUpdateComboBox(HWND comboBoxHandle)
 {
-    winrt::check_hresult(SendMessageW(comboBoxHandle, CB_RESETCONTENT, 0, 0));
+    winrt::check_hresult(static_cast<const int32_t>(SendMessageW(comboBoxHandle, CB_RESETCONTENT, 0, 0)));
     for (auto& monitor : m_monitors)
     {
-        winrt::check_hresult(SendMessageW(comboBoxHandle, CB_ADDSTRING, 0, (LPARAM)monitor.DisplayName.c_str()));
+        winrt::check_hresult(static_cast<const int32_t>(SendMessageW(comboBoxHandle, CB_ADDSTRING, 0, (LPARAM)monitor.DisplayName.c_str())));
     }
 }
