@@ -11,7 +11,7 @@ std::vector<MonitorInfo> EnumerateAllMonitors(bool includeAllMonitors)
 
         return TRUE;
     }, reinterpret_cast<LPARAM>(&monitors));
-    if (includeAllMonitors)
+    if (monitors.size() > 1 && includeAllMonitors)
     {
         monitors.push_back(MonitorInfo(nullptr, L"All Displays"));
     }
