@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "MonitorList.h"
 
-std::vector<MonitorInfo> EnumerateAllMonitors()
+std::vector<MonitorInfo> EnumerateAllMonitors(bool includeAllMonitors)
 {
     std::vector<MonitorInfo> monitors;
     EnumDisplayMonitors(nullptr, nullptr, [](HMONITOR hmon, HDC, LPRECT, LPARAM lparam)
@@ -11,17 +11,22 @@ std::vector<MonitorInfo> EnumerateAllMonitors()
 
         return TRUE;
     }, reinterpret_cast<LPARAM>(&monitors));
+    if (includeAllMonitors)
+    {
+        monitors.push_back(MonitorInfo(nullptr, L"All Displays"));
+    }
     return monitors;
 }
 
-MonitorList::MonitorList()
+MonitorList::MonitorList(bool includeAllMonitors)
 {
-    m_monitors = EnumerateAllMonitors();
+    m_includeAllMonitors = includeAllMonitors;
+    m_monitors = EnumerateAllMonitors(m_includeAllMonitors);
 }
 
 void MonitorList::Update()
 {
-    auto monitors = EnumerateAllMonitors();
+    auto monitors = EnumerateAllMonitors(m_includeAllMonitors);
     std::map<HMONITOR, MonitorInfo> newMonitors;
     for (auto& monitor : monitors)
     {

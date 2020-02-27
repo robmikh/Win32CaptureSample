@@ -10,6 +10,11 @@ struct MonitorInfo
         std::wstring displayName(monitorInfo.szDevice);
         DisplayName = displayName;
     }
+    MonitorInfo(HMONITOR monitorHandle, std::wstring const& displayName)
+    {
+        MonitorHandle = monitorHandle;
+        DisplayName = displayName;
+    }
 
     HMONITOR MonitorHandle;
     std::wstring DisplayName;
@@ -21,7 +26,7 @@ struct MonitorInfo
 class MonitorList
 {
 public:
-    MonitorList();
+    MonitorList(bool includeAllMonitors);
     
     void Update();
     void RegisterComboBoxForUpdates(HWND comboBoxHandle) { m_comboBoxes.push_back(comboBoxHandle); ForceUpdateComboBox(comboBoxHandle); }
@@ -34,4 +39,5 @@ private:
 private:
     std::vector<HWND> m_comboBoxes;
     std::vector<MonitorInfo> m_monitors;
+    bool m_includeAllMonitors = false;
 };

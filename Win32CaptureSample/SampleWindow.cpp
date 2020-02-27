@@ -6,6 +6,7 @@
 #include <CommCtrl.h>
 
 using namespace winrt;
+using namespace Windows::Foundation::Metadata;
 using namespace Windows::Graphics::Capture;
 using namespace Windows::System;
 using namespace Windows::UI;
@@ -40,9 +41,11 @@ SampleWindow::SampleWindow(HINSTANCE instance, int cmdShow, std::shared_ptr<App>
     ShowWindow(m_window, cmdShow);
     UpdateWindow(m_window);
 
+    auto isAllDisplaysPresent = ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", 9);
+
     m_app = app;
     m_windows = std::make_unique<WindowList>();
-    m_monitors = std::make_unique<MonitorList>();
+    m_monitors = std::make_unique<MonitorList>(isAllDisplaysPresent);
     m_pixelFormats = 
     {
         { L"B8G8R8A8UIntNormalized", DirectXPixelFormat::B8G8R8A8UIntNormalized },
@@ -159,7 +162,7 @@ fire_and_forget SampleWindow::OnSnapshotButtonClicked()
 // Not DPI aware but could be by multiplying the constants based on the monitor scale factor
 void SampleWindow::CreateControls(HINSTANCE instance)
 {
-    auto isWin32ProgrammaticPresent = winrt::Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", 8);
+    auto isWin32ProgrammaticPresent = ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", 8);
     auto win32ProgrammaticStyle = isWin32ProgrammaticPresent ? 0 : WS_DISABLED;
 
     // Create window combo box
@@ -186,7 +189,7 @@ void SampleWindow::CreateControls(HINSTANCE instance)
         10, 80, 200, 30, m_window, nullptr, instance, nullptr);
     WINRT_VERIFY(pickerButtonHwnd);
 
-    // Create picker button
+    // Create stop capture button
     HWND stopButtonHwnd = CreateWindowW(WC_BUTTON, L"Stop Capture",
         WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
         10, 120, 200, 30, m_window, nullptr, instance, nullptr);
