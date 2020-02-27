@@ -24,10 +24,19 @@
     <ClInclude Include="util\capture.interop.h">
       <Filter>Util</Filter>
     </ClInclude>
+    <ClInclude Include="util\capture.desktop.interop.h">
+      <Filter>Util</Filter>
+    </ClInclude>
     <ClInclude Include="util\composition.interop.h">
       <Filter>Util</Filter>
     </ClInclude>
+    <ClInclude Include="util\composition.desktop.interop.h">
+      <Filter>Util</Filter>
+    </ClInclude>
     <ClInclude Include="util\d3dHelpers.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="util\d3dHelpers.desktop.h">
       <Filter>Util</Filter>
     </ClInclude>
     <ClInclude Include="util\DesktopWindow.h">
@@ -36,10 +45,13 @@
     <ClInclude Include="util\direct3d11.interop.h">
       <Filter>Util</Filter>
     </ClInclude>
-    <ClInclude Include="util\dispatcherqueue.interop.h">
+    <ClInclude Include="util\dispatcherqueue.desktop.interop.h">
       <Filter>Util</Filter>
     </ClInclude>
     <ClInclude Include="util\stream.interop.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="util\hwnd.interop.h">
       <Filter>Util</Filter>
     </ClInclude>
   </ItemGroup>

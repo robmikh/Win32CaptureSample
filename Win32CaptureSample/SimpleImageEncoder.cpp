@@ -11,6 +11,11 @@ namespace winrt
     using namespace Windows::Storage::Streams;
 }
 
+namespace util
+{
+    using namespace uwp;
+}
+
 struct WICSettings
 {
     GUID ContainerFormat;
@@ -35,15 +40,15 @@ SimpleImageEncoder::SimpleImageEncoder(winrt::IDirect3DDevice const& device)
 {
     m_device = device;
     auto d3dDevice = GetDXGIInterfaceFromObject<ID3D11Device>(m_device);
-    m_d2dFactory = CreateD2DFactory();
-    m_d2dDevice = CreateD2DDevice(m_d2dFactory, d3dDevice);
+    m_d2dFactory = util::CreateD2DFactory();
+    m_d2dDevice = util::CreateD2DDevice(m_d2dFactory, d3dDevice);
     winrt::check_hresult(m_d2dDevice->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_NONE, m_d2dContext.put()));
-	m_wicFactory = CreateWICFactory();
+	m_wicFactory = util::CreateWICFactory();
 }
 
 void SimpleImageEncoder::EncodeImage(winrt::IDirect3DSurface const& surface, winrt::IRandomAccessStream const& stream, SupportedFormats const& format)
 {
-    auto abiStream = CreateStreamFromRandomAccessStream(stream);
+    auto abiStream = util::CreateStreamFromRandomAccessStream(stream);
 
     // Get the texture and setup the D2D bitmap
     auto frameTexture = GetDXGIInterfaceFromObject<ID3D11Texture2D>(surface);

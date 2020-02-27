@@ -5,14 +5,16 @@
 #include "MonitorList.h"
 #include <CommCtrl.h>
 
-using namespace winrt;
-using namespace Windows::Foundation::Metadata;
-using namespace Windows::Graphics::Capture;
-using namespace Windows::System;
-using namespace Windows::UI;
-using namespace Windows::UI::Composition;
-using namespace Windows::UI::Composition::Desktop;
-using namespace Windows::Graphics::DirectX;
+namespace winrt
+{
+    using namespace Windows::Foundation::Metadata;
+    using namespace Windows::Graphics::Capture;
+    using namespace Windows::System;
+    using namespace Windows::UI;
+    using namespace Windows::UI::Composition;
+    using namespace Windows::UI::Composition::Desktop;
+    using namespace Windows::Graphics::DirectX;
+}
 
 const std::wstring SampleWindow::ClassName = L"Win32CaptureSample";
 
@@ -41,15 +43,15 @@ SampleWindow::SampleWindow(HINSTANCE instance, int cmdShow, std::shared_ptr<App>
     ShowWindow(m_window, cmdShow);
     UpdateWindow(m_window);
 
-    auto isAllDisplaysPresent = ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", 9);
+    auto isAllDisplaysPresent = winrt::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", 9);
 
     m_app = app;
     m_windows = std::make_unique<WindowList>();
     m_monitors = std::make_unique<MonitorList>(isAllDisplaysPresent);
     m_pixelFormats = 
     {
-        { L"B8G8R8A8UIntNormalized", DirectXPixelFormat::B8G8R8A8UIntNormalized },
-        { L"R16G16B16A16Float", DirectXPixelFormat::R16G16B16A16Float }
+        { L"B8G8R8A8UIntNormalized", winrt::DirectXPixelFormat::B8G8R8A8UIntNormalized },
+        { L"R16G16B16A16Float", winrt::DirectXPixelFormat::R16G16B16A16Float }
     };
 
     CreateControls(instance);
@@ -78,7 +80,7 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
                     auto window = m_windows->GetCurrentWindows()[index];
                     m_itemClosedRevoker.revoke();
                     auto item = m_app->StartCaptureFromWindowHandle(window.WindowHandle);
-                    m_itemClosedRevoker = item.Closed(auto_revoke, { this, &SampleWindow::OnCaptureItemClosed });
+                    m_itemClosedRevoker = item.Closed(winrt::auto_revoke, { this, &SampleWindow::OnCaptureItemClosed });
 
                     SetSubTitle(std::wstring(item.DisplayName()));
                     SendMessageW(m_monitorComboBoxHwnd, CB_SETCURSEL, -1, 0);
@@ -88,7 +90,7 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
                     auto monitor = m_monitors->GetCurrentMonitors()[index];
                     m_itemClosedRevoker.revoke();
                     auto item = m_app->StartCaptureFromMonitorHandle(monitor.MonitorHandle);
-                    m_itemClosedRevoker = item.Closed(auto_revoke, { this, &SampleWindow::OnCaptureItemClosed });
+                    m_itemClosedRevoker = item.Closed(winrt::auto_revoke, { this, &SampleWindow::OnCaptureItemClosed });
 
                     SetSubTitle(std::wstring(item.DisplayName()));
                     SendMessageW(m_windowComboBoxHwnd, CB_SETCURSEL, -1, 0);
@@ -136,33 +138,33 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
     return 0;
 }
 
-fire_and_forget SampleWindow::OnPickerButtonClicked()
+winrt::fire_and_forget SampleWindow::OnPickerButtonClicked()
 {
     auto selectedItem = co_await m_app->StartCaptureWithPickerAsync();
 
     if (selectedItem)
     {
         m_itemClosedRevoker.revoke();
-        m_itemClosedRevoker = selectedItem.Closed(auto_revoke, { this, &SampleWindow::OnCaptureItemClosed });
+        m_itemClosedRevoker = selectedItem.Closed(winrt::auto_revoke, { this, &SampleWindow::OnCaptureItemClosed });
         SetSubTitle(std::wstring(selectedItem.DisplayName()));
         SendMessageW(m_monitorComboBoxHwnd, CB_SETCURSEL, -1, 0);
         SendMessageW(m_windowComboBoxHwnd, CB_SETCURSEL, -1, 0);
     }
 }
 
-fire_and_forget SampleWindow::OnSnapshotButtonClicked()
+winrt::fire_and_forget SampleWindow::OnSnapshotButtonClicked()
 {
     auto file = co_await m_app->TakeSnapshotAsync();
     if (file != nullptr)
     {
-        co_await Launcher::LaunchFileAsync(file);
+        co_await winrt::Launcher::LaunchFileAsync(file);
     }
 }
 
 // Not DPI aware but could be by multiplying the constants based on the monitor scale factor
 void SampleWindow::CreateControls(HINSTANCE instance)
 {
-    auto isWin32ProgrammaticPresent = ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", 8);
+    auto isWin32ProgrammaticPresent = winrt::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", 8);
     auto win32ProgrammaticStyle = isWin32ProgrammaticPresent ? 0 : WS_DISABLED;
 
     // Create window combo box
@@ -249,7 +251,7 @@ void SampleWindow::StopCapture()
     SendMessageW(m_windowComboBoxHwnd, CB_SETCURSEL, -1, 0);
 }
 
-void SampleWindow::OnCaptureItemClosed(GraphicsCaptureItem const&, winrt::Windows::Foundation::IInspectable const&)
+void SampleWindow::OnCaptureItemClosed(winrt::GraphicsCaptureItem const&, winrt::Windows::Foundation::IInspectable const&)
 {
     StopCapture();
 }

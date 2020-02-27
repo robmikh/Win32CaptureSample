@@ -5,7 +5,7 @@ class App;
 class WindowList;
 class MonitorList;
 
-struct SampleWindow : DesktopWindow<SampleWindow>
+struct SampleWindow : util::desktop::DesktopWindow<SampleWindow>
 {
     static const std::wstring ClassName;
     static void RegisterWindowClass();
@@ -15,12 +15,12 @@ struct SampleWindow : DesktopWindow<SampleWindow>
 
     winrt::Windows::UI::Composition::Desktop::DesktopWindowTarget CreateWindowTarget(winrt::Windows::UI::Composition::Compositor const& compositor)
     {
-        return CreateDesktopWindowTarget(compositor, m_window, true);
+        return util::desktop::CreateDesktopWindowTarget(compositor, m_window, true);
     }
 
     void InitializeObjectWithWindowHandle(winrt::Windows::Foundation::IUnknown const& object)
     {
-        auto initializer = object.as<IInitializeWithWindow>();
+        auto initializer = object.as<util::desktop::IInitializeWithWindow>();
         winrt::check_hresult(initializer->Initialize(m_window));
     }
 

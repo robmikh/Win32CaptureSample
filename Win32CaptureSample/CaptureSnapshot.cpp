@@ -1,38 +1,39 @@
 #include "pch.h"
 #include "CaptureSnapshot.h"
 
-using namespace winrt;
+namespace winrt
+{
+    using namespace Windows;
+    using namespace Windows::Foundation;
+    using namespace Windows::System;
+    using namespace Windows::Graphics;
+    using namespace Windows::Graphics::Capture;
+    using namespace Windows::Graphics::DirectX;
+    using namespace Windows::Graphics::DirectX::Direct3D11;
+    using namespace Windows::Foundation::Numerics;
+    using namespace Windows::UI;
+    using namespace Windows::UI::Composition;
+}
 
-using namespace Windows;
-using namespace Windows::Foundation;
-using namespace Windows::System;
-using namespace Windows::Graphics;
-using namespace Windows::Graphics::Capture;
-using namespace Windows::Graphics::DirectX;
-using namespace Windows::Graphics::DirectX::Direct3D11;
-using namespace Windows::Foundation::Numerics;
-using namespace Windows::UI;
-using namespace Windows::UI::Composition;
-
-IAsyncOperation<IDirect3DSurface>
-CaptureSnapshot::TakeAsync(IDirect3DDevice const& device, GraphicsCaptureItem const& item, DirectXPixelFormat const& pixelFormat)
+winrt::IAsyncOperation<winrt::IDirect3DSurface>
+CaptureSnapshot::TakeAsync(winrt::IDirect3DDevice const& device, winrt::GraphicsCaptureItem const& item, winrt::DirectXPixelFormat const& pixelFormat)
 {
     auto d3dDevice = GetDXGIInterfaceFromObject<ID3D11Device>(device);
-    com_ptr<ID3D11DeviceContext> d3dContext;
+    winrt::com_ptr<ID3D11DeviceContext> d3dContext;
     d3dDevice->GetImmediateContext(d3dContext.put());
 
     // Creating our frame pool with CreateFreeThreaded means that we 
     // will be called back from the frame pool's internal worker thread
     // instead of the thread we are currently on. It also disables the
     // DispatcherQueue requirement.
-    auto framePool = Direct3D11CaptureFramePool::CreateFreeThreaded(
+    auto framePool = winrt::Direct3D11CaptureFramePool::CreateFreeThreaded(
         device,
         pixelFormat,
         1,
         item.Size());
     auto session = framePool.CreateCaptureSession(item);
 
-    auto completion = completion_source<IDirect3DSurface>();
+    auto completion = completion_source<winrt::IDirect3DSurface>();
     framePool.FrameArrived([session, d3dDevice, d3dContext, &completion](auto& framePool, auto&)
     {
         auto frame = framePool.TryGetNextFrame();
@@ -46,8 +47,8 @@ CaptureSnapshot::TakeAsync(IDirect3DDevice const& device, GraphicsCaptureItem co
         desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
         desc.CPUAccessFlags = 0;
         desc.MiscFlags = 0;
-        com_ptr<ID3D11Texture2D> textureCopy;
-        check_hresult(d3dDevice->CreateTexture2D(&desc, nullptr, textureCopy.put()));
+        winrt::com_ptr<ID3D11Texture2D> textureCopy;
+        winrt::check_hresult(d3dDevice->CreateTexture2D(&desc, nullptr, textureCopy.put()));
         d3dContext->CopyResource(textureCopy.get(), frameTexture.get());
         
         auto dxgiSurface = textureCopy.as<IDXGISurface>();

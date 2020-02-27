@@ -45,9 +45,12 @@
 
 // Helpers
 #include "util/composition.interop.h"
+#include "util/composition.desktop.interop.h"
 #include "util/d3dHelpers.h"
+#include "util/d3dHelpers.desktop.h"
 #include "util/direct3d11.interop.h"
-#include "util/capture.interop.h"
-#include "util/dispatcherqueue.interop.h"
+#include "util/capture.desktop.interop.h"
+#include "util/dispatcherqueue.desktop.interop.h"
 #include "util/stream.interop.h"
+#include "util/hwnd.interop.h"
 #include "completionSource.h"

@@ -15,6 +15,11 @@ namespace winrt
     using namespace Windows::UI::Composition;
 }
 
+namespace util
+{
+    using namespace uwp;
+}
+
 SimpleCapture::SimpleCapture(winrt::IDirect3DDevice const& device, winrt::GraphicsCaptureItem const& item, winrt::DirectXPixelFormat pixelFormat)
 {
     m_item = item;
@@ -24,7 +29,7 @@ SimpleCapture::SimpleCapture(winrt::IDirect3DDevice const& device, winrt::Graphi
     auto d3dDevice = GetDXGIInterfaceFromObject<ID3D11Device>(m_device);
     d3dDevice->GetImmediateContext(m_d3dContext.put());
 
-    m_swapChain = CreateDXGISwapChain(d3dDevice, static_cast<uint32_t>(m_item.Size().Width), static_cast<uint32_t>(m_item.Size().Height),
+    m_swapChain = util::CreateDXGISwapChain(d3dDevice, static_cast<uint32_t>(m_item.Size().Width), static_cast<uint32_t>(m_item.Size().Height),
         static_cast<DXGI_FORMAT>(m_pixelFormat), 2);
 
     // Creating our frame pool with 'Create' instead of 'CreateFreeThreaded'
@@ -49,7 +54,7 @@ void SimpleCapture::StartCapture()
 winrt::ICompositionSurface SimpleCapture::CreateSurface(winrt::Compositor const& compositor)
 {
     CheckClosed();
-    return CreateCompositionSurfaceForSwapChain(compositor, m_swapChain.get());
+    return util::CreateCompositionSurfaceForSwapChain(compositor, m_swapChain.get());
 }
 
 void SimpleCapture::Close()

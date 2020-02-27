@@ -2,22 +2,30 @@
 #include "App.h"
 #include "CaptureSnapshot.h"
 
-using namespace winrt;
-using namespace Windows::Storage;
-using namespace Windows::Storage::Pickers;
-using namespace Windows::System;
-using namespace Windows::Foundation;
-using namespace Windows::UI;
-using namespace Windows::UI::Composition;
-using namespace Windows::UI::Popups;
-using namespace Windows::Graphics::Capture;
-using namespace Windows::Graphics::DirectX;
+namespace winrt
+{
+    using namespace Windows::Storage;
+    using namespace Windows::Storage::Pickers;
+    using namespace Windows::System;
+    using namespace Windows::Foundation;
+    using namespace Windows::UI;
+    using namespace Windows::UI::Composition;
+    using namespace Windows::UI::Popups;
+    using namespace Windows::Graphics::Capture;
+    using namespace Windows::Graphics::DirectX;
+}
 
-App::App(ContainerVisual root, GraphicsCapturePicker capturePicker, FileSavePicker savePicker)
+namespace util
+{
+    using namespace desktop;
+    using namespace uwp;
+}
+
+App::App(winrt::ContainerVisual root, winrt::GraphicsCapturePicker capturePicker, winrt::FileSavePicker savePicker)
 {
     m_capturePicker = capturePicker;
     m_savePicker = savePicker;
-    m_mainThread = DispatcherQueue::GetForCurrentThread();
+    m_mainThread = winrt::DispatcherQueue::GetForCurrentThread();
     WINRT_VERIFY(m_mainThread != nullptr);
 
     m_compositor = root.Compositor();
@@ -35,34 +43,34 @@ App::App(ContainerVisual root, GraphicsCapturePicker capturePicker, FileSavePick
     m_content.Brush(m_brush);
     m_brush.HorizontalAlignmentRatio(0.5f);
     m_brush.VerticalAlignmentRatio(0.5f);
-    m_brush.Stretch(CompositionStretch::Uniform);
+    m_brush.Stretch(winrt::CompositionStretch::Uniform);
     auto shadow = m_compositor.CreateDropShadow();
     shadow.Mask(m_brush);
     m_content.Shadow(shadow);
     m_root.Children().InsertAtTop(m_content);
 
-    auto d3dDevice = CreateD3DDevice();
+    auto d3dDevice = util::CreateD3DDevice();
     auto dxgiDevice = d3dDevice.as<IDXGIDevice>();
     m_device = CreateDirect3DDevice(dxgiDevice.get());
 
     m_encoder = std::make_unique<SimpleImageEncoder>(m_device);
 }
 
-GraphicsCaptureItem App::StartCaptureFromWindowHandle(HWND hwnd)
+winrt::GraphicsCaptureItem App::StartCaptureFromWindowHandle(HWND hwnd)
 {
-    auto item = CreateCaptureItemForWindow(hwnd);
+    auto item = util::CreateCaptureItemForWindow(hwnd);
     StartCaptureFromItem(item);
     return item;
 }
 
-GraphicsCaptureItem App::StartCaptureFromMonitorHandle(HMONITOR hmon)
+winrt::GraphicsCaptureItem App::StartCaptureFromMonitorHandle(HMONITOR hmon)
 {
-    auto item = CreateCaptureItemForMonitor(hmon);
+    auto item = util::CreateCaptureItemForMonitor(hmon);
     StartCaptureFromItem(item);
     return item;
 }
 
-IAsyncOperation<GraphicsCaptureItem> App::StartCaptureWithPickerAsync()
+winrt::IAsyncOperation<winrt::GraphicsCaptureItem> App::StartCaptureWithPickerAsync()
 {
     auto item = co_await m_capturePicker.PickSingleItemAsync();
     if (item)
@@ -80,7 +88,7 @@ IAsyncOperation<GraphicsCaptureItem> App::StartCaptureWithPickerAsync()
     co_return item;
 }
 
-IAsyncOperation<StorageFile> App::TakeSnapshotAsync()
+winrt::IAsyncOperation<winrt::StorageFile> App::TakeSnapshotAsync()
 {
     // First, get a GraphicsCaptureItem. Here we're using the picker, but
     // this would also work for any other type of GraphicsCaptureItem.
@@ -92,13 +100,13 @@ IAsyncOperation<StorageFile> App::TakeSnapshotAsync()
     }
 
     // Ask the user where they want to save the snapshot.
-    m_savePicker.SuggestedStartLocation(PickerLocationId::PicturesLibrary);
+    m_savePicker.SuggestedStartLocation(winrt::PickerLocationId::PicturesLibrary);
     m_savePicker.SuggestedFileName(L"snapshot");
     m_savePicker.DefaultFileExtension(L".png");
     m_savePicker.FileTypeChoices().Clear();
-    m_savePicker.FileTypeChoices().Insert(L"PNG image", single_threaded_vector<hstring>({ L".png" }));
-    m_savePicker.FileTypeChoices().Insert(L"JPG image", single_threaded_vector<hstring>({ L".jpg" }));
-    m_savePicker.FileTypeChoices().Insert(L"JXR image", single_threaded_vector<hstring>({ L".jxr" }));
+    m_savePicker.FileTypeChoices().Insert(L"PNG image", winrt::single_threaded_vector<winrt::hstring>({ L".png" }));
+    m_savePicker.FileTypeChoices().Insert(L"JPG image", winrt::single_threaded_vector<winrt::hstring>({ L".jpg" }));
+    m_savePicker.FileTypeChoices().Insert(L"JXR image", winrt::single_threaded_vector<winrt::hstring>({ L".jxr" }));
     auto file = co_await m_savePicker.PickSaveFileAsync();
     if (file == nullptr)
     {
@@ -108,33 +116,33 @@ IAsyncOperation<StorageFile> App::TakeSnapshotAsync()
     // Decide on the pixel format depending on the image type
     auto fileExtension = file.FileType();
     SimpleImageEncoder::SupportedFormats fileFormat;
-    DirectXPixelFormat pixelFormat;
+    winrt::DirectXPixelFormat pixelFormat;
     if (fileExtension == L".png")
     {
         fileFormat = SimpleImageEncoder::SupportedFormats::Png;
-        pixelFormat = DirectXPixelFormat::B8G8R8A8UIntNormalized;
+        pixelFormat = winrt::DirectXPixelFormat::B8G8R8A8UIntNormalized;
     }
     else if (fileExtension == L".jpg" || fileExtension == L".jpeg")
     {
         fileFormat = SimpleImageEncoder::SupportedFormats::Jpg;
-        pixelFormat = DirectXPixelFormat::B8G8R8A8UIntNormalized;
+        pixelFormat = winrt::DirectXPixelFormat::B8G8R8A8UIntNormalized;
     }
     else if (fileExtension == L".jxr")
     {
         fileFormat = SimpleImageEncoder::SupportedFormats::Jxr;
-        pixelFormat = DirectXPixelFormat::R16G16B16A16Float;
+        pixelFormat = winrt::DirectXPixelFormat::R16G16B16A16Float;
     }
     else
     {
         // Unsupported
-        auto dialog = MessageDialog(L"Unsupported file format!");
+        auto dialog = winrt::MessageDialog(L"Unsupported file format!");
 
         co_await dialog.ShowAsync();
         co_return nullptr;
     }
 
     // Get the file stream
-    auto stream = co_await file.OpenAsync(FileAccessMode::ReadWrite);
+    auto stream = co_await file.OpenAsync(winrt::FileAccessMode::ReadWrite);
 
     // Take the snapshot
     auto frame = co_await CaptureSnapshot::TakeAsync(m_device, item, pixelFormat);
@@ -153,7 +161,7 @@ void App::SnapshotCurrentCapture()
     }
 }
 
-void App::StartCaptureFromItem(GraphicsCaptureItem item)
+void App::StartCaptureFromItem(winrt::GraphicsCaptureItem item)
 {
     m_capture = std::make_unique<SimpleCapture>(m_device, item, m_pixelFormat);
 
@@ -173,7 +181,7 @@ void App::StopCapture()
     }
 }
 
-void App::PixelFormat(DirectXPixelFormat pixelFormat)
+void App::PixelFormat(winrt::DirectXPixelFormat pixelFormat)
 {
     m_pixelFormat = pixelFormat;
     if (m_capture)

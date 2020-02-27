@@ -4,16 +4,23 @@
 
 #pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 
-using namespace winrt;
-using namespace Windows::Storage::Pickers;
-using namespace Windows::Graphics::Capture;
-using namespace Windows::UI::Composition;
+namespace winrt
+{
+    using namespace Windows::Storage::Pickers;
+    using namespace Windows::Graphics::Capture;
+    using namespace Windows::UI::Composition;
+}
+
+namespace util
+{
+    using namespace desktop;
+}
 
 int __stdcall WinMain(HINSTANCE instance, HINSTANCE, PSTR cmdLine, int cmdShow)
 {
     // SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2); // works but everything draws small
     // Initialize COM
-    init_apartment(apartment_type::multi_threaded);
+    winrt::init_apartment(winrt::apartment_type::multi_threaded);
 
     // Check to see that capture is supported
     auto isCaptureSupported = winrt::Windows::Graphics::Capture::GraphicsCaptureSession::IsSupported();
@@ -29,18 +36,18 @@ int __stdcall WinMain(HINSTANCE instance, HINSTANCE, PSTR cmdLine, int cmdShow)
     SampleWindow::RegisterWindowClass();
 
     // Create the DispatcherQueue that the compositor needs to run
-    auto controller = CreateDispatcherQueueControllerForCurrentThread();
+    auto controller = util::CreateDispatcherQueueControllerForCurrentThread();
 
     // Initialize Composition
-    auto compositor = Compositor();
+    auto compositor = winrt::Compositor();
     auto root = compositor.CreateContainerVisual();
     root.RelativeSizeAdjustment({ 1.0f, 1.0f });
     root.Size({ -220.0f, 0.0f });
     root.Offset({ 220.0f, 0.0f, 0.0f });
 
     // Create the pickers
-    auto capturePicker = GraphicsCapturePicker();
-    auto savePicker = FileSavePicker();
+    auto capturePicker = winrt::GraphicsCapturePicker();
+    auto savePicker = winrt::FileSavePicker();
 
     // Create the app
     auto app = std::make_shared<App>(root, capturePicker, savePicker);

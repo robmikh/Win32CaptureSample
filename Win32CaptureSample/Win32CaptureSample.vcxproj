@@ -210,13 +210,15 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.h" />
-    <ClInclude Include="util\capture.interop.h" />
+    <ClInclude Include="util\capture.desktop.interop.h" />
     <ClInclude Include="CaptureSnapshot.h" />
     <ClInclude Include="completionSource.h" />
+    <ClInclude Include="util\composition.desktop.interop.h" />
     <ClInclude Include="util\composition.interop.h" />
     <ClInclude Include="util\DesktopWindow.h" />
-    <ClInclude Include="util\dispatcherqueue.interop.h" />
+    <ClInclude Include="util\dispatcherqueue.desktop.interop.h" />
     <ClInclude Include="util\d3dHelpers.h" />
+    <ClInclude Include="util\d3dHelpers.desktop.h" />
     <ClInclude Include="util\direct3d11.interop.h" />
     <ClInclude Include="MonitorList.h" />
     <ClInclude Include="pch.h" />
@@ -224,6 +226,7 @@
     <ClInclude Include="SimpleCapture.h" />
     <ClInclude Include="SimpleImageEncoder.h" />
     <ClInclude Include="util\stream.interop.h" />
+    <ClInclude Include="util\hwnd.interop.h" />
     <ClInclude Include="WindowList.h" />
   </ItemGroup>
   <ItemGroup>
