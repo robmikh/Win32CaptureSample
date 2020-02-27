@@ -21,9 +21,6 @@
     <ClInclude Include="WindowList.h" />
     <ClInclude Include="MonitorList.h" />
     <ClInclude Include="SimpleImageEncoder.h" />
-    <ClInclude Include="util\capture.interop.h">
-      <Filter>Util</Filter>
-    </ClInclude>
     <ClInclude Include="util\capture.desktop.interop.h">
       <Filter>Util</Filter>
     </ClInclude>
