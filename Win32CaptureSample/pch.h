@@ -44,10 +44,10 @@
 #include <wil/resource.h>
 
 // Helpers
-#include "composition.interop.h"
-#include "d3dHelpers.h"
-#include "direct3d11.interop.h"
-#include "capture.interop.h"
-#include "dispatcherqueue.interop.h"
-#include "stream.interop.h"
+#include "util/composition.interop.h"
+#include "util/d3dHelpers.h"
+#include "util/direct3d11.interop.h"
+#include "util/capture.interop.h"
+#include "util/dispatcherqueue.interop.h"
+#include "util/stream.interop.h"
 #include "completionSource.h"
