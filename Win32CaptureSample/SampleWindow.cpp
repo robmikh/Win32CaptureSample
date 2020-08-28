@@ -190,7 +190,6 @@ void SampleWindow::CreateControls(HINSTANCE instance)
     auto cursorEnableStyle = isCursorEnablePresent ? 0 : WS_DISABLED;
 
     auto isWin32CaptureExcludePresent = winrt::Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", 9);
-    auto win32CaptureExcludeStyle = isWin32CaptureExcludePresent ? 0 : WS_DISABLED;
 
     // Create window combo box
     HWND windowComboBoxHwnd = CreateWindowW(WC_COMBOBOX, L"",
@@ -253,8 +252,12 @@ void SampleWindow::CreateControls(HINSTANCE instance)
     SendMessageW(cursorCheckBoxHwnd, BM_SETCHECK, BST_CHECKED, 0);
 
     // Create capture exclude checkbox
-    HWND captureExcludeCheckBoxHwnd = CreateWindowW(WC_BUTTON, L"Exclude this window",
-        WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_AUTOCHECKBOX | win32CaptureExcludeStyle,
+    // NOTE: We don't version check this feature because setting WDA_EXCLUDEFROMCAPTURE is the same as
+    //       setting WDA_MONITOR on older builds of Windows. We're changing the label here to try and 
+    //       limit any user confusion.
+    std::wstring excludeCheckBoxLabel = isWin32CaptureExcludePresent ? L"Exclude this window" : L"Block this window";
+    HWND captureExcludeCheckBoxHwnd = CreateWindowW(WC_BUTTON, excludeCheckBoxLabel.c_str(),
+        WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_AUTOCHECKBOX,
         10, 280, 200, 30, m_window, nullptr, instance, nullptr);
     WINRT_VERIFY(captureExcludeCheckBoxHwnd);
 
