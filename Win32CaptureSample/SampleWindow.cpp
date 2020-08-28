@@ -138,8 +138,15 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
     }
     break;
     case WM_DISPLAYCHANGE:
-    {
         m_monitors->Update();
+        break;
+    case WM_CTLCOLORSTATIC:
+    {
+        HDC staticColorHdc = reinterpret_cast<HDC>(wparam);
+        auto color = static_cast<COLORREF>(GetSysColor(COLOR_WINDOW));
+        SetBkColor(staticColorHdc, color);
+        SetDCBrushColor(staticColorHdc, color);
+        return reinterpret_cast<LRESULT>(GetStockObject(DC_BRUSH));
     }
     break;
     default:
