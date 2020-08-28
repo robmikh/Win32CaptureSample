@@ -13,9 +13,8 @@ public:
     winrt::Windows::UI::Composition::ICompositionSurface CreateSurface(
         winrt::Windows::UI::Composition::Compositor const& compositor);
 
-    void SaveNextFrame() { m_captureNextImage = true; }
-	  bool IsCursorEnabled() { CheckClosed(); return m_session.IsCursorCaptureEnabled(); }
-	  void IsCursorEnabled(bool value) { CheckClosed(); m_session.IsCursorCaptureEnabled(value); }
+    bool IsCursorEnabled() { CheckClosed(); return m_session.IsCursorCaptureEnabled(); }
+	void IsCursorEnabled(bool value) { CheckClosed(); m_session.IsCursorCaptureEnabled(value); }
     winrt::Windows::Graphics::Capture::GraphicsCaptureItem CaptureItem() { return m_item; }
 
     void Close();
@@ -24,7 +23,6 @@ private:
     void OnFrameArrived(
         winrt::Windows::Graphics::Capture::Direct3D11CaptureFramePool const& sender,
         winrt::Windows::Foundation::IInspectable const& args);
-    void TakeSnapshot(winrt::com_ptr<ID3D11Texture2D> const& frame);
 
     inline void CheckClosed()
     {

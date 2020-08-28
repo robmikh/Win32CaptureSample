@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "SimpleCapture.h"
-#include <DirectXTex.h>
 
 namespace winrt
 {
@@ -100,12 +99,6 @@ void SimpleCapture::OnFrameArrived(winrt::Direct3D11CaptureFramePool const& send
         auto surfaceTexture = GetDXGIInterfaceFromObject<ID3D11Texture2D>(frame.Surface());
         // copy surfaceTexture to backBuffer
         m_d3dContext->CopyResource(backBuffer.get(), surfaceTexture.get());
-
-        if (m_captureNextImage)
-        {
-            m_captureNextImage = false;
-            TakeSnapshot(surfaceTexture);
-        }
     }
 
     DXGI_PRESENT_PARAMETERS presentParameters{};
@@ -115,22 +108,4 @@ void SimpleCapture::OnFrameArrived(winrt::Direct3D11CaptureFramePool const& send
     {
         m_framePool.Recreate(m_device, m_pixelFormat, 2, m_lastSize);
     }
-}
-
-void SimpleCapture::TakeSnapshot(winrt::com_ptr<ID3D11Texture2D> const& frame)
-{
-    DirectX::ScratchImage im;
-    winrt::check_hresult(DirectX::CaptureTexture(GetDXGIInterfaceFromObject<ID3D11Device>(m_device).get(),
-        m_d3dContext.get(), frame.get(), im));
-    const auto& realImage = *im.GetImage(0, 0, 0);
-	if (m_pixelFormat == winrt::DirectXPixelFormat::R16G16B16A16Float)
-	{
-		winrt::check_hresult(DirectX::SaveToWICFile(realImage, DirectX::WIC_FLAGS_NONE,
-			GUID_ContainerFormatWmp, L"output.jxr"));
-	}
-	else // BGRA8
-	{
-		winrt::check_hresult(DirectX::SaveToWICFile(realImage, DirectX::WIC_FLAGS_NONE,
-			GUID_ContainerFormatPng, L"output.png"));
-	}
 }

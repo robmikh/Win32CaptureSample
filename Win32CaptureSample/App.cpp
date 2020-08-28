@@ -90,14 +90,12 @@ winrt::IAsyncOperation<winrt::GraphicsCaptureItem> App::StartCaptureWithPickerAs
 
 winrt::IAsyncOperation<winrt::StorageFile> App::TakeSnapshotAsync()
 {
-    // First, get a GraphicsCaptureItem. Here we're using the picker, but
-    // this would also work for any other type of GraphicsCaptureItem.
-    auto item = co_await m_capturePicker.PickSingleItemAsync();
-    if (item == nullptr)
+    // Use what we're currently capturing
+    if (m_capture == nullptr)
     {
-        // The user decided not to capture anything.
         co_return nullptr;
     }
+    auto item = m_capture->CaptureItem();
 
     // Ask the user where they want to save the snapshot.
     m_savePicker.SuggestedStartLocation(winrt::PickerLocationId::PicturesLibrary);
@@ -151,14 +149,6 @@ winrt::IAsyncOperation<winrt::StorageFile> App::TakeSnapshotAsync()
     m_encoder->EncodeImage(frame, stream, fileFormat);
 
     co_return file;
-}
-
-void App::SnapshotCurrentCapture()
-{
-    if (m_capture)
-    {
-        m_capture->SaveNextFrame();
-    }
 }
 
 void App::StartCaptureFromItem(winrt::GraphicsCaptureItem item)

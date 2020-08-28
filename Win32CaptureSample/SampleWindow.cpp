@@ -85,6 +85,7 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
                     SetSubTitle(std::wstring(item.DisplayName()));
                     SendMessageW(m_monitorComboBoxHwnd, CB_SETCURSEL, -1, 0);
                     SendMessageW(m_cursorCheckBoxHwnd, BM_SETCHECK, BST_CHECKED, 0);
+                    EnableWindow(m_snapshotButtonHwnd, true);
                 }
                 else if (hwnd == m_monitorComboBoxHwnd)
                 {
@@ -96,6 +97,7 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
                     SetSubTitle(std::wstring(item.DisplayName()));
                     SendMessageW(m_windowComboBoxHwnd, CB_SETCURSEL, -1, 0);
                     SendMessageW(m_cursorCheckBoxHwnd, BM_SETCHECK, BST_CHECKED, 0);
+                    EnableWindow(m_snapshotButtonHwnd, true);
                 }
                 else if (hwnd == m_pixelFormatComboBoxHwnd)
                 {
@@ -113,10 +115,6 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
                 else if (hwnd == m_stopButtonHwnd)
                 {
                     StopCapture();
-                }
-                else if (hwnd == m_currentSnapshotHwnd)
-                {
-                    m_app->SnapshotCurrentCapture();
                 }
                 else if (hwnd == m_snapshotButtonHwnd)
                 {
@@ -169,6 +167,7 @@ winrt::fire_and_forget SampleWindow::OnPickerButtonClicked()
         SendMessageW(m_monitorComboBoxHwnd, CB_SETCURSEL, -1, 0);
         SendMessageW(m_windowComboBoxHwnd, CB_SETCURSEL, -1, 0);
         SendMessageW(m_cursorCheckBoxHwnd, BM_SETCHECK, BST_CHECKED, 0);
+        EnableWindow(m_snapshotButtonHwnd, true);
     }
 }
 
@@ -223,22 +222,16 @@ void SampleWindow::CreateControls(HINSTANCE instance)
         10, 120, 200, 30, m_window, nullptr, instance, nullptr);
     WINRT_VERIFY(stopButtonHwnd);
 
-    // Create current snapshot button
-    HWND currentSnapshotButtonHwnd = CreateWindowW(WC_BUTTON, L"Snapshot Current Capture",
-        WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
-        10, 160, 200, 30, m_window, nullptr, instance, nullptr);
-    WINRT_VERIFY(currentSnapshotButtonHwnd);
-
     // Create independent snapshot button
-    HWND snapshotButtonHwnd = CreateWindowW(WC_BUTTON, L"Take Independent Snapshot",
-        WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
-        10, 200, 200, 30, m_window, nullptr, instance, nullptr);
+    HWND snapshotButtonHwnd = CreateWindowW(WC_BUTTON, L"Take Snapshot",
+        WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON | WS_DISABLED,
+        10, 160, 200, 30, m_window, nullptr, instance, nullptr);
     WINRT_VERIFY(snapshotButtonHwnd);
 
    // Create pixel format combo box
     HWND pixelFormatComboBox = CreateWindowW(WC_COMBOBOX, L"",
         CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_VSCROLL | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE,
-        10, 240, 200, 200, m_window, nullptr, instance, nullptr);
+        10, 200, 200, 200, m_window, nullptr, instance, nullptr);
     WINRT_VERIFY(pixelFormatComboBox);
 
     // Populate pixel format combo box
@@ -253,7 +246,7 @@ void SampleWindow::CreateControls(HINSTANCE instance)
     // Create cursor checkbox
     HWND cursorCheckBoxHwnd = CreateWindowW(WC_BUTTON, L"Enable Cursor",
         WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_AUTOCHECKBOX | cursorEnableStyle,
-        10, 280, 200, 30, m_window, nullptr, instance, nullptr);
+        10, 240, 200, 30, m_window, nullptr, instance, nullptr);
     WINRT_VERIFY(cursorCheckBoxHwnd);
 
     // The default state is true for cursor rendering
@@ -262,7 +255,7 @@ void SampleWindow::CreateControls(HINSTANCE instance)
     // Create capture exclude checkbox
     HWND captureExcludeCheckBoxHwnd = CreateWindowW(WC_BUTTON, L"Exclude this window",
         WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_AUTOCHECKBOX | win32CaptureExcludeStyle,
-        10, 320, 200, 30, m_window, nullptr, instance, nullptr);
+        10, 280, 200, 30, m_window, nullptr, instance, nullptr);
     WINRT_VERIFY(captureExcludeCheckBoxHwnd);
 
     // The default state is false for capture exclusion
@@ -272,7 +265,6 @@ void SampleWindow::CreateControls(HINSTANCE instance)
     m_monitorComboBoxHwnd = monitorComboBoxHwnd;
     m_pickerButtonHwnd = pickerButtonHwnd;
     m_stopButtonHwnd = stopButtonHwnd;
-    m_currentSnapshotHwnd = currentSnapshotButtonHwnd;
     m_snapshotButtonHwnd = snapshotButtonHwnd;
     m_cursorCheckBoxHwnd = cursorCheckBoxHwnd;
     m_captureExcludeCheckBoxHwnd = captureExcludeCheckBoxHwnd;
@@ -296,6 +288,7 @@ void SampleWindow::StopCapture()
     SendMessageW(m_monitorComboBoxHwnd, CB_SETCURSEL, -1, 0);
     SendMessageW(m_windowComboBoxHwnd, CB_SETCURSEL, -1, 0);
     SendMessageW(m_cursorCheckBoxHwnd, BM_SETCHECK, BST_CHECKED, 0);
+    EnableWindow(m_snapshotButtonHwnd, false);
 }
 
 void SampleWindow::OnCaptureItemClosed(winrt::GraphicsCaptureItem const&, winrt::Windows::Foundation::IInspectable const&)
