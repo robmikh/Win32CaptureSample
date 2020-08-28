@@ -3,6 +3,8 @@
 #include <Unknwn.h>
 #include <inspectable.h>
 
+#include <wil/cppwinrt.h>
+
 // WinRT
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Foundation.Collections.h>
@@ -25,6 +27,9 @@
 // STL
 #include <atomic>
 #include <memory>
+#include <algorithm>
+#include <unordered_set>
+#include <vector>
 
 // D3D
 #include <d3d11_4.h>
@@ -32,11 +37,20 @@
 #include <d2d1_3.h>
 #include <wincodec.h>
 
+// DWM
+#include <dwmapi.h>
+
+// WIL
+#include <wil/resource.h>
+
 // Helpers
-#include "composition.interop.h"
-#include "d3dHelpers.h"
-#include "direct3d11.interop.h"
-#include "capture.interop.h"
-#include "dispatcherqueue.interop.h"
-#include "stream.interop.h"
+#include "util/composition.interop.h"
+#include "util/composition.desktop.interop.h"
+#include "util/d3dHelpers.h"
+#include "util/d3dHelpers.desktop.h"
+#include "util/direct3d11.interop.h"
+#include "util/capture.desktop.interop.h"
+#include "util/dispatcherqueue.desktop.interop.h"
+#include "util/stream.interop.h"
+#include "util/hwnd.interop.h"
 #include "completionSource.h"

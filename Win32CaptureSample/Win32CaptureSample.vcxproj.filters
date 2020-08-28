@@ -6,28 +6,58 @@
     <ClCompile Include="App.cpp" />
     <ClCompile Include="SimpleCapture.cpp" />
     <ClCompile Include="SampleWindow.cpp" />
-    <ClCompile Include="EnumerationWindow.cpp" />
-    <ClCompile Include="EnumerationMonitor.cpp" />
     <ClCompile Include="CaptureSnapshot.cpp" />
+    <ClCompile Include="WindowList.cpp" />
+    <ClCompile Include="MonitorList.cpp" />
+    <ClCompile Include="SimpleImageEncoder.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
-    <ClInclude Include="d3dHelpers.h" />
-    <ClInclude Include="composition.interop.h" />
-    <ClInclude Include="direct3d11.interop.h" />
     <ClInclude Include="App.h" />
     <ClInclude Include="SimpleCapture.h" />
-    <ClInclude Include="capture.interop.h" />
-    <ClInclude Include="dispatcherqueue.interop.h" />
-    <ClInclude Include="DesktopWindow.h" />
     <ClInclude Include="SampleWindow.h" />
-    <ClInclude Include="EnumerationWindow.h" />
-    <ClInclude Include="EnumerationMonitor.h" />
     <ClInclude Include="completionSource.h" />
     <ClInclude Include="CaptureSnapshot.h" />
-    <ClInclude Include="stream.interop.h" />
+    <ClInclude Include="WindowList.h" />
+    <ClInclude Include="MonitorList.h" />
+    <ClInclude Include="SimpleImageEncoder.h" />
+    <ClInclude Include="util\capture.desktop.interop.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="util\composition.interop.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="util\composition.desktop.interop.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="util\d3dHelpers.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="util\d3dHelpers.desktop.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="util\DesktopWindow.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="util\direct3d11.interop.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="util\dispatcherqueue.desktop.interop.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="util\stream.interop.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="util\hwnd.interop.h">
+      <Filter>Util</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Util">
+      <UniqueIdentifier>{bd52fd2f-19e3-47c1-afb1-969ba28603f5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>
