@@ -204,7 +204,12 @@ void App::PixelFormat(winrt::DirectXPixelFormat pixelFormat)
     if (m_capture)
     {
         auto item = m_capture->CaptureItem();
+        auto isCursorEnabled = m_capture->IsCursorEnabled();
         StopCapture();
         StartCaptureFromItem(item);
+        if (!isCursorEnabled)
+        {
+            m_capture->IsCursorEnabled(isCursorEnabled);
+        }
     }
 }
