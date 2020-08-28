@@ -9,8 +9,7 @@ Here are some places you should look at in the code to learn the following:
 * Show the system provided picker and capture the selected window/monitor. [`App::StartCaptureWithPickerAsync()`](https://github.com/robmikh/Win32CaptureSample/blob/master/Win32CaptureSample/App.cpp)
 * Setting up the Windows.Graphics.Capture API. [`SimpleCapture::SimpleCapture()`](https://github.com/robmikh/Win32CaptureSample/blob/master/Win32CaptureSample/SimpleCapture.cpp)
 * Processing frames received from the frame pool. [`SimpleCapture::OnFrameArrived(Direct3D11CaptureFramePool, IInspectable)`](https://github.com/robmikh/Win32CaptureSample/blob/master/Win32CaptureSample/SimpleCapture.cpp)
-* Take a snapshot during an ongoing capture [`SimpleCapture::OnFrameArrived(Direct3D11CaptureFramePool, IInspectable)`](https://github.com/robmikh/Win32CaptureSample/blob/master/Win32CaptureSample/SimpleCapture.cpp)
-* Start a capture to save just a single frame (indepdenent snapshot) [`CaptureSnapshot::TakeAsync(IDirect3DDevice, GraphicsCaptureItem)`](https://github.com/robmikh/Win32CaptureSample/blob/master/Win32CaptureSample/CaptureSnapshot.cpp) and [`App::TakeSnapshotAsync()`](https://github.com/robmikh/Win32CaptureSample/blob/master/Win32CaptureSample/App.cpp) for capturing and encoding respectively.
+* Taking a snapshot [`CaptureSnapshot::TakeAsync(IDirect3DDevice, GraphicsCaptureItem)`](https://github.com/robmikh/Win32CaptureSample/blob/master/Win32CaptureSample/CaptureSnapshot.cpp) and [`App::TakeSnapshotAsync()`](https://github.com/robmikh/Win32CaptureSample/blob/master/Win32CaptureSample/App.cpp) for capturing and encoding respectively.
 
 ## Win32 vs UWP
 For the most part, using the API is the same between Win32 and UWP. However, there are some small differences.
