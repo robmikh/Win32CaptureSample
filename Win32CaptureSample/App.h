@@ -18,6 +18,9 @@ public:
     winrt::Windows::Graphics::DirectX::DirectXPixelFormat PixelFormat() { return m_pixelFormat; }
     void PixelFormat(winrt::Windows::Graphics::DirectX::DirectXPixelFormat pixelFormat);
 
+    bool IsCursorEnabled();
+    void IsCursorEnabled(bool value);
+
     void StopCapture();
 
 private:

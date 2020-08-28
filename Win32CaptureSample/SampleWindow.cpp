@@ -84,6 +84,7 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
 
                     SetSubTitle(std::wstring(item.DisplayName()));
                     SendMessageW(m_monitorComboBoxHwnd, CB_SETCURSEL, -1, 0);
+                    SendMessageW(m_cursorCheckBoxHwnd, BM_SETCHECK, BST_CHECKED, 0);
                 }
                 else if (hwnd == m_monitorComboBoxHwnd)
                 {
@@ -94,6 +95,7 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
 
                     SetSubTitle(std::wstring(item.DisplayName()));
                     SendMessageW(m_windowComboBoxHwnd, CB_SETCURSEL, -1, 0);
+                    SendMessageW(m_cursorCheckBoxHwnd, BM_SETCHECK, BST_CHECKED, 0);
                 }
                 else if (hwnd == m_pixelFormatComboBoxHwnd)
                 {
@@ -119,6 +121,16 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
                 else if (hwnd == m_snapshotButtonHwnd)
                 {
                     OnSnapshotButtonClicked();
+                }
+                else if (hwnd == m_cursorCheckBoxHwnd)
+                {
+                    auto value = SendMessageW(m_cursorCheckBoxHwnd, BM_GETCHECK, 0, 0) == BST_CHECKED;
+                    m_app->IsCursorEnabled(value);
+                }
+                else if (hwnd == m_captureExcludeCheckBoxHwnd)
+                {
+                    auto value = SendMessageW(m_captureExcludeCheckBoxHwnd, BM_GETCHECK, 0, 0) == BST_CHECKED;
+                    winrt::check_bool(SetWindowDisplayAffinity(m_window, value ? WDA_EXCLUDEFROMCAPTURE : WDA_NONE));
                 }
             }
             break;
@@ -149,6 +161,7 @@ winrt::fire_and_forget SampleWindow::OnPickerButtonClicked()
         SetSubTitle(std::wstring(selectedItem.DisplayName()));
         SendMessageW(m_monitorComboBoxHwnd, CB_SETCURSEL, -1, 0);
         SendMessageW(m_windowComboBoxHwnd, CB_SETCURSEL, -1, 0);
+        SendMessageW(m_cursorCheckBoxHwnd, BM_SETCHECK, BST_CHECKED, 0);
     }
 }
 
@@ -166,6 +179,12 @@ void SampleWindow::CreateControls(HINSTANCE instance)
 {
     auto isWin32ProgrammaticPresent = winrt::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", 8);
     auto win32ProgrammaticStyle = isWin32ProgrammaticPresent ? 0 : WS_DISABLED;
+
+    auto isCursorEnablePresent = winrt::Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", 9);
+    auto cursorEnableStyle = isCursorEnablePresent ? 0 : WS_DISABLED;
+
+    auto isWin32CaptureExcludePresent = winrt::Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", 9);
+    auto win32CaptureExcludeStyle = isWin32CaptureExcludePresent ? 0 : WS_DISABLED;
 
     // Create window combo box
     HWND windowComboBoxHwnd = CreateWindowW(WC_COMBOBOX, L"",
@@ -209,7 +228,7 @@ void SampleWindow::CreateControls(HINSTANCE instance)
         10, 200, 200, 30, m_window, nullptr, instance, nullptr);
     WINRT_VERIFY(snapshotButtonHwnd);
 
-    // Create pixel format combo box
+   // Create pixel format combo box
     HWND pixelFormatComboBox = CreateWindowW(WC_COMBOBOX, L"",
         CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_VSCROLL | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE,
         10, 240, 200, 200, m_window, nullptr, instance, nullptr);
@@ -223,6 +242,24 @@ void SampleWindow::CreateControls(HINSTANCE instance)
     
     // The default pixel format is BGRA8
     SendMessageW(pixelFormatComboBox, CB_SETCURSEL, 0, 0);
+  
+    // Create cursor checkbox
+    HWND cursorCheckBoxHwnd = CreateWindowW(WC_BUTTON, L"Enable Cursor",
+        WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_AUTOCHECKBOX | cursorEnableStyle,
+        10, 280, 200, 30, m_window, nullptr, instance, nullptr);
+    WINRT_VERIFY(cursorCheckBoxHwnd);
+
+    // The default state is true for cursor rendering
+    SendMessageW(cursorCheckBoxHwnd, BM_SETCHECK, BST_CHECKED, 0);
+
+    // Create capture exclude checkbox
+    HWND captureExcludeCheckBoxHwnd = CreateWindowW(WC_BUTTON, L"Exclude this window",
+        WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_AUTOCHECKBOX | win32CaptureExcludeStyle,
+        10, 320, 200, 30, m_window, nullptr, instance, nullptr);
+    WINRT_VERIFY(captureExcludeCheckBoxHwnd);
+
+    // The default state is false for capture exclusion
+    SendMessageW(captureExcludeCheckBoxHwnd, BM_SETCHECK, BST_UNCHECKED, 0);
 
     m_windowComboBoxHwnd = windowComboBoxHwnd;
     m_monitorComboBoxHwnd = monitorComboBoxHwnd;
@@ -230,6 +267,8 @@ void SampleWindow::CreateControls(HINSTANCE instance)
     m_stopButtonHwnd = stopButtonHwnd;
     m_currentSnapshotHwnd = currentSnapshotButtonHwnd;
     m_snapshotButtonHwnd = snapshotButtonHwnd;
+    m_cursorCheckBoxHwnd = cursorCheckBoxHwnd;
+    m_captureExcludeCheckBoxHwnd = captureExcludeCheckBoxHwnd;
     m_pixelFormatComboBoxHwnd = pixelFormatComboBox;
 }
 
@@ -249,6 +288,7 @@ void SampleWindow::StopCapture()
     SetSubTitle(L"");
     SendMessageW(m_monitorComboBoxHwnd, CB_SETCURSEL, -1, 0);
     SendMessageW(m_windowComboBoxHwnd, CB_SETCURSEL, -1, 0);
+    SendMessageW(m_cursorCheckBoxHwnd, BM_SETCHECK, BST_CHECKED, 0);
 }
 
 void SampleWindow::OnCaptureItemClosed(winrt::GraphicsCaptureItem const&, winrt::Windows::Foundation::IInspectable const&)

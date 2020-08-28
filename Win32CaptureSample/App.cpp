@@ -181,13 +181,35 @@ void App::StopCapture()
     }
 }
 
+bool App::IsCursorEnabled()
+{
+    if (m_capture != nullptr)
+    {
+        return m_capture->IsCursorEnabled();
+    }
+    return false;
+}
+
+void App::IsCursorEnabled(bool value)
+{
+    if (m_capture != nullptr)
+    {
+        m_capture->IsCursorEnabled(value);
+    }
+}
+
 void App::PixelFormat(winrt::DirectXPixelFormat pixelFormat)
 {
     m_pixelFormat = pixelFormat;
     if (m_capture)
     {
         auto item = m_capture->CaptureItem();
+        auto isCursorEnabled = m_capture->IsCursorEnabled();
         StopCapture();
         StartCaptureFromItem(item);
+        if (!isCursorEnabled)
+        {
+            m_capture->IsCursorEnabled(isCursorEnabled);
+        }
     }
 }

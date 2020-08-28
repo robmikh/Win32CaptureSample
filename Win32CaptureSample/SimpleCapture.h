@@ -14,6 +14,8 @@ public:
         winrt::Windows::UI::Composition::Compositor const& compositor);
 
     void SaveNextFrame() { m_captureNextImage = true; }
+	  bool IsCursorEnabled() { CheckClosed(); return m_session.IsCursorCaptureEnabled(); }
+	  void IsCursorEnabled(bool value) { CheckClosed(); m_session.IsCursorCaptureEnabled(value); }
     winrt::Windows::Graphics::Capture::GraphicsCaptureItem CaptureItem() { return m_item; }
 
     void Close();
