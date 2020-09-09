@@ -104,6 +104,22 @@ void SimpleCapture::OnFrameArrived(winrt::Direct3D11CaptureFramePool const& send
     DXGI_PRESENT_PARAMETERS presentParameters{};
     m_swapChain->Present1(1, 0, &presentParameters);
 
+    {
+        auto lock = m_lock.lock_exclusive();
+        if (m_pixelFormatUpdate.has_value())
+        {
+            auto pixelFormat = m_pixelFormatUpdate.value();
+            if (pixelFormat != m_pixelFormat)
+            {
+                m_pixelFormat = pixelFormat;
+                winrt::check_hresult(m_swapChain->ResizeBuffers(2, static_cast<uint32_t>(m_lastSize.Width), static_cast<uint32_t>(m_lastSize.Height),
+                    static_cast<DXGI_FORMAT>(m_pixelFormat), 0));
+                swapChainResizedToFrame = true;
+            }
+            m_pixelFormatUpdate = std::nullopt;
+        }
+    }
+
     if (swapChainResizedToFrame)
     {
         m_framePool.Recreate(m_device, m_pixelFormat, 2, m_lastSize);

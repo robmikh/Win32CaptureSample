@@ -30,6 +30,7 @@
 #include <algorithm>
 #include <unordered_set>
 #include <vector>
+#include <optional>
 
 // D3D
 #include <d3d11_4.h>

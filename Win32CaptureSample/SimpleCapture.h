@@ -17,6 +17,13 @@ public:
 	void IsCursorEnabled(bool value) { CheckClosed(); m_session.IsCursorCaptureEnabled(value); }
     winrt::Windows::Graphics::Capture::GraphicsCaptureItem CaptureItem() { return m_item; }
 
+    void SetPixelFormat(winrt::Windows::Graphics::DirectX::DirectXPixelFormat pixelFormat)
+    {
+        CheckClosed();
+        auto lock = m_lock.lock_exclusive();
+        m_pixelFormatUpdate = pixelFormat;
+    }
+
     void Close();
 
 private:
@@ -44,6 +51,9 @@ private:
     winrt::com_ptr<IDXGISwapChain1> m_swapChain{ nullptr };
     winrt::com_ptr<ID3D11DeviceContext> m_d3dContext{ nullptr };
     winrt::Windows::Graphics::DirectX::DirectXPixelFormat m_pixelFormat;
+
+    wil::srwlock m_lock;
+    std::optional<winrt::Windows::Graphics::DirectX::DirectXPixelFormat> m_pixelFormatUpdate = std::nullopt;
 
     std::atomic<bool> m_closed = false;
     std::atomic<bool> m_captureNextImage = false;
