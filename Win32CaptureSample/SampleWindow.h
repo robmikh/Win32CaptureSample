@@ -27,18 +27,28 @@ struct SampleWindow : util::desktop::DesktopWindow<SampleWindow>
     LRESULT MessageHandler(UINT const message, WPARAM const wparam, LPARAM const lparam);
 
 private:
+    struct PixelFormatData
+    {
+        std::wstring Name;
+        winrt::Windows::Graphics::DirectX::DirectXPixelFormat PixelFormat;
+    };
+
+    enum class CaptureType
+    {
+        ProgrammaticWindow,
+        ProgrammaticMonitor,
+        Picker,
+    };
+
     void CreateControls(HINSTANCE instance);
     void SetSubTitle(std::wstring const& text);
     winrt::fire_and_forget OnPickerButtonClicked();
     winrt::fire_and_forget OnSnapshotButtonClicked();
     void StopCapture();
     void OnCaptureItemClosed(winrt::Windows::Graphics::Capture::GraphicsCaptureItem const&, winrt::Windows::Foundation::IInspectable const&);
-
-    struct PixelFormatData
-    {
-        std::wstring Name;
-        winrt::Windows::Graphics::DirectX::DirectXPixelFormat PixelFormat;
-    };
+    void OnCaptureStarted(
+        winrt::Windows::Graphics::Capture::GraphicsCaptureItem const& item, 
+        CaptureType captureType);
 
 private:
     HWND m_windowComboBoxHwnd = nullptr;

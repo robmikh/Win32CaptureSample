@@ -78,26 +78,14 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
                 if (hwnd == m_windowComboBoxHwnd)
                 {
                     auto window = m_windows->GetCurrentWindows()[index];
-                    m_itemClosedRevoker.revoke();
                     auto item = m_app->StartCaptureFromWindowHandle(window.WindowHandle);
-                    m_itemClosedRevoker = item.Closed(winrt::auto_revoke, { this, &SampleWindow::OnCaptureItemClosed });
-
-                    SetSubTitle(std::wstring(item.DisplayName()));
-                    SendMessageW(m_monitorComboBoxHwnd, CB_SETCURSEL, -1, 0);
-                    SendMessageW(m_cursorCheckBoxHwnd, BM_SETCHECK, BST_CHECKED, 0);
-                    EnableWindow(m_snapshotButtonHwnd, true);
+                    OnCaptureStarted(item, CaptureType::ProgrammaticWindow);
                 }
                 else if (hwnd == m_monitorComboBoxHwnd)
                 {
                     auto monitor = m_monitors->GetCurrentMonitors()[index];
-                    m_itemClosedRevoker.revoke();
                     auto item = m_app->StartCaptureFromMonitorHandle(monitor.MonitorHandle);
-                    m_itemClosedRevoker = item.Closed(winrt::auto_revoke, { this, &SampleWindow::OnCaptureItemClosed });
-
-                    SetSubTitle(std::wstring(item.DisplayName()));
-                    SendMessageW(m_windowComboBoxHwnd, CB_SETCURSEL, -1, 0);
-                    SendMessageW(m_cursorCheckBoxHwnd, BM_SETCHECK, BST_CHECKED, 0);
-                    EnableWindow(m_snapshotButtonHwnd, true);
+                    OnCaptureStarted(item, CaptureType::ProgrammaticMonitor);
                 }
                 else if (hwnd == m_pixelFormatComboBoxHwnd)
                 {
@@ -155,19 +143,36 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
     return 0;
 }
 
+void SampleWindow::OnCaptureStarted(winrt::GraphicsCaptureItem const& item, CaptureType captureType)
+{
+    m_itemClosedRevoker.revoke();
+    m_itemClosedRevoker = item.Closed(winrt::auto_revoke, { this, &SampleWindow::OnCaptureItemClosed });
+    SetSubTitle(std::wstring(item.DisplayName()));
+    switch (captureType)
+    {
+    case CaptureType::ProgrammaticWindow:
+        SendMessageW(m_monitorComboBoxHwnd, CB_SETCURSEL, -1, 0);
+        break;
+    case CaptureType::ProgrammaticMonitor:
+        SendMessageW(m_windowComboBoxHwnd, CB_SETCURSEL, -1, 0);
+        break;
+    case CaptureType::Picker:
+        SendMessageW(m_windowComboBoxHwnd, CB_SETCURSEL, -1, 0);
+        SendMessageW(m_monitorComboBoxHwnd, CB_SETCURSEL, -1, 0);
+        break;
+    }
+    SendMessageW(m_cursorCheckBoxHwnd, BM_SETCHECK, BST_CHECKED, 0);
+    EnableWindow(m_stopButtonHwnd, true);
+    EnableWindow(m_snapshotButtonHwnd, true);
+}
+
 winrt::fire_and_forget SampleWindow::OnPickerButtonClicked()
 {
     auto selectedItem = co_await m_app->StartCaptureWithPickerAsync();
 
     if (selectedItem)
     {
-        m_itemClosedRevoker.revoke();
-        m_itemClosedRevoker = selectedItem.Closed(winrt::auto_revoke, { this, &SampleWindow::OnCaptureItemClosed });
-        SetSubTitle(std::wstring(selectedItem.DisplayName()));
-        SendMessageW(m_monitorComboBoxHwnd, CB_SETCURSEL, -1, 0);
-        SendMessageW(m_windowComboBoxHwnd, CB_SETCURSEL, -1, 0);
-        SendMessageW(m_cursorCheckBoxHwnd, BM_SETCHECK, BST_CHECKED, 0);
-        EnableWindow(m_snapshotButtonHwnd, true);
+        OnCaptureStarted(selectedItem, CaptureType::Picker);
     }
 }
 
@@ -216,7 +221,7 @@ void SampleWindow::CreateControls(HINSTANCE instance)
     HWND pickerButtonHwnd = controls.CreateControl(ControlType::Button, L"Open Picker");
 
     // Create stop capture button
-    HWND stopButtonHwnd = controls.CreateControl(ControlType::Button, L"Stop Capture");
+    HWND stopButtonHwnd = controls.CreateControl(ControlType::Button, L"Stop Capture", WS_DISABLED);
 
     // Create independent snapshot button
     HWND snapshotButtonHwnd = controls.CreateControl(ControlType::Button, L"Take Snapshot", WS_DISABLED);
@@ -275,9 +280,10 @@ void SampleWindow::StopCapture()
 {
     m_app->StopCapture();
     SetSubTitle(L"");
-    SendMessageW(m_monitorComboBoxHwnd, CB_SETCURSEL, -1, 0);
     SendMessageW(m_windowComboBoxHwnd, CB_SETCURSEL, -1, 0);
+    SendMessageW(m_monitorComboBoxHwnd, CB_SETCURSEL, -1, 0);
     SendMessageW(m_cursorCheckBoxHwnd, BM_SETCHECK, BST_CHECKED, 0);
+    EnableWindow(m_stopButtonHwnd, false);
     EnableWindow(m_snapshotButtonHwnd, false);
 }
 
