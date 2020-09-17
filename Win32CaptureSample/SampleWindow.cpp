@@ -3,7 +3,7 @@
 #include "SampleWindow.h"
 #include "WindowList.h"
 #include "MonitorList.h"
-#include <CommCtrl.h>
+#include "ControlsHelper.h"
 
 namespace winrt
 {
@@ -183,55 +183,48 @@ winrt::fire_and_forget SampleWindow::OnSnapshotButtonClicked()
 // Not DPI aware but could be by multiplying the constants based on the monitor scale factor
 void SampleWindow::CreateControls(HINSTANCE instance)
 {
+    // Programmatic capture
     auto isWin32ProgrammaticPresent = winrt::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", 8);
     auto win32ProgrammaticStyle = isWin32ProgrammaticPresent ? 0 : WS_DISABLED;
 
+    // Cursor capture
     auto isCursorEnablePresent = winrt::Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", 9);
     auto cursorEnableStyle = isCursorEnablePresent ? 0 : WS_DISABLED;
 
+    // Window exclusion
     auto isWin32CaptureExcludePresent = winrt::Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", 9);
 
+    auto controls = StackPanel(m_window, instance, 10, 10, 200);
+
+    auto windowLabel = controls.CreateControl(ControlType::Label, L"Windows:");
+
     // Create window combo box
-    HWND windowComboBoxHwnd = CreateWindowW(WC_COMBOBOX, L"",
-        CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_VSCROLL | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE | win32ProgrammaticStyle,
-        10, 10, 200, 200, m_window, nullptr, instance, nullptr);
-    WINRT_VERIFY(windowComboBoxHwnd);
+    HWND windowComboBoxHwnd = controls.CreateControl(ControlType::ComboBox, L"", win32ProgrammaticStyle);
 
     // Populate window combo box and register for updates
     m_windows->RegisterComboBoxForUpdates(windowComboBoxHwnd);
 
+    auto monitorLabel = controls.CreateControl(ControlType::Label, L"Displays:");
+
     // Create monitor combo box
-    HWND monitorComboBoxHwnd = CreateWindowW(WC_COMBOBOX, L"",
-        CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_VSCROLL | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE | win32ProgrammaticStyle,
-        10, 45, 200, 200, m_window, nullptr, instance, nullptr);
-    WINRT_VERIFY(monitorComboBoxHwnd);
+    HWND monitorComboBoxHwnd = controls.CreateControl(ControlType::ComboBox, L"", win32ProgrammaticStyle);
 
     // Populate monitor combo box
     m_monitors->RegisterComboBoxForUpdates(monitorComboBoxHwnd);
 
     // Create picker button
-    HWND pickerButtonHwnd = CreateWindowW(WC_BUTTON, L"Use Picker",
-        WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
-        10, 80, 200, 30, m_window, nullptr, instance, nullptr);
-    WINRT_VERIFY(pickerButtonHwnd);
+    HWND pickerButtonHwnd = controls.CreateControl(ControlType::Button, L"Open Picker");
 
     // Create stop capture button
-    HWND stopButtonHwnd = CreateWindowW(WC_BUTTON, L"Stop Capture",
-        WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
-        10, 120, 200, 30, m_window, nullptr, instance, nullptr);
-    WINRT_VERIFY(stopButtonHwnd);
+    HWND stopButtonHwnd = controls.CreateControl(ControlType::Button, L"Stop Capture");
 
     // Create independent snapshot button
-    HWND snapshotButtonHwnd = CreateWindowW(WC_BUTTON, L"Take Snapshot",
-        WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON | WS_DISABLED,
-        10, 160, 200, 30, m_window, nullptr, instance, nullptr);
-    WINRT_VERIFY(snapshotButtonHwnd);
+    HWND snapshotButtonHwnd = controls.CreateControl(ControlType::Button, L"Take Snapshot", WS_DISABLED);
+
+    auto pixelFormatLabel = controls.CreateControl(ControlType::Label, L"Pixel Format:");
 
    // Create pixel format combo box
-    HWND pixelFormatComboBox = CreateWindowW(WC_COMBOBOX, L"",
-        CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_VSCROLL | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE,
-        10, 200, 200, 200, m_window, nullptr, instance, nullptr);
-    WINRT_VERIFY(pixelFormatComboBox);
+    HWND pixelFormatComboBox = controls.CreateControl(ControlType::ComboBox, L"");
 
     // Populate pixel format combo box
     for (auto& pixelFormat : m_pixelFormats)
@@ -243,10 +236,7 @@ void SampleWindow::CreateControls(HINSTANCE instance)
     SendMessageW(pixelFormatComboBox, CB_SETCURSEL, 0, 0);
   
     // Create cursor checkbox
-    HWND cursorCheckBoxHwnd = CreateWindowW(WC_BUTTON, L"Enable Cursor",
-        WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_AUTOCHECKBOX | cursorEnableStyle,
-        10, 240, 200, 30, m_window, nullptr, instance, nullptr);
-    WINRT_VERIFY(cursorCheckBoxHwnd);
+    HWND cursorCheckBoxHwnd = controls.CreateControl(ControlType::CheckBox, L"Enable Cursor", cursorEnableStyle);
 
     // The default state is true for cursor rendering
     SendMessageW(cursorCheckBoxHwnd, BM_SETCHECK, BST_CHECKED, 0);
@@ -256,10 +246,7 @@ void SampleWindow::CreateControls(HINSTANCE instance)
     //       setting WDA_MONITOR on older builds of Windows. We're changing the label here to try and 
     //       limit any user confusion.
     std::wstring excludeCheckBoxLabel = isWin32CaptureExcludePresent ? L"Exclude this window" : L"Block this window";
-    HWND captureExcludeCheckBoxHwnd = CreateWindowW(WC_BUTTON, excludeCheckBoxLabel.c_str(),
-        WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_AUTOCHECKBOX,
-        10, 280, 200, 30, m_window, nullptr, instance, nullptr);
-    WINRT_VERIFY(captureExcludeCheckBoxHwnd);
+    HWND captureExcludeCheckBoxHwnd = controls.CreateControl(ControlType::CheckBox, excludeCheckBoxLabel.c_str());
 
     // The default state is false for capture exclusion
     SendMessageW(captureExcludeCheckBoxHwnd, BM_SETCHECK, BST_UNCHECKED, 0);

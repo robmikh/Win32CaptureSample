@@ -51,6 +51,7 @@
     <ClInclude Include="util\hwnd.interop.h">
       <Filter>Util</Filter>
     </ClInclude>
+    <ClInclude Include="ControlsHelper.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Util">
