@@ -39,7 +39,9 @@ private:
         }
     }
 
+    void ResizeSwapChain();
     bool TryResizeSwapChain(winrt::Windows::Graphics::Capture::Direct3D11CaptureFrame const& frame);
+    bool TryUpdatePixelFormat();
 
 private:
     winrt::Windows::Graphics::Capture::GraphicsCaptureItem m_item{ nullptr };

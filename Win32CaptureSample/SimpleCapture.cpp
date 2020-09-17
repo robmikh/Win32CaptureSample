@@ -71,6 +71,12 @@ void SimpleCapture::Close()
     }
 }
 
+void SimpleCapture::ResizeSwapChain()
+{
+    winrt::check_hresult(m_swapChain->ResizeBuffers(2, static_cast<uint32_t>(m_lastSize.Width), static_cast<uint32_t>(m_lastSize.Height),
+        static_cast<DXGI_FORMAT>(m_pixelFormat), 0));
+}
+
 bool SimpleCapture::TryResizeSwapChain(winrt::Direct3D11CaptureFrame const& frame)
 {
     auto const contentSize = frame.ContentSize();
@@ -79,9 +85,25 @@ bool SimpleCapture::TryResizeSwapChain(winrt::Direct3D11CaptureFrame const& fram
     {
         // The thing we have been capturing has changed size, resize the swap chain to match.
         m_lastSize = contentSize;
-        winrt::check_hresult(m_swapChain->ResizeBuffers(2, static_cast<uint32_t>(m_lastSize.Width), static_cast<uint32_t>(m_lastSize.Height),
-            static_cast<DXGI_FORMAT>(m_pixelFormat), 0));
+        ResizeSwapChain();
         return true;
+    }
+    return false;
+}
+
+bool SimpleCapture::TryUpdatePixelFormat()
+{
+    auto lock = m_lock.lock_exclusive();
+    if (m_pixelFormatUpdate.has_value())
+    {
+        auto pixelFormat = m_pixelFormatUpdate.value();
+        m_pixelFormatUpdate = std::nullopt;
+        if (pixelFormat != m_pixelFormat)
+        {
+            m_pixelFormat = pixelFormat;
+            ResizeSwapChain();
+            return true;
+        }
     }
     return false;
 }
@@ -104,21 +126,7 @@ void SimpleCapture::OnFrameArrived(winrt::Direct3D11CaptureFramePool const& send
     DXGI_PRESENT_PARAMETERS presentParameters{};
     m_swapChain->Present1(1, 0, &presentParameters);
 
-    {
-        auto lock = m_lock.lock_exclusive();
-        if (m_pixelFormatUpdate.has_value())
-        {
-            auto pixelFormat = m_pixelFormatUpdate.value();
-            if (pixelFormat != m_pixelFormat)
-            {
-                m_pixelFormat = pixelFormat;
-                winrt::check_hresult(m_swapChain->ResizeBuffers(2, static_cast<uint32_t>(m_lastSize.Width), static_cast<uint32_t>(m_lastSize.Height),
-                    static_cast<DXGI_FORMAT>(m_pixelFormat), 0));
-                swapChainResizedToFrame = true;
-            }
-            m_pixelFormatUpdate = std::nullopt;
-        }
-    }
+    swapChainResizedToFrame = swapChainResizedToFrame || TryUpdatePixelFormat();
 
     if (swapChainResizedToFrame)
     {
