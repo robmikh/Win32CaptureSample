@@ -51,14 +51,14 @@ private:
         CaptureType captureType);
 
 private:
-    HWND m_windowComboBoxHwnd = nullptr;
-    HWND m_monitorComboBoxHwnd = nullptr;
-    HWND m_pickerButtonHwnd = nullptr;
-    HWND m_stopButtonHwnd = nullptr;
-    HWND m_snapshotButtonHwnd = nullptr;
-    HWND m_pixelFormatComboBoxHwnd = nullptr;
-    HWND m_cursorCheckBoxHwnd = nullptr;
-    HWND m_captureExcludeCheckBoxHwnd = nullptr;
+    HWND m_windowComboBox = nullptr;
+    HWND m_monitorComboBox = nullptr;
+    HWND m_pickerButton = nullptr;
+    HWND m_stopButton = nullptr;
+    HWND m_snapshotButton = nullptr;
+    HWND m_pixelFormatComboBox = nullptr;
+    HWND m_cursorCheckBox = nullptr;
+    HWND m_captureExcludeCheckBox = nullptr;
     std::unique_ptr<WindowList> m_windows;
     std::unique_ptr<MonitorList> m_monitors;
     std::vector<PixelFormatData> m_pixelFormats;
