@@ -193,11 +193,11 @@ void SampleWindow::CreateControls(HINSTANCE instance)
     auto win32ProgrammaticStyle = isWin32ProgrammaticPresent ? 0 : WS_DISABLED;
 
     // Cursor capture
-    auto isCursorEnablePresent = winrt::Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", 9);
+    auto isCursorEnablePresent = winrt::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", 9);
     auto cursorEnableStyle = isCursorEnablePresent ? 0 : WS_DISABLED;
 
     // Window exclusion
-    auto isWin32CaptureExcludePresent = winrt::Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", 9);
+    auto isWin32CaptureExcludePresent = winrt::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", 9);
 
     auto controls = StackPanel(m_window, instance, 10, 10, 200);
 
@@ -228,7 +228,7 @@ void SampleWindow::CreateControls(HINSTANCE instance)
 
     auto pixelFormatLabel = controls.CreateControl(ControlType::Label, L"Pixel Format:");
 
-   // Create pixel format combo box
+    // Create pixel format combo box
     auto pixelFormatComboBox = controls.CreateControl(ControlType::ComboBox, L"");
 
     // Populate pixel format combo box
