@@ -1,0 +1,47 @@
+name: MSBuild
+
+on: 
+  pull_request:
+  push:
+    branches:
+      - master
+
+env:
+  # Path to the solution file relative to the root of the project.
+  SOLUTION_FILE_PATH: .
+
+jobs:
+  build:
+    runs-on: windows-latest
+    
+    strategy:
+      matrix:
+        configuration: [Release]
+        platform: [x86, x64, ARM, ARM64]
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Add MSBuild to PATH
+      uses: microsoft/setup-msbuild@v1
+
+    - name: Restore NuGet packages
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: nuget restore ${{env.SOLUTION_FILE_PATH}}
+
+    - name: Build
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: msbuild /m /p:Configuration=${{ matrix.configuration }} /p:Platform=${{ matrix.platform }} ${{env.SOLUTION_FILE_PATH}} 
+
+    - name: Normalize x86
+      if: matrix.platform == 'x86'
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: |
+        mkdir ${{ matrix.platform }}\${{ matrix.configuration }}
+        copy .\${{ matrix.configuration }}\* ${{ matrix.platform }}\${{ matrix.configuration }}
+
+    - name: Upload Build Artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: 'Win32CaptureSample_${{ matrix.platform }}_${{ matrix.configuration }}'
+        path: '.\${{ matrix.platform }}\${{ matrix.configuration }}\*'
