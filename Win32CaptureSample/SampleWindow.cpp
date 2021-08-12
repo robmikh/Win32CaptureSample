@@ -78,14 +78,20 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
                 if (hwnd == m_windowComboBox)
                 {
                     auto window = m_windows->GetCurrentWindows()[index];
-                    auto item = m_app->StartCaptureFromWindowHandle(window.WindowHandle);
-                    OnCaptureStarted(item, CaptureType::ProgrammaticWindow);
+                    auto item = m_app->TryStartCaptureFromWindowHandle(window.WindowHandle);
+                    if (item != nullptr)
+                    {
+                        OnCaptureStarted(item, CaptureType::ProgrammaticWindow);
+                    }
                 }
                 else if (hwnd == m_monitorComboBox)
                 {
                     auto monitor = m_monitors->GetCurrentMonitors()[index];
-                    auto item = m_app->StartCaptureFromMonitorHandle(monitor.MonitorHandle);
-                    OnCaptureStarted(item, CaptureType::ProgrammaticMonitor);
+                    auto item = m_app->TryStartCaptureFromMonitorHandle(monitor.MonitorHandle);
+                    if (item != nullptr)
+                    {
+                        OnCaptureStarted(item, CaptureType::ProgrammaticMonitor);
+                    }
                 }
                 else if (hwnd == m_pixelFormatComboBox)
                 {

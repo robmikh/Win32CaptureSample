@@ -56,17 +56,39 @@ App::App(winrt::ContainerVisual root, winrt::GraphicsCapturePicker capturePicker
     m_encoder = std::make_unique<SimpleImageEncoder>(m_device);
 }
 
-winrt::GraphicsCaptureItem App::StartCaptureFromWindowHandle(HWND hwnd)
+winrt::GraphicsCaptureItem App::TryStartCaptureFromWindowHandle(HWND hwnd)
 {
-    auto item = util::CreateCaptureItemForWindow(hwnd);
-    StartCaptureFromItem(item);
+    winrt::GraphicsCaptureItem item{ nullptr };
+    try
+    {
+        item = util::CreateCaptureItemForWindow(hwnd);
+        StartCaptureFromItem(item);
+    }
+    catch (winrt::hresult_error const& error)
+    {
+        MessageBoxW(nullptr,
+            error.message().c_str(),
+            L"Win32CaptureSample",
+            MB_OK | MB_ICONERROR);
+    }
     return item;
 }
 
-winrt::GraphicsCaptureItem App::StartCaptureFromMonitorHandle(HMONITOR hmon)
+winrt::GraphicsCaptureItem App::TryStartCaptureFromMonitorHandle(HMONITOR hmon)
 {
-    auto item = util::CreateCaptureItemForMonitor(hmon);
-    StartCaptureFromItem(item);
+    winrt::GraphicsCaptureItem item{ nullptr };
+    try
+    {
+        item = util::CreateCaptureItemForMonitor(hmon);
+        StartCaptureFromItem(item);
+    }
+    catch (winrt::hresult_error const& error)
+    {
+        MessageBoxW(nullptr,
+            error.message().c_str(),
+            L"Win32CaptureSample",
+            MB_OK | MB_ICONERROR);
+    }
     return item;
 }
 
