@@ -3,7 +3,9 @@ A simple sample using the Windows.Graphics.Capture APIs in a Win32 application.
 
 Created by [Robert Mikhayelyan](https://github.com/robmikh/Win32CaptureSample)
 
-# Modified for Spout output
+## Modified for Spout output
+
+Pre-compiled binaries in Spout\Binaries
 
 - Add console for debugging.
 - Limit to BRGA8 format.
