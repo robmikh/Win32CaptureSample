@@ -78,7 +78,10 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
                 if (hwnd == m_windowComboBox)
                 {
                     auto window = m_windows->GetCurrentWindows()[index];
+
+                    // SPOUT - include window handle
                     auto item = m_app->TryStartCaptureFromWindowHandle(window.WindowHandle);
+
                     if (item != nullptr)
                     {
                         OnCaptureStarted(item, CaptureType::ProgrammaticWindow);
@@ -93,11 +96,14 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
                         OnCaptureStarted(item, CaptureType::ProgrammaticMonitor);
                     }
                 }
+                /*
+                // SPOUT - limit to BRGA8
                 else if (hwnd == m_pixelFormatComboBox)
                 {
                     auto pixelFormatData = m_pixelFormats[index];
                     m_app->PixelFormat(pixelFormatData.PixelFormat);
                 }
+                */
             }
             break;
         case BN_CLICKED:
@@ -119,12 +125,18 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
                     auto value = SendMessageW(m_cursorCheckBox, BM_GETCHECK, 0, 0) == BST_CHECKED;
                     m_app->IsCursorEnabled(value);
                 }
+                // SPOUT client area capture
+                else if (hwnd == m_clientCheckBox)
+                {
+                    auto value = SendMessageW(m_clientCheckBox, BM_GETCHECK, 0, 0) == BST_CHECKED;
+                    m_app->IsClientEnabled(value);
+                }
                 else if (hwnd == m_captureExcludeCheckBox)
                 {
                     auto value = SendMessageW(m_captureExcludeCheckBox, BM_GETCHECK, 0, 0) == BST_CHECKED;
                     winrt::check_bool(SetWindowDisplayAffinity(m_window, value ? WDA_EXCLUDEFROMCAPTURE : WDA_NONE));
                 }
-            }
+        }
             break;
         }
     }
@@ -154,6 +166,7 @@ void SampleWindow::OnCaptureStarted(winrt::GraphicsCaptureItem const& item, Capt
     m_itemClosedRevoker.revoke();
     m_itemClosedRevoker = item.Closed(winrt::auto_revoke, { this, &SampleWindow::OnCaptureItemClosed });
     SetSubTitle(std::wstring(item.DisplayName()));
+
     switch (captureType)
     {
     case CaptureType::ProgrammaticWindow:
@@ -167,7 +180,12 @@ void SampleWindow::OnCaptureStarted(winrt::GraphicsCaptureItem const& item, Capt
         SendMessageW(m_monitorComboBox, CB_SETCURSEL, -1, 0);
         break;
     }
-    SendMessageW(m_cursorCheckBox, BM_SETCHECK, BST_CHECKED, 0);
+
+    // SendMessageW(m_cursorCheckBox, BM_SETCHECK, BST_CHECKED, 0);
+    SendMessageW(m_cursorCheckBox, BM_SETCHECK, BST_UNCHECKED, 0); // SPOUT - default no cursor
+    m_app->IsCursorEnabled(false);
+    SendMessageW(m_clientCheckBox, BM_SETCHECK, BST_CHECKED, 0); // SPOUT - default send client area
+
     EnableWindow(m_stopButton, true);
     EnableWindow(m_snapshotButton, true);
 }
@@ -175,7 +193,6 @@ void SampleWindow::OnCaptureStarted(winrt::GraphicsCaptureItem const& item, Capt
 winrt::fire_and_forget SampleWindow::OnPickerButtonClicked()
 {
     auto selectedItem = co_await m_app->StartCaptureWithPickerAsync();
-
     if (selectedItem)
     {
         OnCaptureStarted(selectedItem, CaptureType::Picker);
@@ -232,6 +249,8 @@ void SampleWindow::CreateControls(HINSTANCE instance)
     // Create independent snapshot button
     auto snapshotButton = controls.CreateControl(ControlType::Button, L"Take Snapshot", WS_DISABLED);
 
+    // SPOUT - limit to BRGA8
+    /*
     auto pixelFormatLabel = controls.CreateControl(ControlType::Label, L"Pixel Format:");
 
     // Create pixel format combo box
@@ -242,15 +261,23 @@ void SampleWindow::CreateControls(HINSTANCE instance)
     {
         SendMessageW(pixelFormatComboBox, CB_ADDSTRING, 0, (LPARAM)pixelFormat.Name.c_str());
     }
-    
     // The default pixel format is BGRA8
     SendMessageW(pixelFormatComboBox, CB_SETCURSEL, 0, 0);
-  
+    */
+
     // Create cursor checkbox
     auto cursorCheckBox = controls.CreateControl(ControlType::CheckBox, L"Enable Cursor", cursorEnableStyle);
 
     // The default state is true for cursor rendering
-    SendMessageW(cursorCheckBox, BM_SETCHECK, BST_CHECKED, 0);
+    // SendMessageW(cursorCheckBox, BM_SETCHECK, BST_CHECKED, 0);
+    // SPOUT - default no cursor
+    SendMessageW(m_cursorCheckBox, BM_SETCHECK, BST_UNCHECKED, 0);
+
+    // SPOUT
+    // Create send client area checkbox
+    auto clientCheckBox = controls.CreateControl(ControlType::CheckBox, L"Send client area", cursorEnableStyle);
+    // The default state is true
+    SendMessageW(clientCheckBox, BM_SETCHECK, BST_CHECKED, 0);
 
     // Create capture exclude checkbox
     // NOTE: We don't version check this feature because setting WDA_EXCLUDEFROMCAPTURE is the same as
@@ -269,7 +296,10 @@ void SampleWindow::CreateControls(HINSTANCE instance)
     m_snapshotButton = snapshotButton;
     m_cursorCheckBox = cursorCheckBox;
     m_captureExcludeCheckBox = captureExcludeCheckBox;
-    m_pixelFormatComboBox = pixelFormatComboBox;
+    // SPOUT 
+    // m_pixelFormatComboBox = pixelFormatComboBox; // limit to BRGA8
+    m_clientCheckBox = clientCheckBox; // Add a client/window capture checkbox
+
 }
 
 void SampleWindow::SetSubTitle(std::wstring const& text)
@@ -288,7 +318,10 @@ void SampleWindow::StopCapture()
     SetSubTitle(L"");
     SendMessageW(m_windowComboBox, CB_SETCURSEL, -1, 0);
     SendMessageW(m_monitorComboBox, CB_SETCURSEL, -1, 0);
-    SendMessageW(m_cursorCheckBox, BM_SETCHECK, BST_CHECKED, 0);
+    // SendMessageW(m_cursorCheckBox, BM_SETCHECK, BST_CHECKED, 0);
+    SendMessageW(m_cursorCheckBox, BM_SETCHECK, BST_UNCHECKED, 0); // SPOUT - default no cursor
+    SendMessageW(m_clientCheckBox, BM_SETCHECK, BST_CHECKED, 0); // SPOUT - default send client area
+
     EnableWindow(m_stopButton, false);
     EnableWindow(m_snapshotButton, false);
 }

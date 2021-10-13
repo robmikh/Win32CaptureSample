@@ -19,16 +19,21 @@ namespace util
     using namespace uwp;
 }
 
-SimpleCapture::SimpleCapture(winrt::IDirect3DDevice const& device, winrt::GraphicsCaptureItem const& item, winrt::DirectXPixelFormat pixelFormat)
+SimpleCapture::SimpleCapture(winrt::IDirect3DDevice const& device,
+    winrt::GraphicsCaptureItem const& item,
+    winrt::DirectXPixelFormat pixelFormat, HWND hwnd)
 {
     m_item = item;
     m_device = device;
     m_pixelFormat = pixelFormat;
-
+    m_hWnd = hwnd; // SPOUT
+ 
     auto d3dDevice = GetDXGIInterfaceFromObject<ID3D11Device>(m_device);
     d3dDevice->GetImmediateContext(m_d3dContext.put());
 
-    m_swapChain = util::CreateDXGISwapChain(d3dDevice, static_cast<uint32_t>(m_item.Size().Width), static_cast<uint32_t>(m_item.Size().Height),
+    m_swapChain = util::CreateDXGISwapChain(d3dDevice,
+        static_cast<uint32_t>(m_item.Size().Width),
+        static_cast<uint32_t>(m_item.Size().Height),
         static_cast<DXGI_FORMAT>(m_pixelFormat), 2);
 
     // Creating our frame pool with 'Create' instead of 'CreateFreeThreaded'
@@ -37,6 +42,7 @@ SimpleCapture::SimpleCapture(winrt::IDirect3DDevice const& device, winrt::Graphi
     // must have a DispatcherQueue. If you use this method, it's best not to do
     // it on the UI thread. 
     m_framePool = winrt::Direct3D11CaptureFramePool::Create(m_device, m_pixelFormat, 2, m_item.Size());
+
     m_session = m_framePool.CreateCaptureSession(m_item);
     m_lastSize = m_item.Size();
     m_framePool.FrameArrived({ this, &SimpleCapture::OnFrameArrived });
@@ -61,6 +67,10 @@ void SimpleCapture::Close()
     auto expected = false;
     if (m_closed.compare_exchange_strong(expected, true))
     {
+        // SPOUT
+        spoutsender.ReleaseSender();
+        m_hWnd = nullptr;
+
         m_session.Close();
         m_framePool.Close();
 
@@ -73,8 +83,11 @@ void SimpleCapture::Close()
 
 void SimpleCapture::ResizeSwapChain()
 {
-    winrt::check_hresult(m_swapChain->ResizeBuffers(2, static_cast<uint32_t>(m_lastSize.Width), static_cast<uint32_t>(m_lastSize.Height),
+    winrt::check_hresult(m_swapChain->ResizeBuffers(2,
+        static_cast<uint32_t>(m_lastSize.Width),
+        static_cast<uint32_t>(m_lastSize.Height),
         static_cast<DXGI_FORMAT>(m_pixelFormat), 0));
+
 }
 
 bool SimpleCapture::TryResizeSwapChain(winrt::Direct3D11CaptureFrame const& frame)
@@ -119,8 +132,45 @@ void SimpleCapture::OnFrameArrived(winrt::Direct3D11CaptureFramePool const& send
         winrt::com_ptr<ID3D11Texture2D> backBuffer;
         winrt::check_hresult(m_swapChain->GetBuffer(0, winrt::guid_of<ID3D11Texture2D>(), backBuffer.put_void()));
         auto surfaceTexture = GetDXGIInterfaceFromObject<ID3D11Texture2D>(frame.Surface());
+        
         // copy surfaceTexture to backBuffer
         m_d3dContext->CopyResource(backBuffer.get(), surfaceTexture.get());
+
+        //
+        // SPOUT
+        //
+
+        // Send the client area of a window
+        if (m_hWnd && m_bClient) {
+
+            // Get the frame surface texture size
+            D3D11_TEXTURE2D_DESC desc{};
+            surfaceTexture.get()->GetDesc(&desc);
+
+            // Get capture window client size
+            RECT rect{};
+            GetClientRect(m_hWnd, &rect);
+
+            //
+            // Get texture offsets and size
+            //
+
+            // Assume equal borders left and right
+            unsigned int xoffset = (desc.Width - (rect.right - rect.left)) / 2;
+            // Assume the bottom border is the same as left and right
+            unsigned int yoffset = (desc.Height - (rect.bottom - rect.top)) - xoffset;
+            // We want the client width and height
+            unsigned int width = (rect.right - rect.left);
+            unsigned int height = (rect.bottom - rect.top);
+
+            // SPOUT
+            // SendTexture looks after sender creation and update
+            spoutsender.SendTexture(surfaceTexture.get(), xoffset, yoffset, width, height);
+        }
+        else {
+            // The whole frame for a monitor or window
+            spoutsender.SendTexture(surfaceTexture.get());
+        }
     }
 
     DXGI_PRESENT_PARAMETERS presentParameters{};

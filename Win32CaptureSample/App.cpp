@@ -54,6 +54,7 @@ App::App(winrt::ContainerVisual root, winrt::GraphicsCapturePicker capturePicker
     m_device = CreateDirect3DDevice(dxgiDevice.get());
 
     m_encoder = std::make_unique<SimpleImageEncoder>(m_device);
+
 }
 
 winrt::GraphicsCaptureItem App::TryStartCaptureFromWindowHandle(HWND hwnd)
@@ -62,13 +63,13 @@ winrt::GraphicsCaptureItem App::TryStartCaptureFromWindowHandle(HWND hwnd)
     try
     {
         item = util::CreateCaptureItemForWindow(hwnd);
-        StartCaptureFromItem(item);
+        StartCaptureFromItem(item, hwnd);
     }
     catch (winrt::hresult_error const& error)
     {
         MessageBoxW(nullptr,
             error.message().c_str(),
-            L"Win32CaptureSample",
+            L"win32CaptureSample",
             MB_OK | MB_ICONERROR);
     }
     return item;
@@ -103,8 +104,13 @@ winrt::IAsyncOperation<winrt::GraphicsCaptureItem> App::StartCaptureWithPickerAs
         // a DispatcherQueue. See CaptureSnapshot for an example that uses 
         // Direct3D11CaptureFramePool::CreateFreeThreaded, which doesn't now have this
         // requirement. See the README if you're unsure of which version of 'Create' to use.
+
+        // SPOUT
+        // Get the window handle from the name
+        HWND hwnd = FindWindow(NULL, item.DisplayName().c_str());
+
         co_await m_mainThread;
-        StartCaptureFromItem(item);
+        StartCaptureFromItem(item, hwnd);
     }
 
     co_return item;
@@ -173,13 +179,13 @@ winrt::IAsyncOperation<winrt::StorageFile> App::TakeSnapshotAsync()
     co_return file;
 }
 
-void App::StartCaptureFromItem(winrt::GraphicsCaptureItem item)
+void App::StartCaptureFromItem(winrt::GraphicsCaptureItem item, HWND hwnd)
 {
-    m_capture = std::make_unique<SimpleCapture>(m_device, item, m_pixelFormat);
+    m_capture = std::make_unique<SimpleCapture>(m_device, item, m_pixelFormat, hwnd);
 
-    auto surface = m_capture->CreateSurface(m_compositor);
+     auto surface = m_capture->CreateSurface(m_compositor);
     m_brush.Surface(surface);
-
+   
     m_capture->StartCapture();
 }
 
@@ -207,6 +213,15 @@ void App::IsCursorEnabled(bool value)
     if (m_capture != nullptr)
     {
         m_capture->IsCursorEnabled(value);
+    }
+}
+
+// SPOUT
+void App::IsClientEnabled(bool value)
+{
+    if (m_capture != nullptr)
+    {
+        m_capture->IsClientEnabled(value);
     }
 }
 

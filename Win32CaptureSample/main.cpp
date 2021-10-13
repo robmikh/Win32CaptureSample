@@ -2,6 +2,36 @@
 #include "App.h"
 #include "SampleWindow.h"
 
+//
+// SPOUT
+//
+// Win32CaptureSample - created by Robert Mikhayelyan
+// Forked from : https://github.com/robmikh/Win32CaptureSample
+//
+// Modified for Spout output.
+//   Add console for debugging.
+//   Limit to BRGA8 format.
+//   Default cursor capture off.
+//   Add "Send client area" option.
+//   Include window handle for TryStartCaptureFromWindowHandle and StartCaptureFromItem
+//   Add m_hWnd to SimpleCapture
+//   Add Spout sender to SimpleCapture
+//   Add SendTexture to OnFrameArrived
+//
+// Search for "SPOUT" in :
+// Main.cpp, App.h, SimpleCapture.h, SimpleCapture.cpp
+// SampleWindow.h, SampleWindow.cpp
+//
+// Build with Visual Studio 2019
+// SpoutDX.dll must be copied to the folder containing the executable e.g. "\x64\Release"
+// Find it in : Win32CaptureSample\SpoutDX
+//
+// SpoutDX - for this application, added function to send part of a texture.
+//   bool SendTexture(ID3D11Texture2D* pTexture,
+//         unsigned int xoffset, unsigned int yoffset,
+//         unsigned int width, unsigned int height);
+//
+
 #pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 
 namespace winrt
@@ -19,6 +49,7 @@ namespace util
 int __stdcall WinMain(HINSTANCE instance, HINSTANCE, PSTR cmdLine, int cmdShow)
 {
     // SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2); // works but everything draws small
+    // SPOUT - Project properties > Manifest Tool > Input and Output > DPI Awareness > Per Monitor High DPI Aware
     // Initialize COM
     winrt::init_apartment(winrt::apartment_type::multi_threaded);
 
@@ -51,6 +82,11 @@ int __stdcall WinMain(HINSTANCE instance, HINSTANCE, PSTR cmdLine, int cmdShow)
 
     // Create the app
     auto app = std::make_shared<App>(root, capturePicker, savePicker);
+
+    // SPOUT - console for debugging
+    // AllocConsole();
+    // FILE* pCout;
+    // freopen_s(&pCout, "CONOUT$", "w", stdout);
 
     auto window = SampleWindow(instance, cmdShow, app);
 

@@ -72,6 +72,9 @@ private:
             return WS_TABSTOP | BS_DEFPUSHBUTTON;
         case ControlType::CheckBox:
             return WS_TABSTOP | BS_AUTOCHECKBOX;
+        // SPOUT fix
+        default:
+            return 0;
         }
     };
 
@@ -87,6 +90,9 @@ private:
             return WC_BUTTON;
         case ControlType::CheckBox:
             return WC_BUTTON;
+        // SPOUT fix
+        default:
+            return WC_STATIC;
         }
     };
 
@@ -102,6 +108,9 @@ private:
             return currentOffsetY.Step();
         case ControlType::CheckBox:
             return currentOffsetY.Step();
+            // SPOUT fix
+        default:
+            return currentOffsetY.StepCustom(20);;
         }
     };
 

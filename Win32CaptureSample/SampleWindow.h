@@ -58,7 +58,9 @@ private:
     HWND m_snapshotButton = nullptr;
     HWND m_pixelFormatComboBox = nullptr;
     HWND m_cursorCheckBox = nullptr;
+    HWND m_clientCheckBox = nullptr; // SPOUT
     HWND m_captureExcludeCheckBox = nullptr;
+
     std::unique_ptr<WindowList> m_windows;
     std::unique_ptr<MonitorList> m_monitors;
     std::vector<PixelFormatData> m_pixelFormats;

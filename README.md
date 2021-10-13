@@ -1,6 +1,30 @@
 # Win32CaptureSample
 A simple sample using the Windows.Graphics.Capture APIs in a Win32 application.
 
+Created by [Robert Mikhayelyan](https://github.com/robmikh/Win32CaptureSample)
+
+# Modified for Spout output
+
+- Add console for debugging.
+- Limit to BRGA8 format.
+- Default cursor capture off.
+- Add "Send client area" option.
+- Include window handle for TryStartCaptureFromWindowHandle and StartCaptureFromItem
+- Add m_hWnd to SimpleCapture
+- Add Spout sender to SimpleCapture
+- Add SendTexture to OnFrameArrived
+
+Search for "SPOUT" in :\
+Main.cpp, App.h, SimpleCapture.h, SimpleCapture.cpp, SampleWindow.h, SampleWindow.cpp
+
+Build with Visual Studio 2019 - Windows 64 bit only.\
+SpoutDX.dll must be copied to the folder containing the executable e.g. "\x64\Release"\
+Find it in : Win32CaptureSample\SpoutDX
+
+SpoutDX - for this application, added function to send part of a texture.\
+bool SendTexture(ID3D11Texture2D* pTexture, unsigned int xoffset, unsigned int yoffset, unsigned int width, unsigned int height);
+
+
 ## Points of interest
 Here are some places you should look at in the code to learn the following:
 

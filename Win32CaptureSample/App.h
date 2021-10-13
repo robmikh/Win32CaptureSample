@@ -8,7 +8,7 @@ public:
     App(winrt::Windows::UI::Composition::ContainerVisual root,
         winrt::Windows::Graphics::Capture::GraphicsCapturePicker capturePicker,
         winrt::Windows::Storage::Pickers::FileSavePicker savePicker);
-    ~App() {}
+    ~App() { }
 
     winrt::Windows::Graphics::Capture::GraphicsCaptureItem TryStartCaptureFromWindowHandle(HWND hwnd);
     winrt::Windows::Graphics::Capture::GraphicsCaptureItem TryStartCaptureFromMonitorHandle(HMONITOR hmon);
@@ -19,11 +19,12 @@ public:
 
     bool IsCursorEnabled();
     void IsCursorEnabled(bool value);
+    void IsClientEnabled(bool value); // SPOUT
 
     void StopCapture();
 
 private:
-    void StartCaptureFromItem(winrt::Windows::Graphics::Capture::GraphicsCaptureItem item);
+    void StartCaptureFromItem(winrt::Windows::Graphics::Capture::GraphicsCaptureItem item, HWND hwnd = nullptr);
 
 private:
     winrt::Windows::System::DispatcherQueue m_mainThread{ nullptr };
@@ -40,4 +41,5 @@ private:
     winrt::Windows::Graphics::DirectX::DirectXPixelFormat m_pixelFormat = winrt::Windows::Graphics::DirectX::DirectXPixelFormat::B8G8R8A8UIntNormalized;
 
     std::unique_ptr<SimpleImageEncoder> m_encoder{ nullptr };
+
 };

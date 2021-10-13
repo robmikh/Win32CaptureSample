@@ -1,12 +1,15 @@
 #pragma once
 
+// SPOUT
+#include "SpoutDX\includes\SpoutDX.h"
+
 class SimpleCapture
 {
 public:
     SimpleCapture(
         winrt::Windows::Graphics::DirectX::Direct3D11::IDirect3DDevice const& device,
         winrt::Windows::Graphics::Capture::GraphicsCaptureItem const& item,
-        winrt::Windows::Graphics::DirectX::DirectXPixelFormat pixelFormat);
+        winrt::Windows::Graphics::DirectX::DirectXPixelFormat pixelFormat, HWND hwnd);
     ~SimpleCapture() { Close(); }
 
     void StartCapture();
@@ -15,6 +18,8 @@ public:
 
     bool IsCursorEnabled() { CheckClosed(); return m_session.IsCursorCaptureEnabled(); }
 	void IsCursorEnabled(bool value) { CheckClosed(); m_session.IsCursorCaptureEnabled(value); }
+    void IsClientEnabled(bool value) { m_bClient = value; } // SPOUT
+
     winrt::Windows::Graphics::Capture::GraphicsCaptureItem CaptureItem() { return m_item; }
 
     void SetPixelFormat(winrt::Windows::Graphics::DirectX::DirectXPixelFormat pixelFormat)
@@ -26,7 +31,13 @@ public:
 
     void Close();
 
+    // SPOUT
+    spoutDX spoutsender;
+    HWND m_hWnd = nullptr;
+    bool m_bClient = true;
+
 private:
+
     void OnFrameArrived(
         winrt::Windows::Graphics::Capture::Direct3D11CaptureFramePool const& sender,
         winrt::Windows::Foundation::IInspectable const& args);
@@ -59,4 +70,5 @@ private:
 
     std::atomic<bool> m_closed = false;
     std::atomic<bool> m_captureNextImage = false;
+
 };
