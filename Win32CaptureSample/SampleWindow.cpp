@@ -40,6 +40,12 @@ SampleWindow::SampleWindow(HINSTANCE instance, int cmdShow, std::shared_ptr<App>
         CW_USEDEFAULT, CW_USEDEFAULT, 800, 600, nullptr, nullptr, instance, this));
     WINRT_ASSERT(m_window);
 
+    // SPOUT
+    // Easy to add without changing the code
+    HICON hWindowIcon = reinterpret_cast<HICON>(LoadImage(nullptr, L"Windows.ico", IMAGE_ICON, 16, 16, LR_LOADFROMFILE));
+    SendMessage(m_window, WM_SETICON, ICON_BIG, (LPARAM)hWindowIcon);
+    SendMessage(m_window, WM_SETICON, ICON_SMALL, (LPARAM)hWindowIcon);
+
     ShowWindow(m_window, cmdShow);
     UpdateWindow(m_window);
 
