@@ -50,6 +50,7 @@ void MonitorList::Update()
     }
 
     // Remove old monitors
+    std::sort(monitorIndexesToRemove.begin(), monitorIndexesToRemove.end(), std::greater<int>());
     for (auto& removalIndex : monitorIndexesToRemove)
     {
         m_monitors.erase(m_monitors.begin() + removalIndex);
