@@ -47,6 +47,12 @@ SimpleCapture::SimpleCapture(winrt::IDirect3DDevice const& device,
     m_lastSize = m_item.Size();
     m_framePool.FrameArrived({ this, &SimpleCapture::OnFrameArrived });
 
+    // SPOUT
+    // Initialize DirectX.
+    // A device pointer must be passed in if a DirectX 11.0 device is available.
+    // Otherwise a different device is created in the SpoutDX class.
+    spoutsender.OpenDirectX11(d3dDevice.get());
+
     WINRT_ASSERT(m_session != nullptr);
 }
 
