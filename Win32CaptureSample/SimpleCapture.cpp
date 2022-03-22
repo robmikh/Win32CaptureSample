@@ -22,6 +22,9 @@ namespace util
 SimpleCapture::SimpleCapture(
     winrt::IDirect3DDevice const& device,
     std::shared_ptr<DirtyRegionVisualizer> const& dirtyRegionVisualizer,
+    winrt::com_ptr<IDXGIFactory1> const& dxgiFactory,
+    winrt::com_ptr<ID3D12CommandQueue> const& d3d12Queue,
+    winrt::com_ptr<ID3D11On12Device> const& d3d11on12Device,
     winrt::GraphicsCaptureItem const& item, 
     winrt::DirectXPixelFormat pixelFormat)
 {
@@ -29,13 +32,32 @@ SimpleCapture::SimpleCapture(
     m_device = device;
     m_pixelFormat = pixelFormat;
     m_dirtyRegionVisualizer = dirtyRegionVisualizer;
+    m_d3d11on12Device = d3d11on12Device;
 
     m_d3dDevice = GetDXGIInterfaceFromObject<ID3D11Device>(m_device);
     m_d3dDevice->GetImmediateContext(m_d3dContext.put());
 
+    auto itemSize = item.Size();
+    auto width = static_cast<uint32_t>(itemSize.Width);
+    auto height = static_cast<uint32_t>(itemSize.Height);
     auto format = static_cast<DXGI_FORMAT>(m_pixelFormat);
-    m_swapChain = util::CreateDXGISwapChain(m_d3dDevice, static_cast<uint32_t>(m_item.Size().Width), static_cast<uint32_t>(m_item.Size().Height),
-        format, 2).as<IDXGISwapChain3>();
+
+    DXGI_SWAP_CHAIN_DESC1 desc = {};
+    desc.Width = width;
+    desc.Height = height;
+    desc.Format = format;
+    desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+    desc.SampleDesc.Count = 1;
+    desc.SampleDesc.Quality = 0;
+    desc.BufferCount = 2;
+    desc.Scaling = DXGI_SCALING_STRETCH;
+    desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
+    desc.AlphaMode = DXGI_ALPHA_MODE_PREMULTIPLIED;
+
+    auto factory2 = dxgiFactory.as<IDXGIFactory2>();
+    winrt::com_ptr<IDXGISwapChain1> swapChain1;
+    winrt::check_hresult(factory2->CreateSwapChainForComposition(d3d12Queue.get(), &desc, nullptr, swapChain1.put()));
+    m_swapChain = swapChain1.as<IDXGISwapChain3>();
     winrt::check_hresult(m_swapChain->SetColorSpace1(GetColorSpaceFromPixelFormat(format)));
 
     // We use 'CreateFreeThreaded' instead of 'Create' so that the FrameArrived
@@ -145,9 +167,19 @@ void SimpleCapture::OnFrameArrived(winrt::Direct3D11CaptureFramePool const& send
         auto frame = sender.TryGetNextFrame();
         swapChainResizedToFrame = TryResizeSwapChain(frame);
 
-        winrt::com_ptr<ID3D11Texture2D> backBuffer;
-        winrt::check_hresult(m_swapChain->GetBuffer(0, winrt::guid_of<ID3D11Texture2D>(), backBuffer.put_void()));
+        winrt::com_ptr<ID3D12Resource> resource;
+        winrt::check_hresult(m_swapChain->GetBuffer(0, winrt::guid_of<ID3D12Resource>(), resource.put_void()));
 
+        winrt::com_ptr<ID3D11Texture2D> backBuffer;
+        D3D11_RESOURCE_FLAGS d3d11Flags = { D3D11_BIND_RENDER_TARGET };
+        winrt::check_hresult(m_d3d11on12Device->CreateWrappedResource(
+            resource.get(),
+            &d3d11Flags,
+            D3D12_RESOURCE_STATE_RENDER_TARGET,
+            D3D12_RESOURCE_STATE_PRESENT,
+            winrt::guid_of<ID3D11Texture2D>(),
+            backBuffer.put_void()));
+        
         auto surfaceTexture = GetDXGIInterfaceFromObject<ID3D11Texture2D>(frame.Surface());
 
         // If we have a dirty region visualizer, then we're running on a build
@@ -219,7 +251,8 @@ void SimpleCapture::OnFrameArrived(winrt::Direct3D11CaptureFramePool const& send
         {
             m_dirtyRegionVisualizer->Render(backBuffer, frame);
         }
-    }
+    } // We currently fail here when the frame is returned to the pool. This 
+      // is because there is an API currently missing in 11-on-12.
 
     DXGI_PRESENT_PARAMETERS presentParameters{};
     m_swapChain->Present1(1, 0, &presentParameters);

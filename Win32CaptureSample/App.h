@@ -52,4 +52,9 @@ private:
     std::shared_ptr<DirtyRegionVisualizer> m_dirtyRegionVisualizer;
 
     winrt::com_ptr<IWICImagingFactory2> m_wicFactory;
+
+    winrt::com_ptr<IDXGIFactory1> m_dxgiFactory;
+    winrt::com_ptr<ID3D12Device> m_d3d12Device;
+    winrt::com_ptr<ID3D12CommandQueue> m_d3d12Queue;
+    winrt::com_ptr<ID3D11On12Device> m_d3d11on12Device;
 };
