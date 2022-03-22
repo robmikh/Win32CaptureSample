@@ -40,4 +40,9 @@ private:
     winrt::Windows::Graphics::DirectX::DirectXPixelFormat m_pixelFormat = winrt::Windows::Graphics::DirectX::DirectXPixelFormat::B8G8R8A8UIntNormalized;
 
     std::unique_ptr<SimpleImageEncoder> m_encoder{ nullptr };
+
+    winrt::com_ptr<IDXGIFactory1> m_dxgiFactory;
+    winrt::com_ptr<ID3D12Device> m_d3d12Device;
+    winrt::com_ptr<ID3D12CommandQueue> m_d3d12Queue;
+    winrt::com_ptr<ID3D11On12Device> m_d3d11on12Device;
 };

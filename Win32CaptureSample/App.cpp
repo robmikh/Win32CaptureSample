@@ -21,6 +21,38 @@ namespace util
     using namespace uwp;
 }
 
+winrt::com_ptr<IDXGIAdapter1> GetHardwareAdapter(winrt::com_ptr<IDXGIFactory1> const& factory)
+{
+    auto factory6 = factory.as<IDXGIFactory6>();
+    winrt::com_ptr<IDXGIAdapter1> adapter;
+    for (
+        uint32_t adapterIndex = 0;
+        SUCCEEDED(factory6->EnumAdapterByGpuPreference(
+            adapterIndex,
+            DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE,
+            winrt::guid_of<IDXGIAdapter1>(),
+            adapter.put_void()));
+        ++adapterIndex)
+    {
+        DXGI_ADAPTER_DESC1 desc = {};
+        adapter->GetDesc1(&desc);
+
+        if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE)
+        {
+            // Don't select the Basic Render Driver adapter.
+            continue;
+        }
+
+        // Check to see whether the adapter supports Direct3D 12, but don't create the
+        // actual device yet.
+        if (SUCCEEDED(D3D12CreateDevice(adapter.get(), D3D_FEATURE_LEVEL_11_0, _uuidof(ID3D12Device), nullptr)))
+        {
+            break;
+        }
+    }
+    return adapter;
+}
+
 App::App(winrt::ContainerVisual root, winrt::GraphicsCapturePicker capturePicker, winrt::FileSavePicker savePicker)
 {
     m_capturePicker = capturePicker;
@@ -49,9 +81,55 @@ App::App(winrt::ContainerVisual root, winrt::GraphicsCapturePicker capturePicker
     m_content.Shadow(shadow);
     m_root.Children().InsertAtTop(m_content);
 
-    auto d3dDevice = util::CreateD3DDevice();
-    auto dxgiDevice = d3dDevice.as<IDXGIDevice>();
+    // Create our D3D12 device
+    winrt::com_ptr<IDXGIFactory4> dxgiFactory;
+    winrt::check_hresult(CreateDXGIFactory1(winrt::guid_of<IDXGIFactory4>(), dxgiFactory.put_void()));
+    auto adapter = GetHardwareAdapter(dxgiFactory);
+    if (adapter.get() == nullptr)
+    {
+        winrt::check_hresult(dxgiFactory->EnumWarpAdapter(winrt::guid_of<IDXGIAdapter1>(), adapter.put_void()));
+    }
+    winrt::com_ptr<ID3D12Device> d3d12Device;
+    winrt::check_hresult(D3D12CreateDevice(
+        adapter.get(), 
+        D3D_FEATURE_LEVEL_11_0, 
+        winrt::guid_of<ID3D12Device>(), 
+        d3d12Device.put_void()));
+
+    // Create our command queue
+    D3D12_COMMAND_QUEUE_DESC queueDesc = {};
+    queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
+    queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+    winrt::com_ptr<ID3D12CommandQueue> d3d12Queue;
+    winrt::check_hresult(d3d12Device->CreateCommandQueue(&queueDesc, winrt::guid_of<ID3D12CommandQueue>(), d3d12Queue.put_void()));
+
+    // Wrap our D3D12 device with a D3D11 device
+    winrt::com_ptr<ID3D11Device> d3d11Device;
+    winrt::com_ptr<ID3D11DeviceContext> d3d11Context;
+    auto d3d12QueuePointer = d3d12Queue.get();
+    winrt::check_hresult(D3D11On12CreateDevice(
+        d3d12Device.get(),
+        D3D11_CREATE_DEVICE_BGRA_SUPPORT,
+        nullptr,
+        0,
+        reinterpret_cast<IUnknown**>(&d3d12QueuePointer),
+        1,
+        0,
+        d3d11Device.put(),
+        d3d11Context.put(),
+        nullptr));
+
+    // Get the 11on12 interface
+    auto d3d11on12Device = d3d11Device.as<ID3D11On12Device>();
+
+    // Initialize as usual
+    auto dxgiDevice = d3d11Device.as<IDXGIDevice>();
     m_device = CreateDirect3DDevice(dxgiDevice.get());
+
+    m_dxgiFactory = dxgiFactory;
+    m_d3d12Device = d3d12Device;
+    m_d3d12Queue = d3d12Queue;
+    m_d3d11on12Device = d3d11on12Device;
 
     m_encoder = std::make_unique<SimpleImageEncoder>(m_device);
 }
@@ -175,7 +253,7 @@ winrt::IAsyncOperation<winrt::StorageFile> App::TakeSnapshotAsync()
 
 void App::StartCaptureFromItem(winrt::GraphicsCaptureItem item)
 {
-    m_capture = std::make_unique<SimpleCapture>(m_device, item, m_pixelFormat);
+    m_capture = std::make_unique<SimpleCapture>(m_device, m_dxgiFactory, m_d3d12Queue, m_d3d11on12Device, item, m_pixelFormat);
 
     auto surface = m_capture->CreateSurface(m_compositor);
     m_brush.Surface(surface);

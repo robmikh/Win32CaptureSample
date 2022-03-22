@@ -5,6 +5,9 @@ class SimpleCapture
 public:
     SimpleCapture(
         winrt::Windows::Graphics::DirectX::Direct3D11::IDirect3DDevice const& device,
+        winrt::com_ptr<IDXGIFactory1> const& dxgiFactory,
+        winrt::com_ptr<ID3D12CommandQueue> const& d3d12Queue,
+        winrt::com_ptr<ID3D11On12Device> const& d3d11on12Device,
         winrt::Windows::Graphics::Capture::GraphicsCaptureItem const& item,
         winrt::Windows::Graphics::DirectX::DirectXPixelFormat pixelFormat);
     ~SimpleCapture() { Close(); }
@@ -49,6 +52,7 @@ private:
     winrt::Windows::Graphics::Capture::GraphicsCaptureSession m_session{ nullptr };
     winrt::Windows::Graphics::SizeInt32 m_lastSize;
 
+    winrt::com_ptr<ID3D11On12Device> m_d3d11on12Device;
     winrt::Windows::Graphics::DirectX::Direct3D11::IDirect3DDevice m_device{ nullptr };
     winrt::com_ptr<IDXGISwapChain1> m_swapChain{ nullptr };
     winrt::com_ptr<ID3D11DeviceContext> m_d3dContext{ nullptr };
