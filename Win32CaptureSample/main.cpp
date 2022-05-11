@@ -63,12 +63,11 @@ int __stdcall WinMain(HINSTANCE instance, HINSTANCE, PSTR cmdLine, int cmdShow)
     target.Root(root);
 
     // Message pump
-    MSG msg;
+    MSG msg = {};
     while (GetMessageW(&msg, nullptr, 0, 0))
     {
         TranslateMessage(&msg);
         DispatchMessageW(&msg);
     }
-
-    return static_cast<int>(msg.wParam);
+    return util::ShutdownDispatcherQueueControllerAndWait(controller);
 }
