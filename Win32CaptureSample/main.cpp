@@ -69,5 +69,5 @@ int __stdcall WinMain(HINSTANCE instance, HINSTANCE, PSTR cmdLine, int cmdShow)
         TranslateMessage(&msg);
         DispatchMessageW(&msg);
     }
-    return util::ShutdownDispatcherQueueControllerAndWait(controller);
+    return util::ShutdownDispatcherQueueControllerAndWait(controller, static_cast<int>(msg.wParam));
 }
