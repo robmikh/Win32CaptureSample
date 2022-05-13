@@ -20,7 +20,7 @@ namespace util
     using namespace robmikh::common::desktop::controls;
 }
 
-const std::wstring SampleWindow::ClassName = L"Win32CaptureSample";
+const std::wstring SampleWindow::ClassName = L"Win32CaptureSample.SampleWindow";
 std::once_flag SampleWindowClassRegistration;
 
 void SampleWindow::RegisterWindowClass()
