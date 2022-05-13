@@ -4,16 +4,16 @@
 
 namespace winrt
 {
-    using namespace Windows::Storage;
-    using namespace Windows::Storage::Pickers;
-    using namespace Windows::System;
     using namespace Windows::Foundation;
-    using namespace Windows::UI;
-    using namespace Windows::UI::Composition;
-    using namespace Windows::UI::Popups;
     using namespace Windows::Graphics::Capture;
     using namespace Windows::Graphics::DirectX;
     using namespace Windows::Graphics::Imaging;
+    using namespace Windows::Storage;
+    using namespace Windows::Storage::Pickers;
+    using namespace Windows::System;
+    using namespace Windows::UI;
+    using namespace Windows::UI::Composition;
+    using namespace Windows::UI::Popups;
 }
 
 namespace util

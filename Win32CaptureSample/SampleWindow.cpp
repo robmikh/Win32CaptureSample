@@ -8,11 +8,11 @@ namespace winrt
 {
     using namespace Windows::Foundation::Metadata;
     using namespace Windows::Graphics::Capture;
+    using namespace Windows::Graphics::DirectX;
     using namespace Windows::System;
     using namespace Windows::UI;
     using namespace Windows::UI::Composition;
     using namespace Windows::UI::Composition::Desktop;
-    using namespace Windows::Graphics::DirectX;
 }
 
 namespace util

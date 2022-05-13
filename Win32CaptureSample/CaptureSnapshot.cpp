@@ -5,12 +5,12 @@ namespace winrt
 {
     using namespace Windows;
     using namespace Windows::Foundation;
-    using namespace Windows::System;
+    using namespace Windows::Foundation::Numerics;
     using namespace Windows::Graphics;
     using namespace Windows::Graphics::Capture;
     using namespace Windows::Graphics::DirectX;
     using namespace Windows::Graphics::DirectX::Direct3D11;
-    using namespace Windows::Foundation::Numerics;
+    using namespace Windows::System;
     using namespace Windows::UI;
     using namespace Windows::UI::Composition;
 }
