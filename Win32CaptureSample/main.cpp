@@ -13,7 +13,7 @@ namespace winrt
 
 namespace util
 {
-    using namespace desktop;
+    using namespace robmikh::common::desktop;
 }
 
 int __stdcall WinMain(HINSTANCE instance, HINSTANCE, PSTR cmdLine, int cmdShow)

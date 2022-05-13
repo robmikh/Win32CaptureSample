@@ -17,8 +17,8 @@ namespace winrt
 
 namespace util
 {
-    using namespace desktop;
-    using namespace uwp;
+    using namespace robmikh::common::desktop;
+    using namespace robmikh::common::uwp;
 }
 
 App::App(winrt::ContainerVisual root, winrt::GraphicsCapturePicker capturePicker, winrt::FileSavePicker savePicker)

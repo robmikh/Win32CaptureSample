@@ -16,7 +16,7 @@ namespace winrt
 
 namespace util
 {
-    using namespace uwp;
+    using namespace robmikh::common::uwp;
 }
 
 SimpleCapture::SimpleCapture(winrt::IDirect3DDevice const& device, winrt::GraphicsCaptureItem const& item, winrt::DirectXPixelFormat pixelFormat)

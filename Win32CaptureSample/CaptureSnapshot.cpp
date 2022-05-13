@@ -15,6 +15,11 @@ namespace winrt
     using namespace Windows::UI::Composition;
 }
 
+namespace util
+{
+    using namespace robmikh::common::uwp;
+}
+
 winrt::IAsyncOperation<winrt::IDirect3DSurface>
 CaptureSnapshot::TakeAsync(winrt::IDirect3DDevice const& device, winrt::GraphicsCaptureItem const& item, winrt::DirectXPixelFormat const& pixelFormat)
 {
@@ -33,36 +38,27 @@ CaptureSnapshot::TakeAsync(winrt::IDirect3DDevice const& device, winrt::Graphics
         item.Size());
     auto session = framePool.CreateCaptureSession(item);
 
-    auto completion = completion_source<winrt::IDirect3DSurface>();
-    framePool.FrameArrived([session, d3dDevice, d3dContext, &completion](auto& framePool, auto&)
+    wil::shared_event captureEvent(wil::EventOptions::ManualReset);
+    winrt::com_ptr<ID3D11Texture2D> texture;
+    framePool.FrameArrived([session, &texture, captureEvent](auto& framePool, auto&)
     {
         auto frame = framePool.TryGetNextFrame();
         auto frameTexture = GetDXGIInterfaceFromObject<ID3D11Texture2D>(frame.Surface());
-
-        // Make a copy of the texture
-        D3D11_TEXTURE2D_DESC desc = {};
-        frameTexture->GetDesc(&desc);
-        // Clear flags that we don't need
-        desc.Usage = D3D11_USAGE_DEFAULT;
-        desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-        desc.CPUAccessFlags = 0;
-        desc.MiscFlags = 0;
-        winrt::com_ptr<ID3D11Texture2D> textureCopy;
-        winrt::check_hresult(d3dDevice->CreateTexture2D(&desc, nullptr, textureCopy.put()));
-        d3dContext->CopyResource(textureCopy.get(), frameTexture.get());
-        
-        auto dxgiSurface = textureCopy.as<IDXGISurface>();
-        auto result = CreateDirect3DSurface(dxgiSurface.get());
+        texture.copy_from(frameTexture.get());
 
         // End the capture
         session.Close();
         framePool.Close();
 
         // Complete the operation
-        completion.set(result);
+        captureEvent.SetEvent();
     });
 
     session.StartCapture();
+    co_await winrt::resume_on_signal(captureEvent.get());
 
-    co_return co_await completion;
+    auto resultTexture = util::CopyD3DTexture(d3dDevice, texture, true);
+    auto result = CreateDirect3DSurface(resultTexture.as<IDXGISurface>().get());
+
+    co_return result;
 }

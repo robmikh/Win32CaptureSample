@@ -13,7 +13,7 @@ namespace winrt
 
 namespace util
 {
-    using namespace uwp;
+    using namespace robmikh::common::uwp;
 }
 
 struct WICSettings

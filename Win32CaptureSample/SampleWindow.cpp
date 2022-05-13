@@ -3,7 +3,6 @@
 #include "SampleWindow.h"
 #include "WindowList.h"
 #include "MonitorList.h"
-#include "ControlsHelper.h"
 
 namespace winrt
 {
@@ -14,6 +13,11 @@ namespace winrt
     using namespace Windows::UI::Composition;
     using namespace Windows::UI::Composition::Desktop;
     using namespace Windows::Graphics::DirectX;
+}
+
+namespace util
+{
+    using namespace robmikh::common::desktop::controls;
 }
 
 const std::wstring SampleWindow::ClassName = L"Win32CaptureSample";
@@ -205,37 +209,37 @@ void SampleWindow::CreateControls(HINSTANCE instance)
     // Window exclusion
     auto isWin32CaptureExcludePresent = winrt::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", 9);
 
-    auto controls = StackPanel(m_window, instance, 10, 10, 200);
+    auto controls = util::StackPanel(m_window, instance, 10, 10, 40, 200, 30);
 
-    auto windowLabel = controls.CreateControl(ControlType::Label, L"Windows:");
+    auto windowLabel = controls.CreateControl(util::ControlType::Label, L"Windows:");
 
     // Create window combo box
-    auto windowComboBox = controls.CreateControl(ControlType::ComboBox, L"", win32ProgrammaticStyle);
+    auto windowComboBox = controls.CreateControl(util::ControlType::ComboBox, L"", win32ProgrammaticStyle);
 
     // Populate window combo box and register for updates
     m_windows->RegisterComboBoxForUpdates(windowComboBox);
 
-    auto monitorLabel = controls.CreateControl(ControlType::Label, L"Displays:");
+    auto monitorLabel = controls.CreateControl(util::ControlType::Label, L"Displays:");
 
     // Create monitor combo box
-    auto monitorComboBox = controls.CreateControl(ControlType::ComboBox, L"", win32ProgrammaticStyle);
+    auto monitorComboBox = controls.CreateControl(util::ControlType::ComboBox, L"", win32ProgrammaticStyle);
 
     // Populate monitor combo box
     m_monitors->RegisterComboBoxForUpdates(monitorComboBox);
 
     // Create picker button
-    auto pickerButton = controls.CreateControl(ControlType::Button, L"Open Picker");
+    auto pickerButton = controls.CreateControl(util::ControlType::Button, L"Open Picker");
 
     // Create stop capture button
-    auto stopButton = controls.CreateControl(ControlType::Button, L"Stop Capture", WS_DISABLED);
+    auto stopButton = controls.CreateControl(util::ControlType::Button, L"Stop Capture", WS_DISABLED);
 
     // Create independent snapshot button
-    auto snapshotButton = controls.CreateControl(ControlType::Button, L"Take Snapshot", WS_DISABLED);
+    auto snapshotButton = controls.CreateControl(util::ControlType::Button, L"Take Snapshot", WS_DISABLED);
 
-    auto pixelFormatLabel = controls.CreateControl(ControlType::Label, L"Pixel Format:");
+    auto pixelFormatLabel = controls.CreateControl(util::ControlType::Label, L"Pixel Format:");
 
     // Create pixel format combo box
-    auto pixelFormatComboBox = controls.CreateControl(ControlType::ComboBox, L"");
+    auto pixelFormatComboBox = controls.CreateControl(util::ControlType::ComboBox, L"");
 
     // Populate pixel format combo box
     for (auto& pixelFormat : m_pixelFormats)
@@ -247,7 +251,7 @@ void SampleWindow::CreateControls(HINSTANCE instance)
     SendMessageW(pixelFormatComboBox, CB_SETCURSEL, 0, 0);
   
     // Create cursor checkbox
-    auto cursorCheckBox = controls.CreateControl(ControlType::CheckBox, L"Enable Cursor", cursorEnableStyle);
+    auto cursorCheckBox = controls.CreateControl(util::ControlType::CheckBox, L"Enable Cursor", cursorEnableStyle);
 
     // The default state is true for cursor rendering
     SendMessageW(cursorCheckBox, BM_SETCHECK, BST_CHECKED, 0);
@@ -257,7 +261,7 @@ void SampleWindow::CreateControls(HINSTANCE instance)
     //       setting WDA_MONITOR on older builds of Windows. We're changing the label here to try and 
     //       limit any user confusion.
     std::wstring excludeCheckBoxLabel = isWin32CaptureExcludePresent ? L"Exclude this window" : L"Block this window";
-    auto captureExcludeCheckBox = controls.CreateControl(ControlType::CheckBox, excludeCheckBoxLabel.c_str());
+    auto captureExcludeCheckBox = controls.CreateControl(util::ControlType::CheckBox, excludeCheckBoxLabel.c_str());
 
     // The default state is false for capture exclusion
     SendMessageW(captureExcludeCheckBox, BM_SETCHECK, BST_UNCHECKED, 0);
