@@ -1,6 +1,10 @@
 name: Build
 
-on: [pull_request]
+on: 
+  pull_request:
+  push:
+    branches:
+      - master
 
 env:
   # Path to the solution file relative to the root of the project.
@@ -8,12 +12,12 @@ env:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: windows-2019
     
     strategy:
       matrix:
         configuration: [Release]
-        platform: [x86, x64, ARM, ARM64]
+        platform: [x64, ARM64]
 
     steps:
     - uses: actions/checkout@v2
