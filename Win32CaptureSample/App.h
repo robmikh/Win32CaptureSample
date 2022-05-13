@@ -18,6 +18,8 @@ public:
 
     bool IsCursorEnabled();
     void IsCursorEnabled(bool value);
+    bool IsBorderRequired();
+    winrt::fire_and_forget IsBorderRequired(bool value);
 
     void StopCapture();
 

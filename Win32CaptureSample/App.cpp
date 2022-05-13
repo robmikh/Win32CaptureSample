@@ -239,3 +239,25 @@ void App::PixelFormat(winrt::DirectXPixelFormat pixelFormat)
         m_capture->SetPixelFormat(pixelFormat);
     }
 }
+
+
+bool App::IsBorderRequired()
+{
+    if (m_capture != nullptr)
+    {
+        return m_capture->IsBorderRequired();
+    }
+    return false;
+}
+
+winrt::fire_and_forget App::IsBorderRequired(bool value)
+{
+    if (m_capture != nullptr)
+    {
+        // Even if the user or system policy denies access, it's
+        // still safe to set the IsBorderRequired property. In the
+        // event that the policy changes, the property will be honored.
+        auto ignored = co_await winrt::GraphicsCaptureAccess::RequestAccessAsync(winrt::GraphicsCaptureAccessKind::Borderless);
+        m_capture->IsBorderRequired(value);
+    }
+}

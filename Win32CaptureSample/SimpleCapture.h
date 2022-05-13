@@ -15,6 +15,8 @@ public:
 
     bool IsCursorEnabled() { CheckClosed(); return m_session.IsCursorCaptureEnabled(); }
 	void IsCursorEnabled(bool value) { CheckClosed(); m_session.IsCursorCaptureEnabled(value); }
+    bool IsBorderRequired() { CheckClosed(); return m_session.IsBorderRequired(); }
+    void IsBorderRequired(bool value) { CheckClosed(); m_session.IsBorderRequired(value); }
     winrt::Windows::Graphics::Capture::GraphicsCaptureItem CaptureItem() { return m_item; }
 
     void SetPixelFormat(winrt::Windows::Graphics::DirectX::DirectXPixelFormat pixelFormat)

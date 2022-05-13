@@ -21,6 +21,7 @@
 #include <winrt/Windows.Graphics.DirectX.h>
 #include <winrt/Windows.Graphics.DirectX.Direct3d11.h>
 #include <winrt/Windows.Graphics.Imaging.h>
+#include <winrt/Windows.Security.Authorization.AppCapabilityAccess.h>
 
 #include <windows.ui.composition.interop.h>
 #include <DispatcherQueue.h>
