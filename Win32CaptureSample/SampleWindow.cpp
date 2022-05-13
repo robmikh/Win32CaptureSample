@@ -26,7 +26,8 @@ std::once_flag SampleWindowClassRegistration;
 void SampleWindow::RegisterWindowClass()
 {
     auto instance = winrt::check_pointer(GetModuleHandleW(nullptr));
-    WNDCLASSEX wcex = { sizeof(wcex) };
+    WNDCLASSEX wcex = {};
+    wcex.cbSize = sizeof(wcex);
     wcex.style = CS_HREDRAW | CS_VREDRAW;
     wcex.lpfnWndProc = WndProc;
     wcex.hInstance = instance;
