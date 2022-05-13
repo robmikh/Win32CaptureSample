@@ -20,7 +20,7 @@ int __stdcall WinMain(HINSTANCE, HINSTANCE, PSTR, int)
 {
     // SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2); // works but everything draws small
     // Initialize COM
-    winrt::init_apartment(winrt::apartment_type::multi_threaded);
+    winrt::init_apartment(winrt::apartment_type::single_threaded);
 
     // Check to see that capture is supported
     auto isCaptureSupported = winrt::Windows::Graphics::Capture::GraphicsCaptureSession::IsSupported();
