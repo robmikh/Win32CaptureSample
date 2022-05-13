@@ -220,7 +220,7 @@ void SampleWindow::CreateControls(HINSTANCE instance)
     auto isWin32CaptureExcludePresent = winrt::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", 9);
 
     // Border configuration
-    auto isBorderRequiredPresent = winrt::Windows::Foundation::Metadata::ApiInformation::IsPropertyPresent(L"Windows.Graphics.Capture.GraphicsCaptureSession", L"IsBorderRequired");
+    auto isBorderRequiredPresent = winrt::Windows::Foundation::Metadata::ApiInformation::IsPropertyPresent(winrt::name_of<winrt::GraphicsCaptureSession>(), L"IsBorderRequired");
     auto borderEnableSytle = isBorderRequiredPresent ? 0 : WS_DISABLED;
 
     auto controls = util::StackPanel(m_window, instance, 10, 10, 40, 200, 30);
