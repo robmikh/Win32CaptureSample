@@ -13,6 +13,7 @@ namespace winrt
     using namespace Windows::UI::Popups;
     using namespace Windows::Graphics::Capture;
     using namespace Windows::Graphics::DirectX;
+    using namespace Windows::Graphics::Imaging;
 }
 
 namespace util
@@ -52,8 +53,6 @@ App::App(winrt::ContainerVisual root, winrt::GraphicsCapturePicker capturePicker
     auto d3dDevice = util::CreateD3DDevice();
     auto dxgiDevice = d3dDevice.as<IDXGIDevice>();
     m_device = CreateDirect3DDevice(dxgiDevice.get());
-
-    m_encoder = std::make_unique<SimpleImageEncoder>(m_device);
 }
 
 winrt::GraphicsCaptureItem App::TryStartCaptureFromWindowHandle(HWND hwnd)
@@ -135,40 +134,62 @@ winrt::IAsyncOperation<winrt::StorageFile> App::TakeSnapshotAsync()
 
     // Decide on the pixel format depending on the image type
     auto fileExtension = file.FileType();
-    SimpleImageEncoder::SupportedFormats fileFormat;
+    winrt::guid fileFormatGuid = {};
+    winrt::BitmapPixelFormat bitmapPixelFormat;
     winrt::DirectXPixelFormat pixelFormat;
     if (fileExtension == L".png")
     {
-        fileFormat = SimpleImageEncoder::SupportedFormats::Png;
+        fileFormatGuid = winrt::BitmapEncoder::PngEncoderId();
+        bitmapPixelFormat = winrt::BitmapPixelFormat::Bgra8;
         pixelFormat = winrt::DirectXPixelFormat::B8G8R8A8UIntNormalized;
     }
     else if (fileExtension == L".jpg" || fileExtension == L".jpeg")
     {
-        fileFormat = SimpleImageEncoder::SupportedFormats::Jpg;
+        fileFormatGuid = winrt::BitmapEncoder::JpegEncoderId();
+        bitmapPixelFormat = winrt::BitmapPixelFormat::Bgra8;
         pixelFormat = winrt::DirectXPixelFormat::B8G8R8A8UIntNormalized;
     }
     else if (fileExtension == L".jxr")
     {
-        fileFormat = SimpleImageEncoder::SupportedFormats::Jxr;
+        fileFormatGuid = winrt::BitmapEncoder::JpegXREncoderId();
+        bitmapPixelFormat = winrt::BitmapPixelFormat::Rgba16;
         pixelFormat = winrt::DirectXPixelFormat::R16G16B16A16Float;
     }
     else
     {
         // Unsupported
-        auto dialog = winrt::MessageDialog(L"Unsupported file format!");
-
-        co_await dialog.ShowAsync();
+        co_await m_mainThread;
+        MessageBoxW(nullptr,
+            L"Unsupported file format!",
+            L"Win32CaptureSample",
+            MB_OK | MB_ICONERROR);
         co_return nullptr;
     }
 
-    // Get the file stream
-    auto stream = co_await file.OpenAsync(winrt::FileAccessMode::ReadWrite);
+    {
+        // Get the file stream
+        auto stream = co_await file.OpenAsync(winrt::FileAccessMode::ReadWrite);
 
-    // Take the snapshot
-    auto frame = co_await CaptureSnapshot::TakeAsync(m_device, item, pixelFormat);
-    
-    // Encode the image
-    m_encoder->EncodeImage(frame, stream, fileFormat);
+        // Initialize the encoder
+        auto encoder = co_await winrt::BitmapEncoder::CreateAsync(fileFormatGuid, stream);
+
+        // Take the snapshot
+        auto texture = co_await CaptureSnapshot::TakeAsync(m_device, item, pixelFormat);
+
+        // Encode the image
+        D3D11_TEXTURE2D_DESC desc = {};
+        texture->GetDesc(&desc);
+        auto bytes = util::CopyBytesFromTexture(texture);
+        encoder.SetPixelData(
+            bitmapPixelFormat,
+            winrt::BitmapAlphaMode::Premultiplied,
+            desc.Width,
+            desc.Height,
+            1.0,
+            1.0,
+            bytes);
+        co_await encoder.FlushAsync();
+    }
 
     co_return file;
 }

@@ -147,7 +147,6 @@
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="SampleWindow.cpp" />
     <ClCompile Include="SimpleCapture.cpp" />
-    <ClCompile Include="SimpleImageEncoder.cpp" />
     <ClCompile Include="WindowList.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -157,7 +156,6 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="SampleWindow.h" />
     <ClInclude Include="SimpleCapture.h" />
-    <ClInclude Include="SimpleImageEncoder.h" />
     <ClInclude Include="WindowList.h" />
   </ItemGroup>
   <ItemGroup>

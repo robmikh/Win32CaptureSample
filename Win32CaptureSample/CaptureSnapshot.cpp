@@ -20,7 +20,7 @@ namespace util
     using namespace robmikh::common::uwp;
 }
 
-winrt::IAsyncOperation<winrt::IDirect3DSurface>
+std::future<winrt::com_ptr<ID3D11Texture2D>>
 CaptureSnapshot::TakeAsync(winrt::IDirect3DDevice const& device, winrt::GraphicsCaptureItem const& item, winrt::DirectXPixelFormat const& pixelFormat)
 {
     auto d3dDevice = GetDXGIInterfaceFromObject<ID3D11Device>(device);
@@ -57,8 +57,7 @@ CaptureSnapshot::TakeAsync(winrt::IDirect3DDevice const& device, winrt::Graphics
     session.StartCapture();
     co_await winrt::resume_on_signal(captureEvent.get());
 
-    auto resultTexture = util::CopyD3DTexture(d3dDevice, texture, true);
-    auto result = CreateDirect3DSurface(resultTexture.as<IDXGISurface>().get());
+    auto result = util::CopyD3DTexture(d3dDevice, texture, true);
 
     co_return result;
 }

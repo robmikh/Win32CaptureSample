@@ -20,6 +20,7 @@
 #include <winrt/Windows.Graphics.Capture.h>
 #include <winrt/Windows.Graphics.DirectX.h>
 #include <winrt/Windows.Graphics.DirectX.Direct3d11.h>
+#include <winrt/Windows.Graphics.Imaging.h>
 
 #include <windows.ui.composition.interop.h>
 #include <DispatcherQueue.h>
@@ -31,6 +32,7 @@
 #include <unordered_set>
 #include <vector>
 #include <optional>
+#include <future>
 
 // D3D
 #include <d3d11_4.h>

@@ -9,7 +9,6 @@
     <ClCompile Include="CaptureSnapshot.cpp" />
     <ClCompile Include="WindowList.cpp" />
     <ClCompile Include="MonitorList.cpp" />
-    <ClCompile Include="SimpleImageEncoder.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -19,7 +18,6 @@
     <ClInclude Include="CaptureSnapshot.h" />
     <ClInclude Include="WindowList.h" />
     <ClInclude Include="MonitorList.h" />
-    <ClInclude Include="SimpleImageEncoder.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
