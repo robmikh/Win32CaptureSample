@@ -21,6 +21,7 @@ namespace util
 }
 
 const std::wstring SampleWindow::ClassName = L"Win32CaptureSample";
+std::once_flag SampleWindowClassRegistration;
 
 void SampleWindow::RegisterWindowClass()
 {
@@ -37,15 +38,23 @@ void SampleWindow::RegisterWindowClass()
     winrt::check_bool(RegisterClassExW(&wcex));
 }
 
-SampleWindow::SampleWindow(HINSTANCE instance, int cmdShow, std::shared_ptr<App> app)
+SampleWindow::SampleWindow(int width, int height, std::shared_ptr<App> app)
 {
-    WINRT_ASSERT(!m_window);
-    WINRT_VERIFY(CreateWindowW(ClassName.c_str(), L"Win32CaptureSample", WS_OVERLAPPEDWINDOW,
-        CW_USEDEFAULT, CW_USEDEFAULT, 800, 600, nullptr, nullptr, instance, this));
-    WINRT_ASSERT(m_window);
+    auto instance = winrt::check_pointer(GetModuleHandleW(nullptr));
 
-    ShowWindow(m_window, cmdShow);
-    UpdateWindow(m_window);
+    std::call_once(SampleWindowClassRegistration, []() { RegisterWindowClass(); });
+
+    auto exStyle = WS_EX_NOREDIRECTIONBITMAP;
+    auto style = WS_OVERLAPPEDWINDOW;
+
+    RECT rect = { 0, 0, width, height };
+    winrt::check_bool(AdjustWindowRectEx(&rect, style, false, exStyle));
+    auto adjustedWidth = rect.right - rect.left;
+    auto adjustedHeight = rect.bottom - rect.top;
+
+    winrt::check_bool(CreateWindowExW(0, ClassName.c_str(), L"Win32CaptureSample", WS_OVERLAPPEDWINDOW,
+        CW_USEDEFAULT, CW_USEDEFAULT, adjustedWidth, adjustedHeight, nullptr, nullptr, instance, this));
+    WINRT_ASSERT(m_window);
 
     auto isAllDisplaysPresent = winrt::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", 9);
 
@@ -59,6 +68,9 @@ SampleWindow::SampleWindow(HINSTANCE instance, int cmdShow, std::shared_ptr<App>
     };
 
     CreateControls(instance);
+
+    ShowWindow(m_window, SW_SHOW);
+    UpdateWindow(m_window);
 }
 
 SampleWindow::~SampleWindow()

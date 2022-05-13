@@ -33,6 +33,7 @@
 #include <vector>
 #include <optional>
 #include <future>
+#include <mutex>
 
 // D3D
 #include <d3d11_4.h>

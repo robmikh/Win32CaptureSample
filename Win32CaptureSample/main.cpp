@@ -16,7 +16,7 @@ namespace util
     using namespace robmikh::common::desktop;
 }
 
-int __stdcall WinMain(HINSTANCE instance, HINSTANCE, PSTR cmdLine, int cmdShow)
+int __stdcall WinMain(HINSTANCE, HINSTANCE, PSTR, int)
 {
     // SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2); // works but everything draws small
     // Initialize COM
@@ -32,8 +32,6 @@ int __stdcall WinMain(HINSTANCE instance, HINSTANCE, PSTR cmdLine, int cmdShow)
             MB_OK | MB_ICONERROR);
         return 1;
     }
-
-    SampleWindow::RegisterWindowClass();
 
     // Create the DispatcherQueue that the compositor needs to run
     auto controller = util::CreateDispatcherQueueControllerForCurrentThread();
@@ -52,7 +50,7 @@ int __stdcall WinMain(HINSTANCE instance, HINSTANCE, PSTR cmdLine, int cmdShow)
     // Create the app
     auto app = std::make_shared<App>(root, capturePicker, savePicker);
 
-    auto window = SampleWindow(instance, cmdShow, app);
+    auto window = SampleWindow(800, 600, app);
 
     // Provide the window handle to the pickers (explicit HWND initialization)
     window.InitializeObjectWithWindowHandle(capturePicker);

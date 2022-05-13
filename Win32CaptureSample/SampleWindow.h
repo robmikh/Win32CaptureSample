@@ -8,9 +8,8 @@ class MonitorList;
 struct SampleWindow : util::desktop::DesktopWindow<SampleWindow>
 {
     static const std::wstring ClassName;
-    static void RegisterWindowClass();
 
-    SampleWindow(HINSTANCE instance, int cmdShow, std::shared_ptr<App> app);
+    SampleWindow(int width, int height, std::shared_ptr<App> app);
     ~SampleWindow();
 
     winrt::Windows::UI::Composition::Desktop::DesktopWindowTarget CreateWindowTarget(winrt::Windows::UI::Composition::Compositor const& compositor)
@@ -40,6 +39,7 @@ private:
         Picker,
     };
 
+    static void RegisterWindowClass();
     void CreateControls(HINSTANCE instance);
     void SetSubTitle(std::wstring const& text);
     winrt::fire_and_forget OnPickerButtonClicked();
