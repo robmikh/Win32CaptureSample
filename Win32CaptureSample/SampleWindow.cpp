@@ -44,7 +44,7 @@ SampleWindow::SampleWindow(int width, int height, std::shared_ptr<App> app)
 
     std::call_once(SampleWindowClassRegistration, []() { RegisterWindowClass(); });
 
-    auto exStyle = WS_EX_NOREDIRECTIONBITMAP;
+    auto exStyle = 0;
     auto style = WS_OVERLAPPEDWINDOW;
 
     RECT rect = { 0, 0, width, height };
@@ -52,7 +52,7 @@ SampleWindow::SampleWindow(int width, int height, std::shared_ptr<App> app)
     auto adjustedWidth = rect.right - rect.left;
     auto adjustedHeight = rect.bottom - rect.top;
 
-    winrt::check_bool(CreateWindowExW(0, ClassName.c_str(), L"Win32CaptureSample", WS_OVERLAPPEDWINDOW,
+    winrt::check_bool(CreateWindowExW(exStyle, ClassName.c_str(), L"Win32CaptureSample", style,
         CW_USEDEFAULT, CW_USEDEFAULT, adjustedWidth, adjustedHeight, nullptr, nullptr, instance, this));
     WINRT_ASSERT(m_window);
 
