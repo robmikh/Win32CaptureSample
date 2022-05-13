@@ -93,11 +93,10 @@ bool SimpleCapture::TryResizeSwapChain(winrt::Direct3D11CaptureFrame const& fram
 
 bool SimpleCapture::TryUpdatePixelFormat()
 {
-    auto lock = m_lock.lock_exclusive();
-    if (m_pixelFormatUpdate.has_value())
+    auto newFormat = m_pixelFormatUpdate.exchange(std::nullopt);
+    if (newFormat.has_value())
     {
-        auto pixelFormat = m_pixelFormatUpdate.value();
-        m_pixelFormatUpdate = std::nullopt;
+        auto pixelFormat = newFormat.value();
         if (pixelFormat != m_pixelFormat)
         {
             m_pixelFormat = pixelFormat;
