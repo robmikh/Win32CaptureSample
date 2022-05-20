@@ -16,18 +16,28 @@ namespace winrt
     using namespace Windows::Graphics::DirectX;
 }
 
-const std::wstring SampleWindow::ClassName = L"Win32CaptureSample";
+// SPOUT - change Class name from "Win32CaptureSample" to "SpoutWinCapture"
+const std::wstring SampleWindow::ClassName = L"SpoutWinCapture";
 
 void SampleWindow::RegisterWindowClass()
 {
     auto instance = winrt::check_pointer(GetModuleHandleW(nullptr));
-    WNDCLASSEX wcex = { sizeof(wcex) };
+    //
+    // robmikh commit - 14-05-22
+    // fix window class description init 
+    // WNDCLASSEX wcex = { sizeof(wcex) };
+    WNDCLASSEX wcex = { };
+    wcex.cbSize = sizeof(wcex);
+    //
     wcex.style = CS_HREDRAW | CS_VREDRAW;
     wcex.lpfnWndProc = WndProc;
     wcex.hInstance = instance;
     wcex.hIcon = LoadIconW(instance, IDI_APPLICATION);
     wcex.hCursor = LoadCursorW(nullptr, IDC_ARROW);
-    wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+    // SPOUT
+    // wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+    // Battleship grey #848482 (COLORREF 0x828484)
+    wcex.hbrBackground = CreateSolidBrush(0x828484);
     wcex.lpszClassName = ClassName.c_str();
     wcex.hIconSm = LoadIconW(wcex.hInstance, IDI_APPLICATION);
     winrt::check_bool(RegisterClassExW(&wcex));
@@ -36,17 +46,32 @@ void SampleWindow::RegisterWindowClass()
 SampleWindow::SampleWindow(HINSTANCE instance, int cmdShow, std::shared_ptr<App> app)
 {
     WINRT_ASSERT(!m_window);
-    WINRT_VERIFY(CreateWindowW(ClassName.c_str(), L"Win32CaptureSample", WS_OVERLAPPEDWINDOW,
-        CW_USEDEFAULT, CW_USEDEFAULT, 800, 600, nullptr, nullptr, instance, this));
+    // SPOUT - change title from "Win32CaptureSample" to "SpoutWinCapture"
+    WINRT_VERIFY(CreateWindowW(ClassName.c_str(), L"SpoutWinCapture",
+        WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 800, 600,
+        nullptr, nullptr, instance, this));
     WINRT_ASSERT(m_window);
 
     // SPOUT
-    // Easy to add without changing the code
+    // ============================================
+    // Easy way to add an icon without changing the code
     HICON hWindowIcon = reinterpret_cast<HICON>(LoadImage(nullptr, L"Windows.ico", IMAGE_ICON, 16, 16, LR_LOADFROMFILE));
     SendMessage(m_window, WM_SETICON, ICON_BIG, (LPARAM)hWindowIcon);
     SendMessage(m_window, WM_SETICON, ICON_SMALL, (LPARAM)hWindowIcon);
+    // Centre the window on the desktop work area
+    RECT rc = { 0, 0, 800, 600 }; // Client size
+    GetWindowRect(m_window, &rc);
+    RECT WorkArea;
+    int WindowPosLeft = 0;
+    int WindowPosTop = 0;
+    SystemParametersInfo(SPI_GETWORKAREA, 0, (LPVOID)&WorkArea, 0);
+    WindowPosLeft += ((WorkArea.right - WorkArea.left) - (rc.right - rc.left)) / 2;
+    WindowPosTop += ((WorkArea.bottom - WorkArea.top) - (rc.bottom - rc.top)) / 2;
+    MoveWindow(m_window, WindowPosLeft, WindowPosTop, (rc.right - rc.left), (rc.bottom - rc.top), false);
+    // ============================================
 
     ShowWindow(m_window, cmdShow);
+
     UpdateWindow(m_window);
 
     auto isAllDisplaysPresent = winrt::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", 9);
@@ -310,7 +335,9 @@ void SampleWindow::CreateControls(HINSTANCE instance)
 
 void SampleWindow::SetSubTitle(std::wstring const& text)
 {
-    std::wstring titleText(L"Win32CaptureSample");
+    // SPOUT
+    // Change name from "Win32CaptureSample" to "SpoutWinCapture"
+    std::wstring titleText(L"SpoutWinCapture");
     if (!text.empty())
     {
         titleText += (L" - " + text);

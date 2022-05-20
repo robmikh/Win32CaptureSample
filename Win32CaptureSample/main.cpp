@@ -33,6 +33,10 @@
 //
 // Changes :
 // 22.02.22 - Add OpenDirectX to SimpleCapture
+// 20.05.22 - Centre on the desktop
+//            Capture display slightly larger
+//            Name change to SpoutWinCapture throughout
+//            Update to Visual Studio 2022
 //
 
 #pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
@@ -62,7 +66,8 @@ int __stdcall WinMain(HINSTANCE instance, HINSTANCE, PSTR cmdLine, int cmdShow)
     {
         MessageBoxW(nullptr,
             L"Screen capture is not supported on this device for this release of Windows!",
-            L"Win32CaptureSample",
+            // SPOUT - change name from "Win32CaptureSample" to "SpoutWinCapture"
+            L"SpoutWinCapture",
             MB_OK | MB_ICONERROR);
         return 1;
     }
@@ -76,8 +81,12 @@ int __stdcall WinMain(HINSTANCE instance, HINSTANCE, PSTR cmdLine, int cmdShow)
     auto compositor = winrt::Compositor();
     auto root = compositor.CreateContainerVisual();
     root.RelativeSizeAdjustment({ 1.0f, 1.0f });
-    root.Size({ -220.0f, 0.0f });
-    root.Offset({ 220.0f, 0.0f, 0.0f });
+    // SPOUT
+    // Make a little bit bigger
+    // root.Size({ -220.0f, 0.0f });
+    // root.Offset({ 220.0f, 0.0f, 0.0f });
+    root.Size({ -180.0f, 0.0f });
+    root.Offset({ 195.0f, 0.0f, 0.0f });
 
     // Create the pickers
     auto capturePicker = winrt::GraphicsCapturePicker();

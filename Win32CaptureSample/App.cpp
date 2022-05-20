@@ -69,7 +69,8 @@ winrt::GraphicsCaptureItem App::TryStartCaptureFromWindowHandle(HWND hwnd)
     {
         MessageBoxW(nullptr,
             error.message().c_str(),
-            L"win32CaptureSample",
+            // SPOUT - change Class name from "Win32CaptureSample" to "SpoutWinCapture"
+            L"SpoutWinCapture",
             MB_OK | MB_ICONERROR);
     }
     return item;
@@ -183,7 +184,7 @@ void App::StartCaptureFromItem(winrt::GraphicsCaptureItem item, HWND hwnd)
 {
     m_capture = std::make_unique<SimpleCapture>(m_device, item, m_pixelFormat, hwnd);
 
-     auto surface = m_capture->CreateSurface(m_compositor);
+    auto surface = m_capture->CreateSurface(m_compositor);
     m_brush.Surface(surface);
    
     m_capture->StartCapture();
