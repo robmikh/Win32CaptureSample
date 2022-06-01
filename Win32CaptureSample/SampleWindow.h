@@ -1,27 +1,16 @@
 #pragma once
-#include "util/DesktopWindow.h"
+#include <robmikh.common/DesktopWindow.h>
 
 class App;
 class WindowList;
 class MonitorList;
 
-struct SampleWindow : util::desktop::DesktopWindow<SampleWindow>
+struct SampleWindow : robmikh::common::desktop::DesktopWindow<SampleWindow>
 {
     static const std::wstring ClassName;
 
     SampleWindow(int width, int height, std::shared_ptr<App> app);
     ~SampleWindow();
-
-    winrt::Windows::UI::Composition::Desktop::DesktopWindowTarget CreateWindowTarget(winrt::Windows::UI::Composition::Compositor const& compositor)
-    {
-        return util::desktop::CreateDesktopWindowTarget(compositor, m_window, true);
-    }
-
-    void InitializeObjectWithWindowHandle(winrt::Windows::Foundation::IUnknown const& object)
-    {
-        auto initializer = object.as<util::desktop::IInitializeWithWindow>();
-        winrt::check_hresult(initializer->Initialize(m_window));
-    }
 
     LRESULT MessageHandler(UINT const message, WPARAM const wparam, LPARAM const lparam);
 
