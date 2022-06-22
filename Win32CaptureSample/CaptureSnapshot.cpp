@@ -23,6 +23,9 @@ namespace util
 std::future<winrt::com_ptr<ID3D11Texture2D>>
 CaptureSnapshot::TakeAsync(winrt::IDirect3DDevice const& device, winrt::GraphicsCaptureItem const& item, winrt::DirectXPixelFormat const& pixelFormat)
 {
+    // Grab the apartment context so we can return to it.
+    winrt::apartment_context context;
+
     auto d3dDevice = GetDXGIInterfaceFromObject<ID3D11Device>(device);
     winrt::com_ptr<ID3D11DeviceContext> d3dContext;
     d3dDevice->GetImmediateContext(d3dContext.put());
@@ -39,16 +42,10 @@ CaptureSnapshot::TakeAsync(winrt::IDirect3DDevice const& device, winrt::Graphics
     auto session = framePool.CreateCaptureSession(item);
 
     wil::shared_event captureEvent(wil::EventOptions::ManualReset);
-    winrt::com_ptr<ID3D11Texture2D> texture;
-    framePool.FrameArrived([session, &texture, captureEvent](auto& framePool, auto&)
+    winrt::Direct3D11CaptureFrame frame{ nullptr };
+    framePool.FrameArrived([&frame, captureEvent](auto& framePool, auto&)
     {
-        auto frame = framePool.TryGetNextFrame();
-        auto frameTexture = GetDXGIInterfaceFromObject<ID3D11Texture2D>(frame.Surface());
-        texture.copy_from(frameTexture.get());
-
-        // End the capture
-        session.Close();
-        framePool.Close();
+        frame = framePool.TryGetNextFrame();
 
         // Complete the operation
         captureEvent.SetEvent();
@@ -56,7 +53,13 @@ CaptureSnapshot::TakeAsync(winrt::IDirect3DDevice const& device, winrt::Graphics
 
     session.StartCapture();
     co_await winrt::resume_on_signal(captureEvent.get());
+    co_await context;
 
+    // End the capture
+    session.Close();
+    framePool.Close();
+
+    auto texture = GetDXGIInterfaceFromObject<ID3D11Texture2D>(frame.Surface());
     auto result = util::CopyD3DTexture(d3dDevice, texture, true);
 
     co_return result;
