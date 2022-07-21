@@ -40,8 +40,6 @@ SimpleCapture::SimpleCapture(winrt::IDirect3DDevice const& device, winrt::Graphi
     m_session = m_framePool.CreateCaptureSession(m_item);
     m_lastSize = m_item.Size();
     m_framePool.FrameArrived({ this, &SimpleCapture::OnFrameArrived });
-
-    WINRT_ASSERT(m_session != nullptr);
 }
 
 void SimpleCapture::StartCapture()
