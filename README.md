@@ -27,7 +27,7 @@ Find it in : Win32CaptureSample\SpoutDX
 SpoutDX - for this application, added function to send part of a texture.\
 bool SendTexture(ID3D11Texture2D* pTexture, unsigned int xoffset, unsigned int yoffset, unsigned int width, unsigned int height);
 
-Instructions for command line window capture can be found in Spout\aa-capture.bat
+Instructions for command line window capture can be found in Spout\Binaries\aa-capture.bat
 
 
 ## Points of interest
