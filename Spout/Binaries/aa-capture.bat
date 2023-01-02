@@ -2,7 +2,7 @@
 rem
 rem Example of command line for window capture
 rem Enter the name shown on the title bar of the window
-rem Run the sender application and then run this batch file
+rem Run the application and then run this batch file
 rem
 rem For example :
 "Win32CaptureSample" "Spout Demo Sender"

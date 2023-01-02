@@ -75,18 +75,18 @@ SampleWindow::SampleWindow(HINSTANCE instance, LPSTR lpCmdLine, int cmdShow, std
     // SPOUT
     // ============================================
     // Command line window capture
-    // Find the sender window now so the main window can be minimized
-    HWND hwndsender = nullptr;
+    // Find the window now so the main window can be minimized
+    HWND hwndcapture = nullptr;
     if (lpCmdLine && *lpCmdLine) {
         // Remove double quotes
         std::string str = lpCmdLine;
         str.erase(std::remove(str.begin(), str.end(), '"'), str.end());
         // Find the window handle from it's caption
-        hwndsender = FindWindowA(NULL, str.c_str());
+        hwndcapture = FindWindowA(NULL, str.c_str());
     }
     
     // Minimize the main window if a command line sender was found
-    if (hwndsender > 0)
+    if (hwndcapture > 0)
         ShowWindow(m_window, SW_MINIMIZE);
     else
         ShowWindow(m_window, cmdShow);
@@ -110,11 +110,11 @@ SampleWindow::SampleWindow(HINSTANCE instance, LPSTR lpCmdLine, int cmdShow, std
     // SPOUT
     // ============================================
     // Command line window capture after starting
-    if (hwndsender > 0) {
+    if (hwndcapture > 0) {
         // Restore if minimized 
-        if (IsIconic(hwndsender)) ShowWindow(hwndsender, SW_RESTORE);
+        if (IsIconic(hwndcapture)) ShowWindow(hwndcapture, SW_RESTORE);
         // TryStartCapture for the window
-        auto item = m_app->TryStartCaptureFromWindowHandle(hwndsender);
+        auto item = m_app->TryStartCaptureFromWindowHandle(hwndcapture);
         if (item != nullptr) {
             // Capture from this window straight away
             OnCaptureStarted(item, CaptureType::ProgrammaticWindow);
