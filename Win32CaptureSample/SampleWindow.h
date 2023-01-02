@@ -10,7 +10,10 @@ struct SampleWindow : util::desktop::DesktopWindow<SampleWindow>
     static const std::wstring ClassName;
     static void RegisterWindowClass();
 
-    SampleWindow(HINSTANCE instance, int cmdShow, std::shared_ptr<App> app);
+    // SPOUT
+    // Allow for a command line
+    // SampleWindow(HINSTANCE instance, int cmdShow, std::shared_ptr<App> app);
+    SampleWindow(HINSTANCE instance, LPSTR lpCmdLine, int cmdShow, std::shared_ptr<App> app);
     ~SampleWindow();
 
     winrt::Windows::UI::Composition::Desktop::DesktopWindowTarget CreateWindowTarget(winrt::Windows::UI::Composition::Compositor const& compositor)
@@ -51,6 +54,7 @@ private:
         CaptureType captureType);
 
 private:
+
     HWND m_windowComboBox = nullptr;
     HWND m_monitorComboBox = nullptr;
     HWND m_pickerButton = nullptr;

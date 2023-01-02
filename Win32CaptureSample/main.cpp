@@ -36,7 +36,7 @@
 // 20.05.22 - Centre on the desktop
 //            Capture display slightly larger
 //            Name change to SpoutWinCapture throughout
-//            Update to Visual Studio 2022
+//            Update project to Visual Studio 2022
 //
 
 #pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
@@ -53,7 +53,10 @@ namespace util
     using namespace desktop;
 }
 
-int __stdcall WinMain(HINSTANCE instance, HINSTANCE, PSTR cmdLine, int cmdShow)
+// SPOUT
+// To avoid warning C28251
+// int __stdcall WinMain(HINSTANCE instance, HINSTANCE, PSTR cmdLine, int cmdShow)
+int __stdcall WinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE hInstPrev, _In_ LPSTR lpCmdLine, _In_ int cmdShow)
 {
     // SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2); // works but everything draws small
     // SPOUT - Project properties > Manifest Tool > Input and Output > DPI Awareness > Per Monitor High DPI Aware
@@ -96,13 +99,18 @@ int __stdcall WinMain(HINSTANCE instance, HINSTANCE, PSTR cmdLine, int cmdShow)
     auto app = std::make_shared<App>(root, capturePicker, savePicker);
 
     // SPOUT - console for debugging
-    // AllocConsole();
-    // FILE* pCout;
-    // freopen_s(&pCout, "CONOUT$", "w", stdout);
+    /*
+    AllocConsole();
+    FILE* pCout;
+    freopen_s(&pCout, "CONOUT$", "w", stdout);
+    */
 
-    auto window = SampleWindow(instance, cmdShow, app);
+    // SPOUT
+    // Allow for a command line
+    auto window = SampleWindow(instance, lpCmdLine, cmdShow, app);
+    // auto window = SampleWindow(instance, cmdShow, app);
 
-    // Provide the window handle to the pickers (explicit HWND initialization)
+     // Provide the window handle to the pickers (explicit HWND initialization)
     window.InitializeObjectWithWindowHandle(capturePicker);
     window.InitializeObjectWithWindowHandle(savePicker);
 

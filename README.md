@@ -15,16 +15,19 @@ Pre-compiled binaries in Spout\Binaries
 - Add m_hWnd to SimpleCapture
 - Add Spout sender to SimpleCapture
 - Add SendTexture to OnFrameArrived
+- Add command line sender window capture
 
 Search for "SPOUT" in :\
 Main.cpp, App.h, SimpleCapture.h, SimpleCapture.cpp, SampleWindow.h, SampleWindow.cpp
 
-Build with Visual Studio 2019 - Windows 64 bit only.\
+Build with Visual Studio 2022 - Windows 64 bit only.\
 SpoutDX.dll must be copied to the folder containing the executable e.g. "\x64\Release"\
 Find it in : Win32CaptureSample\SpoutDX
 
 SpoutDX - for this application, added function to send part of a texture.\
 bool SendTexture(ID3D11Texture2D* pTexture, unsigned int xoffset, unsigned int yoffset, unsigned int width, unsigned int height);
+
+Instructions for command line sender capture can be found in Spout\aa-sender.bat
 
 
 ## Points of interest

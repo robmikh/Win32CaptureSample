@@ -36,14 +36,16 @@ void SampleWindow::RegisterWindowClass()
     wcex.hCursor = LoadCursorW(nullptr, IDC_ARROW);
     // SPOUT
     // wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-    // Battleship grey #848482 (COLORREF 0x828484)
     wcex.hbrBackground = CreateSolidBrush(0x828484);
     wcex.lpszClassName = ClassName.c_str();
     wcex.hIconSm = LoadIconW(wcex.hInstance, IDI_APPLICATION);
     winrt::check_bool(RegisterClassExW(&wcex));
 }
 
-SampleWindow::SampleWindow(HINSTANCE instance, int cmdShow, std::shared_ptr<App> app)
+// SPOUT
+// Allow for a command line, passed from main.cpp
+// SampleWindow::SampleWindow(HINSTANCE instance, int cmdShow, std::shared_ptr<App> app)
+SampleWindow::SampleWindow(HINSTANCE instance, LPSTR lpCmdLine, int cmdShow, std::shared_ptr<App> app)
 {
     WINRT_ASSERT(!m_window);
     // SPOUT - change title from "Win32CaptureSample" to "SpoutWinCapture"
@@ -59,7 +61,7 @@ SampleWindow::SampleWindow(HINSTANCE instance, int cmdShow, std::shared_ptr<App>
     SendMessage(m_window, WM_SETICON, ICON_BIG, (LPARAM)hWindowIcon);
     SendMessage(m_window, WM_SETICON, ICON_SMALL, (LPARAM)hWindowIcon);
     // Centre the window on the desktop work area
-    RECT rc = { 0, 0, 800, 600 }; // Client size
+    RECT rc ={0, 0, 800, 600}; // Client size
     GetWindowRect(m_window, &rc);
     RECT WorkArea;
     int WindowPosLeft = 0;
@@ -70,7 +72,25 @@ SampleWindow::SampleWindow(HINSTANCE instance, int cmdShow, std::shared_ptr<App>
     MoveWindow(m_window, WindowPosLeft, WindowPosTop, (rc.right - rc.left), (rc.bottom - rc.top), false);
     // ============================================
 
-    ShowWindow(m_window, cmdShow);
+    // SPOUT
+    // ============================================
+    // Command line window capture
+    // Find the sender window now so the main window can be minimized
+    HWND hwndsender = nullptr;
+    if (lpCmdLine && *lpCmdLine) {
+        // Remove double quotes
+        std::string str = lpCmdLine;
+        str.erase(std::remove(str.begin(), str.end(), '"'), str.end());
+        // Find the window handle from it's caption
+        hwndsender = FindWindowA(NULL, str.c_str());
+    }
+    
+    // Minimize the main window if a command line sender was found
+    if (hwndsender > 0)
+        ShowWindow(m_window, SW_MINIMIZE);
+    else
+        ShowWindow(m_window, cmdShow);
+    // ============================================
 
     UpdateWindow(m_window);
 
@@ -79,13 +99,29 @@ SampleWindow::SampleWindow(HINSTANCE instance, int cmdShow, std::shared_ptr<App>
     m_app = app;
     m_windows = std::make_unique<WindowList>();
     m_monitors = std::make_unique<MonitorList>(isAllDisplaysPresent);
-    m_pixelFormats = 
+    m_pixelFormats =
     {
         { L"B8G8R8A8UIntNormalized", winrt::DirectXPixelFormat::B8G8R8A8UIntNormalized },
         { L"R16G16B16A16Float", winrt::DirectXPixelFormat::R16G16B16A16Float }
     };
 
     CreateControls(instance);
+
+    // SPOUT
+    // ============================================
+    // Command line window capture after starting
+    if (hwndsender > 0) {
+        // Restore if minimized 
+        if (IsIconic(hwndsender)) ShowWindow(hwndsender, SW_RESTORE);
+        // TryStartCapture for the window
+        auto item = m_app->TryStartCaptureFromWindowHandle(hwndsender);
+        if (item != nullptr) {
+            // Capture from this window straight away
+            OnCaptureStarted(item, CaptureType::ProgrammaticWindow);
+        }
+    }
+    // ============================================
+
 }
 
 SampleWindow::~SampleWindow()
@@ -101,6 +137,7 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
     {
         auto command = HIWORD(wparam);
         auto hwnd = (HWND)lparam;
+
         switch (command)
         {
         case CBN_SELCHANGE:
@@ -109,10 +146,7 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
                 if (hwnd == m_windowComboBox)
                 {
                     auto window = m_windows->GetCurrentWindows()[index];
-
-                    // SPOUT - include window handle
                     auto item = m_app->TryStartCaptureFromWindowHandle(window.WindowHandle);
-
                     if (item != nullptr)
                     {
                         OnCaptureStarted(item, CaptureType::ProgrammaticWindow);
@@ -127,21 +161,14 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
                         OnCaptureStarted(item, CaptureType::ProgrammaticMonitor);
                     }
                 }
-                /*
-                // SPOUT - limit to BRGA8
-                else if (hwnd == m_pixelFormatComboBox)
-                {
-                    auto pixelFormatData = m_pixelFormats[index];
-                    m_app->PixelFormat(pixelFormatData.PixelFormat);
-                }
-                */
             }
             break;
+
         case BN_CLICKED:
             {
                 if (hwnd == m_pickerButton)
                 {
-                    OnPickerButtonClicked();
+                     OnPickerButtonClicked();
                 }
                 else if (hwnd == m_stopButton)
                 {
@@ -280,22 +307,6 @@ void SampleWindow::CreateControls(HINSTANCE instance)
     // Create independent snapshot button
     auto snapshotButton = controls.CreateControl(ControlType::Button, L"Take Snapshot", WS_DISABLED);
 
-    // SPOUT - limit to BRGA8
-    /*
-    auto pixelFormatLabel = controls.CreateControl(ControlType::Label, L"Pixel Format:");
-
-    // Create pixel format combo box
-    auto pixelFormatComboBox = controls.CreateControl(ControlType::ComboBox, L"");
-
-    // Populate pixel format combo box
-    for (auto& pixelFormat : m_pixelFormats)
-    {
-        SendMessageW(pixelFormatComboBox, CB_ADDSTRING, 0, (LPARAM)pixelFormat.Name.c_str());
-    }
-    // The default pixel format is BGRA8
-    SendMessageW(pixelFormatComboBox, CB_SETCURSEL, 0, 0);
-    */
-
     // Create cursor checkbox
     auto cursorCheckBox = controls.CreateControl(ControlType::CheckBox, L"Enable Cursor", cursorEnableStyle);
 
@@ -327,11 +338,10 @@ void SampleWindow::CreateControls(HINSTANCE instance)
     m_snapshotButton = snapshotButton;
     m_cursorCheckBox = cursorCheckBox;
     m_captureExcludeCheckBox = captureExcludeCheckBox;
-    // SPOUT 
-    // m_pixelFormatComboBox = pixelFormatComboBox; // limit to BRGA8
     m_clientCheckBox = clientCheckBox; // Add a client/window capture checkbox
 
 }
+
 
 void SampleWindow::SetSubTitle(std::wstring const& text)
 {

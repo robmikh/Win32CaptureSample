@@ -109,7 +109,6 @@ winrt::IAsyncOperation<winrt::GraphicsCaptureItem> App::StartCaptureWithPickerAs
         // SPOUT
         // Get the window handle from the name
         HWND hwnd = FindWindow(NULL, item.DisplayName().c_str());
-
         co_await m_mainThread;
         StartCaptureFromItem(item, hwnd);
     }
