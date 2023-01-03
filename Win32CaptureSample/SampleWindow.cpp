@@ -74,7 +74,7 @@ SampleWindow::SampleWindow(HINSTANCE instance, LPSTR lpCmdLine, int cmdShow, std
     MoveWindow(m_window, WindowPosLeft, WindowPosTop, (rc.right - rc.left), (rc.bottom - rc.top), false);
     //
     // SPOUT - Command line capture
-    // Find the window or monitor now so the main window
+    // Find the window or display now so the main window
     // can be minimized after the initializations are done
     HWND hwndcapture = nullptr;
     int monitorindex = -1; // Monitor index
@@ -83,7 +83,7 @@ SampleWindow::SampleWindow(HINSTANCE instance, LPSTR lpCmdLine, int cmdShow, std
         std::string str = lpCmdLine;
         str.erase(std::remove(str.begin(), str.end(), '"'), str.end());
         if (str.length() == 1) {
-            // Single character is monitor - 0 1, 2 etc
+            // Single character is a display - 0, 1, 2 etc
             monitorindex = atoi(str.c_str());
         }
         else {
@@ -140,7 +140,7 @@ SampleWindow::SampleWindow(HINSTANCE instance, LPSTR lpCmdLine, int cmdShow, std
     }
     else if (monitorindex >= 0) {
         //
-        // Monitor capture
+        // Display capture
         //
         // Get the monitor details for the index
         auto monitor = m_monitors->GetCurrentMonitors()[monitorindex];

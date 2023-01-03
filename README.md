@@ -15,7 +15,7 @@ Pre-compiled binaries in Spout\Binaries
 - Add m_hWnd to SimpleCapture
 - Add Spout sender to SimpleCapture
 - Add SendTexture to OnFrameArrived
-- Add command line window or monitor capture
+- Add command line window or display capture
 
 Search for "SPOUT" in :\
 Main.cpp, App.h, SimpleCapture.h, SimpleCapture.cpp, SampleWindow.h, SampleWindow.cpp
