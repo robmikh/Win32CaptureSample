@@ -7,7 +7,7 @@ SpoutDX.dll - spout functions\
 Windows.ico - icon for the capture window\
 Command line batch files
 - aa-dos.bat - opens a command window (optional)
-- aa-capture.bat - activates Win32CaptureSample with a command line to capture a specific window (edit the file to change the required window)
+- aa-capture.bat - activates Win32CaptureSample with a command line to capture a specific window or monitor (edit the file to change the required window/monitor)
 - aa-start.bat - activates aa-capture.bat without showing a console
 
 

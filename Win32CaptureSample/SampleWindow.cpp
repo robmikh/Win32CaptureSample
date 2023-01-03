@@ -54,7 +54,9 @@ SampleWindow::SampleWindow(HINSTANCE instance, LPSTR lpCmdLine, int cmdShow, std
         nullptr, nullptr, instance, this));
     WINRT_ASSERT(m_window);
 
-    // SPOUT
+
+    // SPOUT - add an icon and centre the window
+    // and look for command line capture
     // ============================================
     // Easy way to add an icon without changing the code
     HICON hWindowIcon = reinterpret_cast<HICON>(LoadImage(nullptr, L"Windows.ico", IMAGE_ICON, 16, 16, LR_LOADFROMFILE));
@@ -70,29 +72,27 @@ SampleWindow::SampleWindow(HINSTANCE instance, LPSTR lpCmdLine, int cmdShow, std
     WindowPosLeft += ((WorkArea.right - WorkArea.left) - (rc.right - rc.left)) / 2;
     WindowPosTop += ((WorkArea.bottom - WorkArea.top) - (rc.bottom - rc.top)) / 2;
     MoveWindow(m_window, WindowPosLeft, WindowPosTop, (rc.right - rc.left), (rc.bottom - rc.top), false);
-    // ============================================
-
-    // SPOUT
-    // ============================================
-    // Command line window capture
-    // Find the window now so the main window can be minimized
+    //
+    // SPOUT - Command line capture
+    // Find the window or monitor now so the main window
+    // can be minimized after the initializations are done
     HWND hwndcapture = nullptr;
+    int monitorindex = -1; // Monitor index
     if (lpCmdLine && *lpCmdLine) {
         // Remove double quotes
         std::string str = lpCmdLine;
         str.erase(std::remove(str.begin(), str.end(), '"'), str.end());
-        // Find the window handle from it's caption
-        hwndcapture = FindWindowA(NULL, str.c_str());
+        if (str.length() == 1) {
+            // Single character is monitor - 0 1, 2 etc
+            monitorindex = atoi(str.c_str());
+        }
+        else {
+            // Multiple caharters - Window caption
+            // Find the window handle from it's caption
+            hwndcapture = FindWindowA(NULL, str.c_str());
+        }
     }
-    
-    // Minimize the main window if a command line sender was found
-    if (hwndcapture > 0)
-        ShowWindow(m_window, SW_MINIMIZE);
-    else
-        ShowWindow(m_window, cmdShow);
     // ============================================
-
-    UpdateWindow(m_window);
 
     auto isAllDisplaysPresent = winrt::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", 9);
 
@@ -107,10 +107,28 @@ SampleWindow::SampleWindow(HINSTANCE instance, LPSTR lpCmdLine, int cmdShow, std
 
     CreateControls(instance);
 
-    // SPOUT
+
+    // SPOUT - command line processing
     // ============================================
-    // Command line window capture after starting
+    // Disable the monitor index if greater than the monitor list size
+    // "All displays" is the last index which also shows this window
+    // on the main display, even if minimized
+    if (monitorindex > (int)m_monitors->GetCurrentMonitors().size()) {
+        monitorindex = -1;
+    }
+
+    // Minimize the main window if a command line was found
+    if (hwndcapture > 0 || monitorindex >= 0)
+        ShowWindow(m_window, SW_MINIMIZE);
+    else
+        ShowWindow(m_window, cmdShow);
+    UpdateWindow(m_window);
+
+    // Command line capture
     if (hwndcapture > 0) {
+        //
+        // Window caption
+        //
         // Restore if minimized 
         if (IsIconic(hwndcapture)) ShowWindow(hwndcapture, SW_RESTORE);
         // TryStartCapture for the window
@@ -118,6 +136,19 @@ SampleWindow::SampleWindow(HINSTANCE instance, LPSTR lpCmdLine, int cmdShow, std
         if (item != nullptr) {
             // Capture from this window straight away
             OnCaptureStarted(item, CaptureType::ProgrammaticWindow);
+        }
+    }
+    else if (monitorindex >= 0) {
+        //
+        // Monitor capture
+        //
+        // Get the monitor details for the index
+        auto monitor = m_monitors->GetCurrentMonitors()[monitorindex];
+        // TryStartCapture for the monitor
+        auto item = m_app->TryStartCaptureFromMonitorHandle(monitor.MonitorHandle);
+        if (item != nullptr)  {
+            // Capture from this monitor straight away
+            OnCaptureStarted(item, CaptureType::ProgrammaticMonitor);
         }
     }
     // ============================================
@@ -202,6 +233,7 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
     case WM_DISPLAYCHANGE:
         m_monitors->Update();
         break;
+
     case WM_CTLCOLORSTATIC:
     {
         HDC staticColorHdc = reinterpret_cast<HDC>(wparam);

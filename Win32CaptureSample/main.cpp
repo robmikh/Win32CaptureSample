@@ -98,12 +98,13 @@ int __stdcall WinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE hInstPrev, _In
     // Create the app
     auto app = std::make_shared<App>(root, capturePicker, savePicker);
 
-    // SPOUT - console for debugging
     /*
+    // SPOUT - console for debugging
     AllocConsole();
     FILE* pCout;
     freopen_s(&pCout, "CONOUT$", "w", stdout);
     */
+
 
     // SPOUT
     // Allow for a command line
