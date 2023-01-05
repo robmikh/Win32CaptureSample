@@ -59,7 +59,7 @@ SampleWindow::SampleWindow(HINSTANCE instance, LPSTR lpCmdLine, int cmdShow, std
     // and look for command line capture
     // ============================================
     // Easy way to add an icon without changing the code
-    HICON hWindowIcon = reinterpret_cast<HICON>(LoadImage(nullptr, L"Windows.ico", IMAGE_ICON, 16, 16, LR_LOADFROMFILE));
+    HICON hWindowIcon = reinterpret_cast<HICON>(LoadImage(nullptr, L"Win32CaptureSample.ico", IMAGE_ICON, 16, 16, LR_LOADFROMFILE));
     SendMessage(m_window, WM_SETICON, ICON_BIG, (LPARAM)hWindowIcon);
     SendMessage(m_window, WM_SETICON, ICON_SMALL, (LPARAM)hWindowIcon);
     // Centre the window on the desktop work area
