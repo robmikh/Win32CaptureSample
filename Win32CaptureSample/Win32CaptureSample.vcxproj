@@ -141,6 +141,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="App.cpp" />
+    <ClCompile Include="BorderWindow.cpp" />
     <ClCompile Include="CaptureSnapshot.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MonitorList.cpp" />
@@ -151,6 +152,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.h" />
+    <ClInclude Include="BorderWindow.h" />
     <ClInclude Include="CaptureSnapshot.h" />
     <ClInclude Include="MonitorList.h" />
     <ClInclude Include="pch.h" />

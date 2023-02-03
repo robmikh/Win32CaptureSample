@@ -23,6 +23,8 @@ public:
 
     void StopCapture();
 
+    winrt::Windows::UI::Composition::Compositor Compositor() { return m_compositor; }
+
 private:
     void StartCaptureFromItem(winrt::Windows::Graphics::Capture::GraphicsCaptureItem item);
 

@@ -31,7 +31,7 @@ public:
     void Update();
     void RegisterComboBoxForUpdates(HWND comboBoxHandle) { m_comboBoxes.push_back(comboBoxHandle); ForceUpdateComboBox(comboBoxHandle); }
     void UnregisterComboBox(HWND comboBoxHandle) { m_comboBoxes.erase(std::remove(m_comboBoxes.begin(), m_comboBoxes.end(), comboBoxHandle), m_comboBoxes.end()); }
-    const std::vector<MonitorInfo> GetCurrentMonitors() { return m_monitors; }
+    const std::vector<MonitorInfo> const& GetCurrentMonitors() { return m_monitors; }
 
 private:
     void ForceUpdateComboBox(HWND comboBoxHandle);

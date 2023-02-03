@@ -35,7 +35,7 @@ public:
 
     void RegisterComboBoxForUpdates(HWND comboBoxHandle) { m_comboBoxes.push_back(comboBoxHandle); ForceUpdateComboBox(comboBoxHandle); }
     void UnregisterComboBox(HWND comboBoxHandle) { m_comboBoxes.erase(std::remove(m_comboBoxes.begin(), m_comboBoxes.end(), comboBoxHandle), m_comboBoxes.end()); }
-    const std::vector<WindowInfo> GetCurrentWindows() { return m_windows; }
+    const std::vector<WindowInfo> const& GetCurrentWindows() { return m_windows; }
 
 private:
     void AddWindow(WindowInfo const& info);

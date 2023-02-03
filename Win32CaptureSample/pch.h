@@ -1,8 +1,13 @@
 #pragma once
 
+// Collision from minwindef min/max and std
+#define NOMINMAX
+
 // Windows SDK support
 #include <Unknwn.h>
 #include <inspectable.h>
+#include <windows.h>
+#include <windowsx.h>
 
 // Needs to come before C++/WinRT headers
 #include <wil/cppwinrt.h>
@@ -58,3 +63,4 @@
 #include <robmikh.common/stream.interop.h>
 #include <robmikh.common/hwnd.interop.h>
 #include <robmikh.common/ControlsHelper.h>
+#include <robmikh.common/DesktopWindow.h>

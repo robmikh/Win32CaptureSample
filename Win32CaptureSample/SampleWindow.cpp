@@ -3,6 +3,7 @@
 #include "SampleWindow.h"
 #include "WindowList.h"
 #include "MonitorList.h"
+#include "BorderWindow.h"
 
 namespace winrt
 {
@@ -67,6 +68,9 @@ SampleWindow::SampleWindow(int width, int height, std::shared_ptr<App> app)
         { L"B8G8R8A8UIntNormalized", winrt::DirectXPixelFormat::B8G8R8A8UIntNormalized },
         { L"R16G16B16A16Float", winrt::DirectXPixelFormat::R16G16B16A16Float }
     };
+
+    m_borderWindow = std::make_unique<BorderWindow>(app->Compositor());
+    m_borderWindow->BorderThickness(5);
 
     CreateControls(instance);
 
@@ -163,6 +167,132 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
     return 0;
 }
 
+LRESULT SampleWindow::SubClassWndProc(HWND window, UINT const message, WPARAM const wparam, LPARAM const lparam)
+{
+    auto parentWindow = reinterpret_cast<SampleWindow*>(GetWindowLongPtrW(window, GWLP_USERDATA));
+    if (parentWindow != nullptr)
+    {
+        if (window == parentWindow->m_windowSelectButton)
+        {
+            return parentWindow->WindowSelectionButtonMessageHandler(message, wparam, lparam);
+        }
+        else if (window == parentWindow->m_monitorSelectButton)
+        {
+            return parentWindow->MonitorSelectionButtonMessageHandler(message, wparam, lparam);
+        }
+    }
+    return DefWindowProcW(window, message, wparam, lparam);
+}
+
+LRESULT SampleWindow::WindowSelectionButtonMessageHandler(UINT const message, WPARAM const wparam, LPARAM const lparam)
+{
+    switch (message)
+    {
+    case WM_LBUTTONDOWN:
+        SetCapture(m_windowSelectButton);
+        m_cursorCaptured = true;
+        m_borderWindow->Show();
+        break;
+    case WM_LBUTTONUP:
+        if (m_cursorCaptured)
+        {
+            winrt::check_bool(ReleaseCapture());
+            m_cursorCaptured = false;
+            m_borderWindow->Hide();
+            m_currentPickerCandidateWindow = nullptr;
+            if (m_currentPickerWindow != nullptr)
+            {
+                auto selectedWindow = m_currentPickerWindow;
+                m_currentPickerWindow = nullptr;
+                OnWindowSelected(selectedWindow);
+            }
+        }
+        break;
+    case WM_MOUSEMOVE:
+    {
+        if (m_cursorCaptured)
+        {
+            auto xPos = GET_X_LPARAM(lparam);
+            auto yPos = GET_Y_LPARAM(lparam);
+
+            POINT point = { xPos, yPos };
+            winrt::check_bool(ClientToScreen(m_windowSelectButton, &point));
+            auto handle = WindowFromPoint(point);
+            handle = GetAncestor(handle, GA_ROOT);
+            if (m_currentPickerCandidateWindow != handle)
+            {
+                m_currentPickerCandidateWindow = handle;
+                if (handle != nullptr && handle != GetShellWindow() && handle != GetDesktopWindow())
+                {
+                    auto exStyle = GetWindowLongPtrW(handle, GWL_EXSTYLE);
+                    if ((exStyle & WS_EX_TOOLWINDOW) == 0) // No tooltips
+                    {
+                        m_borderWindow->PositionOver(handle);
+                        m_currentPickerWindow = handle;
+                    }
+                }
+            }
+        }
+    }
+    break;
+    default:
+        return CallWindowProcW(m_windowSelectionButtonWndProc, m_windowSelectButton, message, wparam, lparam);
+    }
+    return 0;
+}
+
+LRESULT SampleWindow::MonitorSelectionButtonMessageHandler(UINT const message, WPARAM const wparam, LPARAM const lparam)
+{
+    switch (message)
+    {
+    case WM_LBUTTONDOWN:
+        SetCapture(m_monitorSelectButton);
+        m_cursorCaptured = true;
+        m_borderWindow->Show();
+        break;
+    case WM_LBUTTONUP:
+        if (m_cursorCaptured)
+        {
+            winrt::check_bool(ReleaseCapture());
+            m_cursorCaptured = false;
+            m_borderWindow->Hide();
+            m_currentPickerCandidateMonitor = nullptr;
+            if (m_currentPickerMonitor != nullptr)
+            {
+                auto selectedMonitor = m_currentPickerMonitor;
+                m_currentPickerMonitor = nullptr;
+                OnMonitorSelected(selectedMonitor);
+            }
+        }
+        break;
+    case WM_MOUSEMOVE:
+    {
+        if (m_cursorCaptured)
+        {
+            auto xPos = GET_X_LPARAM(lparam);
+            auto yPos = GET_Y_LPARAM(lparam);
+
+            POINT point = { xPos, yPos };
+            winrt::check_bool(ClientToScreen(m_monitorSelectButton, &point));
+            auto handle = MonitorFromPoint(point, MONITOR_DEFAULTTONULL);
+            if (m_currentPickerCandidateMonitor != handle)
+            {
+                m_currentPickerCandidateMonitor = handle;
+                if (handle != nullptr)
+                {
+                    m_borderWindow->PositionOver(handle);
+                    m_currentPickerMonitor = handle;
+                }
+            }
+        }
+    }
+    break;
+    default:
+        return CallWindowProcW(m_monitorSelectionButtonWndProc, m_monitorSelectButton, message, wparam, lparam);
+    }
+    return 0;
+}
+
 void SampleWindow::OnCaptureStarted(winrt::GraphicsCaptureItem const& item, CaptureType captureType)
 {
     m_itemClosedRevoker.revoke();
@@ -234,6 +364,11 @@ void SampleWindow::CreateControls(HINSTANCE instance)
     // Populate window combo box and register for updates
     m_windows->RegisterComboBoxForUpdates(windowComboBox);
 
+    // Add window selection button
+    m_windowSelectButton = controls.CreateControl(util::ControlType::Button, L"Drag to select a window");
+    SetWindowLongPtrW(m_windowSelectButton, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
+    m_windowSelectionButtonWndProc = reinterpret_cast<WNDPROC>(SetWindowLongPtrW(m_windowSelectButton, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(SubClassWndProc)));
+
     auto monitorLabel = controls.CreateControl(util::ControlType::Label, L"Displays:");
 
     // Create monitor combo box
@@ -241,6 +376,11 @@ void SampleWindow::CreateControls(HINSTANCE instance)
 
     // Populate monitor combo box
     m_monitors->RegisterComboBoxForUpdates(monitorComboBox);
+
+    // Add monitor selection button
+    m_monitorSelectButton = controls.CreateControl(util::ControlType::Button, L"Drag to select a display");
+    SetWindowLongPtrW(m_monitorSelectButton, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
+    m_monitorSelectionButtonWndProc = reinterpret_cast<WNDPROC>(SetWindowLongPtrW(m_monitorSelectButton, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(SubClassWndProc)));
 
     // Create picker button
     auto pickerButton = controls.CreateControl(util::ControlType::Button, L"Open Picker");
@@ -323,4 +463,44 @@ void SampleWindow::StopCapture()
 void SampleWindow::OnCaptureItemClosed(winrt::GraphicsCaptureItem const&, winrt::Windows::Foundation::IInspectable const&)
 {
     StopCapture();
+}
+
+void SampleWindow::OnWindowSelected(HWND window)
+{
+    auto item = m_app->TryStartCaptureFromWindowHandle(window);
+    if (item != nullptr)
+    {
+        auto index = -1;
+        auto windows = m_windows->GetCurrentWindows();
+        for (auto i = 0; i < windows.size(); i++)
+        {
+            if (windows[i].WindowHandle == window)
+            {
+                index = i;
+                break;
+            }
+        }
+        SendMessageW(m_windowComboBox, CB_SETCURSEL, index, 0);
+        OnCaptureStarted(item, CaptureType::ProgrammaticWindow);
+    }
+}
+
+void SampleWindow::OnMonitorSelected(HMONITOR monitor)
+{
+    auto item = m_app->TryStartCaptureFromMonitorHandle(monitor);
+    if (item != nullptr)
+    {
+        auto index = -1;
+        auto monitors = m_monitors->GetCurrentMonitors();
+        for (auto i = 0; i < monitors.size(); i++)
+        {
+            if (monitors[i].MonitorHandle == monitor)
+            {
+                index = i;
+                break;
+            }
+        }
+        SendMessageW(m_monitorComboBox, CB_SETCURSEL, index, 0);
+        OnCaptureStarted(item, CaptureType::ProgrammaticMonitor);
+    }
 }
