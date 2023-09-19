@@ -37,6 +37,11 @@
 //            Capture display slightly larger
 //            Name change to SpoutWinCapture throughout
 //            Update project to Visual Studio 2022
+// 16.09.23 - SimpleCapture.cpp - OnFrameArrived
+//            Test window and client region sizes before sending texture.
+// 19.09.23 - Change name to "SpoutWinCapture" to align with the caption title
+//            and to distinguish from the original executable.
+//            Change default icon file name to SpoutWinCapture.ico
 //
 
 #pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
@@ -104,7 +109,6 @@ int __stdcall WinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE hInstPrev, _In
     FILE* pCout;
     freopen_s(&pCout, "CONOUT$", "w", stdout);
     */
-
 
     // SPOUT
     // Allow for a command line

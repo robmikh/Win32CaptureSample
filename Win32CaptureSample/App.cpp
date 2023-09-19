@@ -88,7 +88,8 @@ winrt::GraphicsCaptureItem App::TryStartCaptureFromMonitorHandle(HMONITOR hmon)
     {
         MessageBoxW(nullptr,
             error.message().c_str(),
-            L"Win32CaptureSample",
+            // SPOUT - change Class name from "Win32CaptureSample" to "SpoutWinCapture"
+            L"SpoutWinCapture",
             MB_OK | MB_ICONERROR);
     }
     return item;
@@ -133,6 +134,7 @@ winrt::IAsyncOperation<winrt::StorageFile> App::TakeSnapshotAsync()
     m_savePicker.FileTypeChoices().Insert(L"PNG image", winrt::single_threaded_vector<winrt::hstring>({ L".png" }));
     m_savePicker.FileTypeChoices().Insert(L"JPG image", winrt::single_threaded_vector<winrt::hstring>({ L".jpg" }));
     m_savePicker.FileTypeChoices().Insert(L"JXR image", winrt::single_threaded_vector<winrt::hstring>({ L".jxr" }));
+    
     auto file = co_await m_savePicker.PickSaveFileAsync();
     if (file == nullptr)
     {

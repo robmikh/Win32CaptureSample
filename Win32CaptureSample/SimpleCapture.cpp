@@ -138,7 +138,7 @@ void SimpleCapture::OnFrameArrived(winrt::Direct3D11CaptureFramePool const& send
         winrt::com_ptr<ID3D11Texture2D> backBuffer;
         winrt::check_hresult(m_swapChain->GetBuffer(0, winrt::guid_of<ID3D11Texture2D>(), backBuffer.put_void()));
         auto surfaceTexture = GetDXGIInterfaceFromObject<ID3D11Texture2D>(frame.Surface());
-        
+
         // copy surfaceTexture to backBuffer
         m_d3dContext->CopyResource(backBuffer.get(), surfaceTexture.get());
 
@@ -157,21 +157,23 @@ void SimpleCapture::OnFrameArrived(winrt::Direct3D11CaptureFramePool const& send
             RECT rect{};
             GetClientRect(m_hWnd, &rect);
 
-            //
-            // Get texture offsets and size
-            //
-
-            // Assume equal borders left and right
-            unsigned int xoffset = (desc.Width - (rect.right - rect.left)) / 2;
-            // Assume the bottom border is the same as left and right
-            unsigned int yoffset = (desc.Height - (rect.bottom - rect.top)) - xoffset;
-            // We want the client width and height
-            unsigned int width = (rect.right - rect.left);
-            unsigned int height = (rect.bottom - rect.top);
-
-            // SPOUT
-            // SendTexture looks after sender creation and update
-            spoutsender.SendTexture(surfaceTexture.get(), xoffset, yoffset, width, height);
+            // Test texture size
+            // If a window is picked when minimized and then restored, the texture size
+            // can be less than the client size. This resolve, but the sizes must be tested.
+            if (desc.Width > (UINT)(rect.right - rect.left) && desc.Height > (UINT)(rect.bottom - rect.top)) {
+                //
+                // Get texture offsets and size
+                //
+                // Assume equal borders left and right
+                unsigned int xoffset = (desc.Width - (rect.right - rect.left)) / 2;
+                // Assume the bottom border is the same as left and right
+                unsigned int yoffset = (desc.Height - (rect.bottom - rect.top)) - xoffset;
+                // We want the client width and height
+                unsigned int width   = (rect.right - rect.left);
+                unsigned int height  = (rect.bottom - rect.top);
+               // SendTexture looks after sender creation and update
+               spoutsender.SendTexture(surfaceTexture.get(), xoffset, yoffset, width, height); // crash
+            }
         }
         else {
             // The whole frame for a monitor or window

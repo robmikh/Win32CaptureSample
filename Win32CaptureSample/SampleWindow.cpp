@@ -59,7 +59,7 @@ SampleWindow::SampleWindow(HINSTANCE instance, LPSTR lpCmdLine, int cmdShow, std
     // and look for command line capture
     // ============================================
     // Easy way to add an icon without changing the code
-    HICON hWindowIcon = reinterpret_cast<HICON>(LoadImage(nullptr, L"Win32CaptureSample.ico", IMAGE_ICON, 16, 16, LR_LOADFROMFILE));
+    HICON hWindowIcon = reinterpret_cast<HICON>(LoadImage(nullptr, L"SpoutWinCapture.ico", IMAGE_ICON, 16, 16, LR_LOADFROMFILE));
     SendMessage(m_window, WM_SETICON, ICON_BIG, (LPARAM)hWindowIcon);
     SendMessage(m_window, WM_SETICON, ICON_SMALL, (LPARAM)hWindowIcon);
     // Centre the window on the desktop work area
@@ -205,10 +205,12 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
                 {
                     StopCapture();
                 }
+
                 else if (hwnd == m_snapshotButton)
                 {
                     OnSnapshotButtonClicked();
                 }
+
                 else if (hwnd == m_cursorCheckBox)
                 {
                     auto value = SendMessageW(m_cursorCheckBox, BM_GETCHECK, 0, 0) == BST_CHECKED;
@@ -271,12 +273,14 @@ void SampleWindow::OnCaptureStarted(winrt::GraphicsCaptureItem const& item, Capt
         break;
     }
 
+    // SPOUT
     // SendMessageW(m_cursorCheckBox, BM_SETCHECK, BST_CHECKED, 0);
     SendMessageW(m_cursorCheckBox, BM_SETCHECK, BST_UNCHECKED, 0); // SPOUT - default no cursor
     m_app->IsCursorEnabled(false);
     SendMessageW(m_clientCheckBox, BM_SETCHECK, BST_CHECKED, 0); // SPOUT - default send client area
 
     EnableWindow(m_stopButton, true);
+
     EnableWindow(m_snapshotButton, true);
 }
 
@@ -370,7 +374,7 @@ void SampleWindow::CreateControls(HINSTANCE instance)
     m_snapshotButton = snapshotButton;
     m_cursorCheckBox = cursorCheckBox;
     m_captureExcludeCheckBox = captureExcludeCheckBox;
-    m_clientCheckBox = clientCheckBox; // Add a client/window capture checkbox
+    m_clientCheckBox = clientCheckBox; // SPOUT Add a client/window capture checkbox
 
 }
 
