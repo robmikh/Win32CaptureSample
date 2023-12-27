@@ -102,7 +102,7 @@ winrt::IAsyncOperation<winrt::GraphicsCaptureItem> App::StartCaptureWithPickerAs
         // a DispatcherQueue. See CaptureSnapshot for an example that uses 
         // Direct3D11CaptureFramePool::CreateFreeThreaded, which doesn't now have this
         // requirement. See the README if you're unsure of which version of 'Create' to use.
-        co_await m_mainThread;
+        co_await wil::resume_foreground(m_mainThread);
         StartCaptureFromItem(item);
     }
 
@@ -158,7 +158,7 @@ winrt::IAsyncOperation<winrt::StorageFile> App::TakeSnapshotAsync()
     else
     {
         // Unsupported
-        co_await m_mainThread;
+        co_await wil::resume_foreground(m_mainThread);
         MessageBoxW(nullptr,
             L"Unsupported file format!",
             L"Win32CaptureSample",

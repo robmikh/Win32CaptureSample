@@ -46,6 +46,7 @@
 
 // WIL
 #include <wil/resource.h>
+#include <wil/cppwinrt_helpers.h>
 
 // Helpers
 #include <robmikh.common/composition.interop.h>
@@ -54,7 +55,9 @@
 #include <robmikh.common/d3dHelpers.desktop.h>
 #include <robmikh.common/direct3d11.interop.h>
 #include <robmikh.common/capture.desktop.interop.h>
-#include <robmikh.common/dispatcherqueue.desktop.interop.h>
+// robmikh.common needs to be updated to support newer versions of C++/WinRT
+//#include <robmikh.common/dispatcherqueue.desktop.interop.h>
+#include "dispatcherqueue.desktop.interop.h"
 #include <robmikh.common/stream.interop.h>
 #include <robmikh.common/hwnd.interop.h>
 #include <robmikh.common/ControlsHelper.h>
