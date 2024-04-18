@@ -155,6 +155,7 @@ winrt::IAsyncOperation<winrt::StorageFile> App::TakeSnapshotAsync()
         fileFormat = SimpleImageEncoder::SupportedFormats::Jpg;
         pixelFormat = winrt::DirectXPixelFormat::B8G8R8A8UIntNormalized;
     }
+    // SPOUT - 16 bit float format not used
     else if (fileExtension == L".jxr")
     {
         fileFormat = SimpleImageEncoder::SupportedFormats::Jxr;
@@ -183,7 +184,7 @@ winrt::IAsyncOperation<winrt::StorageFile> App::TakeSnapshotAsync()
 
 void App::StartCaptureFromItem(winrt::GraphicsCaptureItem item, HWND hwnd)
 {
-    m_capture = std::make_unique<SimpleCapture>(m_device, item, m_pixelFormat, hwnd);
+     m_capture = std::make_unique<SimpleCapture>(m_device, item, m_pixelFormat, hwnd);
 
     auto surface = m_capture->CreateSurface(m_compositor);
     m_brush.Surface(surface);

@@ -11,14 +11,14 @@ rem
 rem For example :
 rem
 rem For a window :
-rem "Win32CaptureSample" "Spout Demo Sender"
+rem "SpoutWinCapture" "Spout Sender"
 rem
 rem For a display :
-"Win32CaptureSample" "0"
+"SpoutWinCapture" "0"
 rem
 rem This batch file can be run without showing a console by "aa-start.vbs"
 rem
-rem Win32CaptureSample and command line can also be activated
+rem SpoutWinCapture and command line can also be activated
 rem from a program using ShellExecute of similar
 rem
 

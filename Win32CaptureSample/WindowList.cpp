@@ -81,6 +81,7 @@ WindowList::WindowList()
 
             auto windowList = reinterpret_cast<WindowList*>(lParam);
             windowList->AddWindow(window);
+
         }
         
         return TRUE;
@@ -143,6 +144,7 @@ bool WindowList::RemoveWindow(WindowInfo const& info)
             }
             index++;
         }
+
         m_windows.erase(m_windows.begin() + index);
         for (auto& comboBox : m_comboBoxes)
         {

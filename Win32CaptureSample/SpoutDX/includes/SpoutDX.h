@@ -4,7 +4,7 @@
 
 			Sender and receiver for DirectX applications
 
-	Copyright (c) 2014-2021, Lynn Jarvis. All rights reserved.
+	Copyright (c) 2014-2024 Lynn Jarvis. All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without modification, 
 	are permitted provided that the following conditions are met:
@@ -32,21 +32,36 @@
 #ifndef __spoutDX__
 #define __spoutDX__
 
-// Change the path as required
+//
+// Change the path as necessary
+//
+// For the repository folder structure, the path prefix is "..\..\SpoutGL\"
+// If the include files are in the same folder there is no prefix.
+// If the files are in a different folder, change the prefix as required.
+//
+// #define PATH_PREFIX
+
+#ifdef PATH_PREFIX
+#include "..\..\SpoutGL\SpoutCommon.h" // for dll build
+#include "..\..\SpoutGL\SpoutSenderNames.h" // for sender creation and update
+#include "..\..\SpoutGL\SpoutDirectX.h" // for creating DX11 textures
+#include "..\..\SpoutGL\SpoutFrameCount.h" // for mutex lock and new frame signal
+#include "..\..\SpoutGL\SpoutCopy.h" // for pixel copy
+#include "..\..\SpoutGL\SpoutUtils.h" // Registry utiities
+#else
 #include "SpoutCommon.h" // for dll build
 #include "SpoutSenderNames.h" // for sender creation and update
 #include "SpoutDirectX.h" // for creating DX11 textures
 #include "SpoutFrameCount.h" // for mutex lock and new frame signal
 #include "SpoutCopy.h" // for pixel copy
 #include "SpoutUtils.h" // Registry utiities
+#endif
 
 #include <direct.h> // for _getcwd
 #include <TlHelp32.h> // for PROCESSENTRY32
 #include <tchar.h> // for _tcsicmp
-
-// LJ DEBUG
-using namespace spoututils;
-
+#include <psapi.h> // for GetModuleFileNameExA
+#pragma comment(lib, "Psapi.lib")
 
 class SPOUT_DLLEXP spoutDX {
 
@@ -84,7 +99,7 @@ class SPOUT_DLLEXP spoutDX {
 		unsigned int xoffset, unsigned int yoffset,
 		unsigned int width, unsigned int height); 
 	// Send an image
-	bool SendImage(unsigned char * pData, unsigned int width, unsigned int height);
+	bool SendImage(const unsigned char * pData, unsigned int width, unsigned int height);
 	// Sender status
 	bool IsInitialized();
 	// Sender name
@@ -112,6 +127,10 @@ class SPOUT_DLLEXP spoutDX {
 	bool ReceiveTexture(ID3D11Texture2D** ppTexture);
 	// Receive an image
 	bool ReceiveImage(unsigned char * pixels, unsigned int width, unsigned int height, bool bRGB = false, bool bInvert = false);
+	// Read pixels from texture
+	bool ReadTexurePixels(ID3D11Texture2D* ppTexture, unsigned char* pixels);
+
+
 	// Open sender selection dialog
 	void SelectSender();
 	// Sender has changed
@@ -142,7 +161,7 @@ class SPOUT_DLLEXP spoutDX {
 	//
 
 	// Frame rate control
-	void HoldFps(int fps = 0);
+	void HoldFps(int fps);
 	// Disable frame counting for this application
 	void DisableFrameCount();
 	// Return frame count status
@@ -198,6 +217,36 @@ class SPOUT_DLLEXP spoutDX {
 	int GetSenderAdapter(const char* sendername, char* adaptername = nullptr, int maxchars = 256);
 
 	//
+	// Graphics preference
+	//
+// Windows 10 Vers 1803, build 17134 or later
+#ifdef NTDDI_WIN10_RS4
+
+	// Get the Windows graphics preference for an application
+	//     -1 - No preference
+	//      0 - Default
+	//      1 - Power saving
+	//      2 - High performance
+	// If no path is specified, use the current application path
+	int GetPerformancePreference(const char* path = nullptr);
+	// Set the Windows graphics preference for an application
+	//     -1 - No preference
+	//      0 - Default
+	//      1 - Power saving
+	//      2 - High performance
+	// If no path is specified, use the current application path
+	bool SetPerformancePreference(int preference, const char* path = nullptr);
+	// Get the graphics adapter name for a Windows preference
+	bool GetPreferredAdapterName(int preference, char* adaptername, int maxchars);
+	// Set graphics adapter index for a Windows preference
+	bool SetPreferredAdapter(int preference);
+	// Windows graphics preference availability
+	bool IsPreferenceAvailable();
+	// Is the path a valid application
+	bool IsApplicationPath(const char* path);
+#endif
+
+	//
 	// Sharing modes (2.006 compatibility)
 	//
 
@@ -213,7 +262,20 @@ class SPOUT_DLLEXP spoutDX {
 	bool CreateDX11texture(ID3D11Device* pd3dDevice,
 		unsigned int width, unsigned int height,
 		DXGI_FORMAT format, ID3D11Texture2D** ppTexture);
-	
+
+	//
+	// SpoutUtils namespace functions for dll access
+	//
+	void OpenSpoutConsole();
+	void CloseSpoutConsole(bool bWarning = false);
+	void EnableSpoutLog();
+	void EnableSpoutLogFile(const char* filename, bool append = false);
+	void DisableSpoutLogFile();
+	void DisableSpoutLog();
+	int SpoutMessageBox(const char* message, DWORD dwMilliseconds = 0);
+	int SpoutMessageBox(const char* caption, UINT uType, const char* format, ...);
+	int SpoutMessageBox(HWND hwnd, LPCSTR message, LPCSTR caption, UINT uType, DWORD dwMilliseconds = 0);
+
 	//
 	// Data sharing
 	//
@@ -230,29 +292,6 @@ class SPOUT_DLLEXP spoutDX {
 	int  GetMemoryBufferSize(const char *name);
 
 	//
-	// Staging texture functions
-	//
-
-	// Create a staging texture
-	bool CreateDX11StagingTexture(unsigned int width, unsigned int height, DXGI_FORMAT format, ID3D11Texture2D** pStagingTexture);
-
-	// Read pixels from a staging texture
-	bool ReadPixelData(ID3D11Texture2D* pStagingSource, unsigned char* destpixels,
-		unsigned int width, unsigned int height, bool bRGB, bool bInvert, bool bSwap);
-
-	// LJ DEBUG
-	//
-	// SpoutUtils namespace functions for dll access
-	//
-	void OpenSpoutConsole();
-	void CloseSpoutConsole(bool bWarning = false);
-	void EnableSpoutLog();
-	void EnableSpoutLogFile(const char* filename, bool append = false);
-	void DisableSpoutLogFile();
-	void DisableSpoutLog();
-
-
-	//
 	// Public for external access
 	//
 
@@ -260,7 +299,6 @@ class SPOUT_DLLEXP spoutDX {
 	spoutFrameCount frame;
 	spoutDirectX spoutdx;
 	spoutCopy spoutcopy;
-
 
 	//
 	// Options used for SpoutCam
@@ -296,7 +334,7 @@ protected :
 	bool m_bClassDevice;
 	bool m_bAdapt;
 	bool m_bMemoryShare; // Using 2.006 memoryshare methods
-	SHELLEXECUTEINFOA m_ShExecInfo;
+	SHELLEXECUTEINFOA m_ShExecInfo; // For ShellExecute
 
 	// For WriteMemoryBuffer/ReadMemoryBuffer
 	SpoutSharedMemory memorybuffer;
@@ -307,7 +345,11 @@ protected :
 	bool ReceiveSenderData();
 	void CreateReceiver(const char * sendername, unsigned int width, unsigned int height, DWORD dwFormat);
 	
-	// Create staging textures
+	// Read pixels from a staging texture
+	bool ReadPixelData(ID3D11Texture2D* pStagingSource, unsigned char* destpixels,
+		unsigned int width, unsigned int height, bool bRGB, bool bInvert, bool bSwap);
+	
+	// Create or update staging textures
 	bool CheckStagingTextures(unsigned int width, unsigned int height, DWORD dwFormat = DXGI_FORMAT_B8G8R8A8_UNORM);
 
 	// Create or update class texture

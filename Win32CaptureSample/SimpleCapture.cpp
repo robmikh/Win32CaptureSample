@@ -130,7 +130,7 @@ bool SimpleCapture::TryUpdatePixelFormat()
 void SimpleCapture::OnFrameArrived(winrt::Direct3D11CaptureFramePool const& sender, winrt::IInspectable const&)
 {
     auto swapChainResizedToFrame = false;
-
+ 
     {
         auto frame = sender.TryGetNextFrame();
         swapChainResizedToFrame = TryResizeSwapChain(frame);
@@ -146,40 +146,73 @@ void SimpleCapture::OnFrameArrived(winrt::Direct3D11CaptureFramePool const& send
         // SPOUT
         //
 
-        // Send the client area of a window
-        if (m_hWnd && m_bClient) {
+            // Frame surface texture size
+        D3D11_TEXTURE2D_DESC desc{};
+        surfaceTexture.get()->GetDesc(&desc);
+        int surfaceWidth  = desc.Width;
+        int surfaceHeight = desc.Height;
 
-            // Get the frame surface texture size
-            D3D11_TEXTURE2D_DESC desc{};
-            surfaceTexture.get()->GetDesc(&desc);
+        // Capture window size
+        RECT rect{};
+        GetWindowRect(m_hWnd, &rect);
+        int windowWidth  = (int)(rect.right - rect.left);
+        int windowHeight = (int)(rect.bottom - rect.top);
 
-            // Get capture window client size
-            RECT rect{};
-            GetClientRect(m_hWnd, &rect);
+        // Send the client area of a window (m_hWnd)
+        if (m_hWnd) {
 
-            // Test texture size
-            // If a window is picked when minimized and then restored, the texture size
-            // can be less than the client size. This resolve, but the sizes must be tested.
-            if (desc.Width > (UINT)(rect.right - rect.left) && desc.Height > (UINT)(rect.bottom - rect.top)) {
-                //
-                // Get texture offsets and size
-                //
+            if (m_bClient) { // Client area checkbox
+
+                // Capture client size
+                GetClientRect(m_hWnd, &rect);
+                int clientWidth  = (int)(rect.right - rect.left);
+                int clientHeight = (int)(rect.bottom - rect.top);
+
                 // Assume equal borders left and right
-                unsigned int xoffset = (desc.Width - (rect.right - rect.left)) / 2;
+                int xoffset = 0;
+                if (surfaceWidth > clientWidth)
+                    xoffset = (surfaceWidth - clientWidth)/2;
+
                 // Assume the bottom border is the same as left and right
-                unsigned int yoffset = (desc.Height - (rect.bottom - rect.top)) - xoffset;
-                // We want the client width and height
-                unsigned int width   = (rect.right - rect.left);
-                unsigned int height  = (rect.bottom - rect.top);
-               // SendTexture looks after sender creation and update
-               spoutsender.SendTexture(surfaceTexture.get(), xoffset, yoffset, width, height); // crash
+                int yoffset = 0;
+                if (surfaceHeight > clientHeight)
+                    yoffset = (surfaceHeight - clientHeight)-xoffset;
+
+                // Client width and height
+                unsigned int width  = (unsigned int)clientWidth;
+                unsigned int height = (unsigned int)clientHeight;
+
+                // If the window is selected or picked while minimized and then restored,
+                // offsets can be negative for a few frames while the window is restoring
+                // and the client width is not immediately reduced to zero when minimized.
+                // Also the surface size is reduced by 8. Unknown reason.
+                if (surfaceHeight == windowHeight) yoffset -= 8;
+                //
+                if (surfaceWidth >= clientWidth && surfaceHeight >= clientHeight
+                    && xoffset >= 0 && yoffset >= 0 && width > 1 && height > 1) {
+                    spoutsender.SendTexture(surfaceTexture.get(), (unsigned int)xoffset, (unsigned int)yoffset, width, height);
+                }
+                else {
+                    spoutsender.SendTexture(surfaceTexture.get());
+                }
+            } // endif client
+            else {
+                // The whole window
+                if (surfaceHeight == windowHeight) {
+                    // Restored from minimized
+                    spoutsender.SendTexture(surfaceTexture.get(), 0, 0, surfaceWidth, surfaceHeight-8);
+                }
+                else {
+                    spoutsender.SendTexture(surfaceTexture.get());
+                }
             }
-        }
+        } // endif window capture
         else {
-            // The whole frame for a monitor or window
+            // The whole frame for a monitor
             spoutsender.SendTexture(surfaceTexture.get());
-        }
-    }
+        } // end send surface texture
+
+    } // end copy surfaceTexture to backBuffer
 
     DXGI_PRESENT_PARAMETERS presentParameters{};
     m_swapChain->Present1(1, 0, &presentParameters);

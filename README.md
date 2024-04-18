@@ -21,8 +21,6 @@ Search for "SPOUT" in :\
 Main.cpp, App.h, SimpleCapture.h, SimpleCapture.cpp, SampleWindow.h, SampleWindow.cpp
 
 Build with Visual Studio 2022 - Windows 64 bit only.\
-SpoutDX.dll must be copied to the folder containing the executable e.g. "\x64\Release"\
-Find it in : Win32CaptureSample\SpoutDX
 
 SpoutDX - for this application, added function to send part of a texture.\
 bool SendTexture(ID3D11Texture2D* pTexture, unsigned int xoffset, unsigned int yoffset, unsigned int width, unsigned int height);

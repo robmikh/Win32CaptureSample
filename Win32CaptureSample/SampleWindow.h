@@ -65,9 +65,14 @@ private:
     HWND m_clientCheckBox = nullptr; // SPOUT
     HWND m_captureExcludeCheckBox = nullptr;
 
+    // SPOUT
+    HWND m_aboutButton = nullptr;
+    std::string m_iconpath;
+
     std::unique_ptr<WindowList> m_windows;
     std::unique_ptr<MonitorList> m_monitors;
-    std::vector<PixelFormatData> m_pixelFormats;
+    // SPOUT - pixel format selection not used
+    // std::vector<PixelFormatData> m_pixelFormats;
     std::shared_ptr<App> m_app;
     winrt::Windows::Graphics::Capture::GraphicsCaptureItem::Closed_revoker m_itemClosedRevoker;
 };

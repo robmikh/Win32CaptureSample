@@ -4,6 +4,8 @@
 #include "WindowList.h"
 #include "MonitorList.h"
 #include "ControlsHelper.h"
+// SPOUT
+#include "resource.h" // for version and icon
 
 namespace winrt
 {
@@ -32,13 +34,17 @@ void SampleWindow::RegisterWindowClass()
     wcex.style = CS_HREDRAW | CS_VREDRAW;
     wcex.lpfnWndProc = WndProc;
     wcex.hInstance = instance;
-    wcex.hIcon = LoadIconW(instance, IDI_APPLICATION);
+    // SPOUT
+    // wcex.hIcon = LoadIconW(instance, IDI_APPLICATION);
+    wcex.hIcon = LoadIconW(instance, MAKEINTRESOURCE(IDI_ICON1));
     wcex.hCursor = LoadCursorW(nullptr, IDC_ARROW);
     // SPOUT
     // wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
     wcex.hbrBackground = CreateSolidBrush(0x828484);
     wcex.lpszClassName = ClassName.c_str();
-    wcex.hIconSm = LoadIconW(wcex.hInstance, IDI_APPLICATION);
+    // SPOUT
+    // wcex.hIconSm = LoadIconW(wcex.hInstance, IDI_APPLICATION);
+    wcex.hIconSm = LoadIconW(wcex.hInstance, MAKEINTRESOURCE(IDI_ICON1));
     winrt::check_bool(RegisterClassExW(&wcex));
 }
 
@@ -50,20 +56,18 @@ SampleWindow::SampleWindow(HINSTANCE instance, LPSTR lpCmdLine, int cmdShow, std
     WINRT_ASSERT(!m_window);
     // SPOUT - change title from "Win32CaptureSample" to "SpoutWinCapture"
     WINRT_VERIFY(CreateWindowW(ClassName.c_str(), L"SpoutWinCapture",
-        WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 800, 600,
+        WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 800, 480,
         nullptr, nullptr, instance, this));
     WINRT_ASSERT(m_window);
 
-
-    // SPOUT - add an icon and centre the window
-    // and look for command line capture
-    // ============================================
-    // Easy way to add an icon without changing the code
-    HICON hWindowIcon = reinterpret_cast<HICON>(LoadImage(nullptr, L"SpoutWinCapture.ico", IMAGE_ICON, 16, 16, LR_LOADFROMFILE));
-    SendMessage(m_window, WM_SETICON, ICON_BIG, (LPARAM)hWindowIcon);
-    SendMessage(m_window, WM_SETICON, ICON_SMALL, (LPARAM)hWindowIcon);
+    //
+    // SPOUT - centre the window and look for command line capture
+    //
+    // ===========================================================================
+    //
     // Centre the window on the desktop work area
-    RECT rc ={0, 0, 800, 600}; // Client size
+    //
+    RECT rc ={ 0, 0, 800, 480 }; // Client size
     GetWindowRect(m_window, &rc);
     RECT WorkArea;
     int WindowPosLeft = 0;
@@ -73,7 +77,8 @@ SampleWindow::SampleWindow(HINSTANCE instance, LPSTR lpCmdLine, int cmdShow, std
     WindowPosTop += ((WorkArea.bottom - WorkArea.top) - (rc.bottom - rc.top)) / 2;
     MoveWindow(m_window, WindowPosLeft, WindowPosTop, (rc.right - rc.left), (rc.bottom - rc.top), false);
     //
-    // SPOUT - Command line capture
+    // Command line capture
+    //
     // Find the window or display now so the main window
     // can be minimized after the initializations are done
     HWND hwndcapture = nullptr;
@@ -87,26 +92,27 @@ SampleWindow::SampleWindow(HINSTANCE instance, LPSTR lpCmdLine, int cmdShow, std
             monitorindex = atoi(str.c_str());
         }
         else {
-            // Multiple caharters - Window caption
+            // Multiple characters - Window caption
             // Find the window handle from it's caption
             hwndcapture = FindWindowA(NULL, str.c_str());
         }
     }
-    // ============================================
+    // ===========================================================================
+
 
     auto isAllDisplaysPresent = winrt::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", 9);
 
     m_app = app;
     m_windows = std::make_unique<WindowList>();
     m_monitors = std::make_unique<MonitorList>(isAllDisplaysPresent);
-    m_pixelFormats =
-    {
-        { L"B8G8R8A8UIntNormalized", winrt::DirectXPixelFormat::B8G8R8A8UIntNormalized },
-        { L"R16G16B16A16Float", winrt::DirectXPixelFormat::R16G16B16A16Float }
-    };
+    // SPOUT - pixel format selection not used
+    // m_pixelFormats =
+    // {
+        // { L"B8G8R8A8UIntNormalized", winrt::DirectXPixelFormat::B8G8R8A8UIntNormalized },
+        // { L"R16G16B16A16Float", winrt::DirectXPixelFormat::R16G16B16A16Float }
+    // };
 
     CreateControls(instance);
-
 
     // SPOUT - command line processing
     // ============================================
@@ -126,12 +132,25 @@ SampleWindow::SampleWindow(HINSTANCE instance, LPSTR lpCmdLine, int cmdShow, std
 
     // Command line capture
     if (hwndcapture > 0) {
+        // 
+        // The windows combobox control has been created and populated
+        // Set the current selection to the capture window
         //
-        // Window caption
-        //
+        auto window = WindowInfo(hwndcapture);
+        if (m_windows->GetCurrentWindows().size() > 0) {
+            for (size_t i=0; i<m_windows->GetCurrentWindows().size(); i++) {
+                if (window == m_windows->GetCurrentWindows()[i] ) {
+                    SendMessageW(m_windowComboBox, CB_SETCURSEL, i, 0);
+                }
+            }
+        }
+        //  
         // Restore if minimized 
+        //
         if (IsIconic(hwndcapture)) ShowWindow(hwndcapture, SW_RESTORE);
+        //
         // TryStartCapture for the window
+        //
         auto item = m_app->TryStartCaptureFromWindowHandle(hwndcapture);
         if (item != nullptr) {
             // Capture from this window straight away
@@ -171,6 +190,7 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
 
         switch (command)
         {
+
         case CBN_SELCHANGE:
             {
                 auto index = SendMessageW(hwnd, CB_GETCURSEL, 0, 0);
@@ -205,12 +225,10 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
                 {
                     StopCapture();
                 }
-
                 else if (hwnd == m_snapshotButton)
                 {
                     OnSnapshotButtonClicked();
                 }
-
                 else if (hwnd == m_cursorCheckBox)
                 {
                     auto value = SendMessageW(m_cursorCheckBox, BM_GETCHECK, 0, 0) == BST_CHECKED;
@@ -227,9 +245,24 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
                     auto value = SendMessageW(m_captureExcludeCheckBox, BM_GETCHECK, 0, 0) == BST_CHECKED;
                     winrt::check_bool(SetWindowDisplayAffinity(m_window, value ? WDA_EXCLUDEFROMCAPTURE : WDA_NONE));
                 }
+                else if (hwnd == m_aboutButton)
+                {
+                    // SPOUT
+                    std::string str = "\n                  SpoutWinCapture\n\n";
+                    str += "    Windows monitor and window capture\n";
+                    str += "   with Spout output, using <a href=\"https://learn.microsoft.com/en-us/windows/uwp/cpp-and-winrt-apis/\">WinRT</a> methods\n";
+                    str += "      Original code by <a href=\"https://github.com/robmikh/Win32CaptureSample\">Robert Mikhayelyan</a>\n\n";
+                    str += "                       Version 2.0.0.5\n";
+                    str += "                  <a href=\"https://spout.zeal.co\">https://spout.zeal.co</a>\n";
+                    str += " \n";
+                    // Icon from resources
+                    SpoutMessageBoxIcon(LoadIconA(GetModuleHandle(NULL), MAKEINTRESOURCEA(IDI_ICON1)));
+                    // Centre on the application window
+                    SpoutMessageBox(m_window, str.c_str(), "About", MB_USERICON | MB_OK);
+                }
+            }
         }
-            break;
-        }
+        break;
     }
     break;
     case WM_DISPLAYCHANGE:
@@ -296,10 +329,18 @@ winrt::fire_and_forget SampleWindow::OnPickerButtonClicked()
 winrt::fire_and_forget SampleWindow::OnSnapshotButtonClicked()
 {
     auto file = co_await m_app->TakeSnapshotAsync();
-    if (file != nullptr)
-    {
-        co_await winrt::Launcher::LaunchFileAsync(file);
-    }
+    
+    // SPOUT
+    // Replace image display with messagebox
+    std::string str = winrt::to_string(file.Path());
+    SpoutMessageBoxWindow(m_window); // Centre on the application window
+    SpoutMessageBox(NULL, str.c_str(), "Saved image file", MB_ICONINFORMATION | MB_OK, 4000);
+    
+    // if (file != nullptr)
+    // {
+        // co_await winrt::Launcher::LaunchFileAsync(file);
+    // }
+
 }
 
 // Not DPI aware but could be by multiplying the constants based on the monitor scale factor
@@ -343,7 +384,7 @@ void SampleWindow::CreateControls(HINSTANCE instance)
     // Create independent snapshot button
     auto snapshotButton = controls.CreateControl(ControlType::Button, L"Take Snapshot", WS_DISABLED);
 
-    // Create cursor checkbox
+     // Create cursor checkbox
     auto cursorCheckBox = controls.CreateControl(ControlType::CheckBox, L"Enable Cursor", cursorEnableStyle);
 
     // The default state is true for cursor rendering
@@ -367,6 +408,11 @@ void SampleWindow::CreateControls(HINSTANCE instance)
     // The default state is false for capture exclusion
     SendMessageW(captureExcludeCheckBox, BM_SETCHECK, BST_UNCHECKED, 0);
 
+    //
+    // SPOUT
+    // About button
+    auto aboutButton = controls.CreateControl(ControlType::Button, L"About", WS_VISIBLE);
+
     m_windowComboBox = windowComboBox;
     m_monitorComboBox = monitorComboBox;
     m_pickerButton = pickerButton;
@@ -375,6 +421,8 @@ void SampleWindow::CreateControls(HINSTANCE instance)
     m_cursorCheckBox = cursorCheckBox;
     m_captureExcludeCheckBox = captureExcludeCheckBox;
     m_clientCheckBox = clientCheckBox; // SPOUT Add a client/window capture checkbox
+    // SPOUT
+    m_aboutButton = aboutButton;
 
 }
 

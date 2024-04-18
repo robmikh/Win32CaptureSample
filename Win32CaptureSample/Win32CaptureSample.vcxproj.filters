@@ -52,6 +52,7 @@
       <Filter>Util</Filter>
     </ClInclude>
     <ClInclude Include="ControlsHelper.h" />
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Util">
@@ -62,6 +63,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="icon1.ico" />
+    <ResourceCompile Include="Win32CaptureSample.rc" />
   </ItemGroup>
 </Project>
