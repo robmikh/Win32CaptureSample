@@ -261,3 +261,20 @@ winrt::fire_and_forget App::IsBorderRequired(bool value)
         m_capture->IsBorderRequired(value);
     }
 }
+
+bool App::IncludeSecondaryWindows()
+{
+    if (m_capture != nullptr)
+    {
+        return m_capture->IncludeSecondaryWindows();
+    }
+    return false;
+}
+
+void App::IncludeSecondaryWindows(bool value)
+{
+    if (m_capture != nullptr)
+    {
+        m_capture->IncludeSecondaryWindows(value);
+    }
+}

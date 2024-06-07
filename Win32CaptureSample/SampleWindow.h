@@ -49,9 +49,11 @@ private:
     HWND m_cursorCheckBox = nullptr;
     HWND m_captureExcludeCheckBox = nullptr;
     HWND m_borderRequiredCheckBox = nullptr;
+    HWND m_secondaryWindowsCheckBox = nullptr;
     std::unique_ptr<WindowList> m_windows;
     std::unique_ptr<MonitorList> m_monitors;
     std::vector<PixelFormatData> m_pixelFormats;
     std::shared_ptr<App> m_app;
     winrt::Windows::Graphics::Capture::GraphicsCaptureItem::Closed_revoker m_itemClosedRevoker;
+    bool m_isSecondaryWindowsFeaturePresent = false;
 };

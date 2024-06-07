@@ -146,6 +146,11 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
                     auto value = SendMessageW(m_borderRequiredCheckBox, BM_GETCHECK, 0, 0) == BST_CHECKED;
                     m_app->IsBorderRequired(value);
                 }
+                else if (hwnd == m_secondaryWindowsCheckBox)
+                {
+                    auto value = SendMessageW(m_secondaryWindowsCheckBox, BM_GETCHECK, 0, 0) == BST_CHECKED;
+                    m_app->IncludeSecondaryWindows(value);
+                }
             }
             break;
         }
@@ -172,13 +177,33 @@ void SampleWindow::OnCaptureStarted(winrt::GraphicsCaptureItem const& item, Capt
     {
     case CaptureType::ProgrammaticWindow:
         SendMessageW(m_monitorComboBox, CB_SETCURSEL, -1, 0);
+        if (m_isSecondaryWindowsFeaturePresent)
+        {
+            EnableWindow(m_secondaryWindowsCheckBox, true);
+        }
         break;
     case CaptureType::ProgrammaticMonitor:
         SendMessageW(m_windowComboBox, CB_SETCURSEL, -1, 0);
+        if (m_isSecondaryWindowsFeaturePresent)
+        {
+            EnableWindow(m_secondaryWindowsCheckBox, false);
+        }
         break;
     case CaptureType::Picker:
         SendMessageW(m_windowComboBox, CB_SETCURSEL, -1, 0);
         SendMessageW(m_monitorComboBox, CB_SETCURSEL, -1, 0);
+        if (m_isSecondaryWindowsFeaturePresent)
+        {
+            // Check to see if the item is a window
+            if (auto windowItem = item.try_as<IWindowGraphicsCaptureItemInterop>())
+            {
+                EnableWindow(m_secondaryWindowsCheckBox, true);
+            }
+            else
+            {
+                EnableWindow(m_secondaryWindowsCheckBox, false);
+            }
+        }
         break;
     }
     SendMessageW(m_cursorCheckBox, BM_SETCHECK, BST_CHECKED, 0);
@@ -221,8 +246,11 @@ void SampleWindow::CreateControls(HINSTANCE instance)
     auto isWin32CaptureExcludePresent = winrt::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", 9);
 
     // Border configuration
-    auto isBorderRequiredPresent = winrt::Windows::Foundation::Metadata::ApiInformation::IsPropertyPresent(winrt::name_of<winrt::GraphicsCaptureSession>(), L"IsBorderRequired");
+    auto isBorderRequiredPresent = winrt::ApiInformation::IsPropertyPresent(winrt::name_of<winrt::GraphicsCaptureSession>(), L"IsBorderRequired");
     auto borderEnableSytle = isBorderRequiredPresent ? 0 : WS_DISABLED;
+
+    // Secondary windows configuration
+    m_isSecondaryWindowsFeaturePresent = winrt::ApiInformation::IsPropertyPresent(winrt::name_of<winrt::GraphicsCaptureSession>(), L"IncludeSecondaryWindows");
 
     auto controls = util::StackPanel(m_window, instance, 10, 10, 40, 200, 30);
 
@@ -284,8 +312,15 @@ void SampleWindow::CreateControls(HINSTANCE instance)
     // Border required checkbox
     m_borderRequiredCheckBox = controls.CreateControl(util::ControlType::CheckBox, L"Border required", borderEnableSytle);
 
-    // The default state is false for border required checkbox
+    // The default state is true for border required checkbox
     SendMessageW(m_borderRequiredCheckBox, BM_SETCHECK, BST_CHECKED, 0);
+
+    // Include secondary windows checkbox
+    // NOTE: We always start disabled until a window capture is started
+    m_secondaryWindowsCheckBox = controls.CreateControl(util::ControlType::CheckBox, L"Include secondary windows", WS_DISABLED);
+
+    // The default state is false for the secondary windows checkbox
+    SendMessageW(m_secondaryWindowsCheckBox, BM_SETCHECK, BST_UNCHECKED, 0);
 }
 
 void SampleWindow::SetSubTitle(std::wstring const& text)
@@ -306,6 +341,7 @@ void SampleWindow::StopCapture()
     SendMessageW(m_monitorComboBox, CB_SETCURSEL, -1, 0);
     SendMessageW(m_cursorCheckBox, BM_SETCHECK, BST_CHECKED, 0);
     SendMessageW(m_borderRequiredCheckBox, BM_SETCHECK, BST_CHECKED, 0);
+    SendMessageW(m_secondaryWindowsCheckBox, BM_SETCHECK, BST_UNCHECKED, 0);
     EnableWindow(m_stopButton, false);
     EnableWindow(m_snapshotButton, false);
 }
