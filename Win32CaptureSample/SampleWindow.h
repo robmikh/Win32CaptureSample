@@ -48,7 +48,7 @@ private:
     HWND m_pixelFormatComboBox = nullptr;
     HWND m_cursorCheckBox = nullptr;
     HWND m_captureExcludeCheckBox = nullptr;
-    HWND m_borderRequiredCheckBoxHwnd = nullptr;
+    HWND m_borderRequiredCheckBox = nullptr;
     std::unique_ptr<WindowList> m_windows;
     std::unique_ptr<MonitorList> m_monitors;
     std::vector<PixelFormatData> m_pixelFormats;

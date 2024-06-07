@@ -141,9 +141,9 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
                     auto value = SendMessageW(m_captureExcludeCheckBox, BM_GETCHECK, 0, 0) == BST_CHECKED;
                     winrt::check_bool(SetWindowDisplayAffinity(m_window, value ? WDA_EXCLUDEFROMCAPTURE : WDA_NONE));
                 }
-                else if (hwnd == m_borderRequiredCheckBoxHwnd)
+                else if (hwnd == m_borderRequiredCheckBox)
                 {
-                    auto value = SendMessageW(m_borderRequiredCheckBoxHwnd, BM_GETCHECK, 0, 0) == BST_CHECKED;
+                    auto value = SendMessageW(m_borderRequiredCheckBox, BM_GETCHECK, 0, 0) == BST_CHECKED;
                     m_app->IsBorderRequired(value);
                 }
             }
@@ -182,7 +182,7 @@ void SampleWindow::OnCaptureStarted(winrt::GraphicsCaptureItem const& item, Capt
         break;
     }
     SendMessageW(m_cursorCheckBox, BM_SETCHECK, BST_CHECKED, 0);
-    SendMessageW(m_borderRequiredCheckBoxHwnd, BM_SETCHECK, BST_CHECKED, 0);
+    SendMessageW(m_borderRequiredCheckBox, BM_SETCHECK, BST_CHECKED, 0);
     EnableWindow(m_stopButton, true);
     EnableWindow(m_snapshotButton, true);
 }
@@ -229,73 +229,63 @@ void SampleWindow::CreateControls(HINSTANCE instance)
     auto windowLabel = controls.CreateControl(util::ControlType::Label, L"Windows:");
 
     // Create window combo box
-    auto windowComboBox = controls.CreateControl(util::ControlType::ComboBox, L"", win32ProgrammaticStyle);
+    m_windowComboBox = controls.CreateControl(util::ControlType::ComboBox, L"", win32ProgrammaticStyle);
 
     // Populate window combo box and register for updates
-    m_windows->RegisterComboBoxForUpdates(windowComboBox);
+    m_windows->RegisterComboBoxForUpdates(m_windowComboBox);
 
     auto monitorLabel = controls.CreateControl(util::ControlType::Label, L"Displays:");
 
     // Create monitor combo box
-    auto monitorComboBox = controls.CreateControl(util::ControlType::ComboBox, L"", win32ProgrammaticStyle);
+    m_monitorComboBox = controls.CreateControl(util::ControlType::ComboBox, L"", win32ProgrammaticStyle);
 
     // Populate monitor combo box
-    m_monitors->RegisterComboBoxForUpdates(monitorComboBox);
+    m_monitors->RegisterComboBoxForUpdates(m_monitorComboBox);
 
     // Create picker button
-    auto pickerButton = controls.CreateControl(util::ControlType::Button, L"Open Picker");
+    m_pickerButton = controls.CreateControl(util::ControlType::Button, L"Open Picker");
 
     // Create stop capture button
-    auto stopButton = controls.CreateControl(util::ControlType::Button, L"Stop Capture", WS_DISABLED);
+    m_stopButton = controls.CreateControl(util::ControlType::Button, L"Stop Capture", WS_DISABLED);
 
     // Create independent snapshot button
-    auto snapshotButton = controls.CreateControl(util::ControlType::Button, L"Take Snapshot", WS_DISABLED);
+    m_snapshotButton = controls.CreateControl(util::ControlType::Button, L"Take Snapshot", WS_DISABLED);
 
     auto pixelFormatLabel = controls.CreateControl(util::ControlType::Label, L"Pixel Format:");
 
     // Create pixel format combo box
-    auto pixelFormatComboBox = controls.CreateControl(util::ControlType::ComboBox, L"");
+    m_pixelFormatComboBox = controls.CreateControl(util::ControlType::ComboBox, L"");
 
     // Populate pixel format combo box
     for (auto& pixelFormat : m_pixelFormats)
     {
-        SendMessageW(pixelFormatComboBox, CB_ADDSTRING, 0, (LPARAM)pixelFormat.Name.c_str());
+        SendMessageW(m_pixelFormatComboBox, CB_ADDSTRING, 0, (LPARAM)pixelFormat.Name.c_str());
     }
     
     // The default pixel format is BGRA8
-    SendMessageW(pixelFormatComboBox, CB_SETCURSEL, 0, 0);
+    SendMessageW(m_pixelFormatComboBox, CB_SETCURSEL, 0, 0);
   
     // Create cursor checkbox
-    auto cursorCheckBox = controls.CreateControl(util::ControlType::CheckBox, L"Enable Cursor", cursorEnableStyle);
+    m_cursorCheckBox = controls.CreateControl(util::ControlType::CheckBox, L"Enable Cursor", cursorEnableStyle);
 
     // The default state is true for cursor rendering
-    SendMessageW(cursorCheckBox, BM_SETCHECK, BST_CHECKED, 0);
+    SendMessageW(m_cursorCheckBox, BM_SETCHECK, BST_CHECKED, 0);
 
     // Create capture exclude checkbox
     // NOTE: We don't version check this feature because setting WDA_EXCLUDEFROMCAPTURE is the same as
     //       setting WDA_MONITOR on older builds of Windows. We're changing the label here to try and 
     //       limit any user confusion.
     std::wstring excludeCheckBoxLabel = isWin32CaptureExcludePresent ? L"Exclude this window" : L"Block this window";
-    auto captureExcludeCheckBox = controls.CreateControl(util::ControlType::CheckBox, excludeCheckBoxLabel.c_str());
+    m_captureExcludeCheckBox = controls.CreateControl(util::ControlType::CheckBox, excludeCheckBoxLabel.c_str());
 
     // The default state is false for capture exclusion
-    SendMessageW(captureExcludeCheckBox, BM_SETCHECK, BST_UNCHECKED, 0);
+    SendMessageW(m_captureExcludeCheckBox, BM_SETCHECK, BST_UNCHECKED, 0);
 
     // Border required checkbox
-    HWND borderRequiredCheckBoxHwnd = controls.CreateControl(util::ControlType::CheckBox, L"Border required", borderEnableSytle);
+    m_borderRequiredCheckBox = controls.CreateControl(util::ControlType::CheckBox, L"Border required", borderEnableSytle);
 
     // The default state is false for border required checkbox
-    SendMessageW(borderRequiredCheckBoxHwnd, BM_SETCHECK, BST_CHECKED, 0);
-
-    m_windowComboBox = windowComboBox;
-    m_monitorComboBox = monitorComboBox;
-    m_pickerButton = pickerButton;
-    m_stopButton = stopButton;
-    m_snapshotButton = snapshotButton;
-    m_cursorCheckBox = cursorCheckBox;
-    m_captureExcludeCheckBox = captureExcludeCheckBox;
-    m_pixelFormatComboBox = pixelFormatComboBox;
-    m_borderRequiredCheckBoxHwnd = borderRequiredCheckBoxHwnd;
+    SendMessageW(m_borderRequiredCheckBox, BM_SETCHECK, BST_CHECKED, 0);
 }
 
 void SampleWindow::SetSubTitle(std::wstring const& text)
@@ -315,7 +305,7 @@ void SampleWindow::StopCapture()
     SendMessageW(m_windowComboBox, CB_SETCURSEL, -1, 0);
     SendMessageW(m_monitorComboBox, CB_SETCURSEL, -1, 0);
     SendMessageW(m_cursorCheckBox, BM_SETCHECK, BST_CHECKED, 0);
-    SendMessageW(m_borderRequiredCheckBoxHwnd, BM_SETCHECK, BST_CHECKED, 0);
+    SendMessageW(m_borderRequiredCheckBox, BM_SETCHECK, BST_CHECKED, 0);
     EnableWindow(m_stopButton, false);
     EnableWindow(m_snapshotButton, false);
 }
