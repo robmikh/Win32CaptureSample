@@ -1,10 +1,12 @@
 #pragma once
+#include "DirtyRegionVisualizer.h"
 
 class SimpleCapture
 {
 public:
     SimpleCapture(
         winrt::Windows::Graphics::DirectX::Direct3D11::IDirect3DDevice const& device,
+        std::shared_ptr<DirtyRegionVisualizer> const& dirtyRegionVisualizer,
         winrt::Windows::Graphics::Capture::GraphicsCaptureItem const& item,
         winrt::Windows::Graphics::DirectX::DirectXPixelFormat pixelFormat);
     ~SimpleCapture() { Close(); }
@@ -27,6 +29,9 @@ public:
         auto newFormat = std::optional(pixelFormat);
         m_pixelFormatUpdate.exchange(newFormat);
     }
+
+    bool VisualizeDirtyRegions() { CheckClosed(); return m_visualizeDirtyRegions.load(); }
+    void VisualizeDirtyRegions(bool value);
 
     void Close();
 
@@ -61,5 +66,7 @@ private:
     std::atomic<std::optional<winrt::Windows::Graphics::DirectX::DirectXPixelFormat>> m_pixelFormatUpdate = std::nullopt;
 
     std::atomic<bool> m_closed = false;
-    std::atomic<bool> m_captureNextImage = false;
+
+    std::shared_ptr<DirtyRegionVisualizer> m_dirtyRegionVisualizer;
+    std::atomic<bool> m_visualizeDirtyRegions = false;
 };

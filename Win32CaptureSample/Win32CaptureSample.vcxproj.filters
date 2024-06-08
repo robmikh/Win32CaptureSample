@@ -9,6 +9,7 @@
     <ClCompile Include="CaptureSnapshot.cpp" />
     <ClCompile Include="WindowList.cpp" />
     <ClCompile Include="MonitorList.cpp" />
+    <ClCompile Include="DirtyRegionVisualizer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -18,8 +19,13 @@
     <ClInclude Include="CaptureSnapshot.h" />
     <ClInclude Include="WindowList.h" />
     <ClInclude Include="MonitorList.h" />
+    <ClInclude Include="dispatcherqueue.desktop.interop.h" />
+    <ClInclude Include="DirtyRegionVisualizer.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="$(MSBuildThisFileDirectory)..\..\natvis\wil.natvis" />
   </ItemGroup>
 </Project>

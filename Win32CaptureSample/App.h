@@ -1,5 +1,6 @@
 #pragma once
 #include "SimpleCapture.h"
+#include "DirtyRegionVisualizer.h"
 
 class App
 {
@@ -23,6 +24,9 @@ public:
     bool IncludeSecondaryWindows();
     void IncludeSecondaryWindows(bool value);
 
+    bool VisualizeDirtyRegions();
+    void VisualizeDirtyRegions(bool value);
+
     void StopCapture();
 
 private:
@@ -41,4 +45,5 @@ private:
     winrt::Windows::Graphics::DirectX::Direct3D11::IDirect3DDevice m_device{ nullptr };
     std::unique_ptr<SimpleCapture> m_capture{ nullptr };
     winrt::Windows::Graphics::DirectX::DirectXPixelFormat m_pixelFormat = winrt::Windows::Graphics::DirectX::DirectXPixelFormat::B8G8R8A8UIntNormalized;
+    std::shared_ptr<DirtyRegionVisualizer> m_dirtyRegionVisualizer;
 };

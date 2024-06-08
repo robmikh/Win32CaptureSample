@@ -5,6 +5,7 @@
 namespace winrt
 {
     using namespace Windows::Foundation;
+    using namespace Windows::Foundation::Metadata;
     using namespace Windows::Graphics::Capture;
     using namespace Windows::Graphics::DirectX;
     using namespace Windows::Graphics::Imaging;
@@ -53,6 +54,12 @@ App::App(winrt::ContainerVisual root, winrt::GraphicsCapturePicker capturePicker
     auto d3dDevice = util::CreateD3DDevice();
     auto dxgiDevice = d3dDevice.as<IDXGIDevice>();
     m_device = CreateDirect3DDevice(dxgiDevice.get());
+
+    // Don't bother with a D2D device if we can't use dirty regions
+    if (winrt::ApiInformation::IsPropertyPresent(winrt::name_of<winrt::GraphicsCaptureSession>(), L"DirtyRegionMode"))
+    {
+        m_dirtyRegionVisualizer = std::make_shared<DirtyRegionVisualizer>(d3dDevice);
+    }
 }
 
 winrt::GraphicsCaptureItem App::TryStartCaptureFromWindowHandle(HWND hwnd)
@@ -196,7 +203,7 @@ winrt::IAsyncOperation<winrt::StorageFile> App::TakeSnapshotAsync()
 
 void App::StartCaptureFromItem(winrt::GraphicsCaptureItem item)
 {
-    m_capture = std::make_unique<SimpleCapture>(m_device, item, m_pixelFormat);
+    m_capture = std::make_unique<SimpleCapture>(m_device, m_dirtyRegionVisualizer, item, m_pixelFormat);
 
     auto surface = m_capture->CreateSurface(m_compositor);
     m_brush.Surface(surface);
@@ -276,5 +283,22 @@ void App::IncludeSecondaryWindows(bool value)
     if (m_capture != nullptr)
     {
         m_capture->IncludeSecondaryWindows(value);
+    }
+}
+
+bool App::VisualizeDirtyRegions()
+{
+    if (m_capture != nullptr)
+    {
+        return m_capture->VisualizeDirtyRegions();
+    }
+    return false;
+}
+
+void App::VisualizeDirtyRegions(bool value)
+{
+    if (m_capture != nullptr)
+    {
+        m_capture->VisualizeDirtyRegions(value);
     }
 }

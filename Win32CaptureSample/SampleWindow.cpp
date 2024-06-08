@@ -153,6 +153,11 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
                     auto value = SendMessageW(m_secondaryWindowsCheckBox, BM_GETCHECK, 0, 0) == BST_CHECKED;
                     m_app->IncludeSecondaryWindows(value);
                 }
+                else if (hwnd == m_visualizeDirtyRegionCheckBox)
+                {
+                    auto value = SendMessageW(m_visualizeDirtyRegionCheckBox, BM_GETCHECK, 0, 0) == BST_CHECKED;
+                    m_app->VisualizeDirtyRegions(value);
+                }
             }
             break;
         }
@@ -210,6 +215,7 @@ void SampleWindow::OnCaptureStarted(winrt::GraphicsCaptureItem const& item, Capt
     }
     SendMessageW(m_cursorCheckBox, BM_SETCHECK, BST_CHECKED, 0);
     SendMessageW(m_borderRequiredCheckBox, BM_SETCHECK, BST_CHECKED, 0);
+    SendMessageW(m_visualizeDirtyRegionCheckBox, BM_SETCHECK, BST_UNCHECKED, 0);
     EnableWindow(m_stopButton, true);
     EnableWindow(m_snapshotButton, true);
 }
@@ -250,6 +256,10 @@ void SampleWindow::CreateControls(HINSTANCE instance)
     // Border configuration
     auto isBorderRequiredPresent = winrt::ApiInformation::IsPropertyPresent(winrt::name_of<winrt::GraphicsCaptureSession>(), L"IsBorderRequired");
     auto borderEnableSytle = isBorderRequiredPresent ? 0 : WS_DISABLED;
+
+    // Dirty region mode
+    auto isDirtyRegionModePresent = winrt::ApiInformation::IsPropertyPresent(winrt::name_of<winrt::GraphicsCaptureSession>(), L"DirtyRegionMode");
+    auto dirtyRegionStyle = isDirtyRegionModePresent ? 0 : WS_DISABLED;
 
     // Secondary windows configuration
     m_isSecondaryWindowsFeaturePresent = winrt::ApiInformation::IsPropertyPresent(winrt::name_of<winrt::GraphicsCaptureSession>(), L"IncludeSecondaryWindows");
@@ -323,6 +333,12 @@ void SampleWindow::CreateControls(HINSTANCE instance)
 
     // The default state is false for the secondary windows checkbox
     SendMessageW(m_secondaryWindowsCheckBox, BM_SETCHECK, BST_UNCHECKED, 0);
+
+    // Border required checkbox
+    m_visualizeDirtyRegionCheckBox = controls.CreateControl(util::ControlType::CheckBox, L"Visualize dirty region", dirtyRegionStyle);
+
+    // The default state is false for dirty region checkbox
+    SendMessageW(m_visualizeDirtyRegionCheckBox, BM_SETCHECK, BST_UNCHECKED, 0);
 }
 
 void SampleWindow::SetSubTitle(std::wstring const& text)
@@ -344,6 +360,7 @@ void SampleWindow::StopCapture()
     SendMessageW(m_cursorCheckBox, BM_SETCHECK, BST_CHECKED, 0);
     SendMessageW(m_borderRequiredCheckBox, BM_SETCHECK, BST_CHECKED, 0);
     SendMessageW(m_secondaryWindowsCheckBox, BM_SETCHECK, BST_UNCHECKED, 0);
+    SendMessageW(m_visualizeDirtyRegionCheckBox, BM_SETCHECK, BST_UNCHECKED, 0);
     EnableWindow(m_stopButton, false);
     EnableWindow(m_snapshotButton, false);
 }

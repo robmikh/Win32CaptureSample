@@ -19,11 +19,16 @@ namespace util
     using namespace robmikh::common::uwp;
 }
 
-SimpleCapture::SimpleCapture(winrt::IDirect3DDevice const& device, winrt::GraphicsCaptureItem const& item, winrt::DirectXPixelFormat pixelFormat)
+SimpleCapture::SimpleCapture(
+    winrt::IDirect3DDevice const& device,
+    std::shared_ptr<DirtyRegionVisualizer> const& dirtyRegionVisualizer,
+    winrt::GraphicsCaptureItem const& item, 
+    winrt::DirectXPixelFormat pixelFormat)
 {
     m_item = item;
     m_device = device;
     m_pixelFormat = pixelFormat;
+    m_dirtyRegionVisualizer = dirtyRegionVisualizer;
 
     auto d3dDevice = GetDXGIInterfaceFromObject<ID3D11Device>(m_device);
     d3dDevice->GetImmediateContext(m_d3dContext.put());
@@ -52,6 +57,15 @@ winrt::ICompositionSurface SimpleCapture::CreateSurface(winrt::Compositor const&
 {
     CheckClosed();
     return util::CreateCompositionSurfaceForSwapChain(compositor, m_swapChain.get());
+}
+
+void SimpleCapture::VisualizeDirtyRegions(bool value)
+{
+    CheckClosed();
+    if (m_dirtyRegionVisualizer != nullptr) {
+        auto expected = !value;
+        m_visualizeDirtyRegions.compare_exchange_strong(expected, value);
+    }
 }
 
 void SimpleCapture::Close()
@@ -115,9 +129,15 @@ void SimpleCapture::OnFrameArrived(winrt::Direct3D11CaptureFramePool const& send
 
         winrt::com_ptr<ID3D11Texture2D> backBuffer;
         winrt::check_hresult(m_swapChain->GetBuffer(0, winrt::guid_of<ID3D11Texture2D>(), backBuffer.put_void()));
+
         auto surfaceTexture = GetDXGIInterfaceFromObject<ID3D11Texture2D>(frame.Surface());
         // copy surfaceTexture to backBuffer
         m_d3dContext->CopyResource(backBuffer.get(), surfaceTexture.get());
+
+        if (m_dirtyRegionVisualizer && m_visualizeDirtyRegions.load())
+        {
+            m_dirtyRegionVisualizer->Render(backBuffer, frame);
+        }
     }
 
     DXGI_PRESENT_PARAMETERS presentParameters{};

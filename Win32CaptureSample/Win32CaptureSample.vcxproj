@@ -142,6 +142,7 @@
   <ItemGroup>
     <ClCompile Include="App.cpp" />
     <ClCompile Include="CaptureSnapshot.cpp" />
+    <ClCompile Include="DirtyRegionVisualizer.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MonitorList.cpp" />
     <ClCompile Include="pch.cpp" />
@@ -152,6 +153,7 @@
   <ItemGroup>
     <ClInclude Include="App.h" />
     <ClInclude Include="CaptureSnapshot.h" />
+    <ClInclude Include="DirtyRegionVisualizer.h" />
     <ClInclude Include="dispatcherqueue.desktop.interop.h" />
     <ClInclude Include="MonitorList.h" />
     <ClInclude Include="pch.h" />

@@ -50,6 +50,7 @@ private:
     HWND m_captureExcludeCheckBox = nullptr;
     HWND m_borderRequiredCheckBox = nullptr;
     HWND m_secondaryWindowsCheckBox = nullptr;
+    HWND m_visualizeDirtyRegionCheckBox = nullptr;
     std::unique_ptr<WindowList> m_windows;
     std::unique_ptr<MonitorList> m_monitors;
     std::vector<PixelFormatData> m_pixelFormats;
