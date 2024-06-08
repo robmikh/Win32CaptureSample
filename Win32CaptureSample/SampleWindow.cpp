@@ -23,6 +23,8 @@ namespace util
 const std::wstring SampleWindow::ClassName = L"Win32CaptureSample.SampleWindow";
 std::once_flag SampleWindowClassRegistration;
 
+const std::wstring WindowsUniversalContract = L"Windows.Foundation.UniversalApiContract";
+
 void SampleWindow::RegisterWindowClass()
 {
     auto instance = winrt::check_pointer(GetModuleHandleW(nullptr));
@@ -235,15 +237,15 @@ winrt::fire_and_forget SampleWindow::OnSnapshotButtonClicked()
 void SampleWindow::CreateControls(HINSTANCE instance)
 {
     // Programmatic capture
-    auto isWin32ProgrammaticPresent = winrt::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", 8);
+    auto isWin32ProgrammaticPresent = winrt::ApiInformation::IsApiContractPresent(WindowsUniversalContract, 8);
     auto win32ProgrammaticStyle = isWin32ProgrammaticPresent ? 0 : WS_DISABLED;
 
     // Cursor capture
-    auto isCursorEnablePresent = winrt::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", 9);
+    auto isCursorEnablePresent = winrt::ApiInformation::IsApiContractPresent(WindowsUniversalContract, 9);
     auto cursorEnableStyle = isCursorEnablePresent ? 0 : WS_DISABLED;
 
     // Window exclusion
-    auto isWin32CaptureExcludePresent = winrt::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", 9);
+    auto isWin32CaptureExcludePresent = winrt::ApiInformation::IsApiContractPresent(WindowsUniversalContract, 9);
 
     // Border configuration
     auto isBorderRequiredPresent = winrt::ApiInformation::IsPropertyPresent(winrt::name_of<winrt::GraphicsCaptureSession>(), L"IsBorderRequired");
