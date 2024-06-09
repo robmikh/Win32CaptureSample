@@ -6,6 +6,7 @@
 
 namespace winrt
 {
+    using namespace Windows::Foundation;
     using namespace Windows::Foundation::Metadata;
     using namespace Windows::Graphics::Capture;
     using namespace Windows::Graphics::DirectX;
@@ -59,7 +60,7 @@ SampleWindow::SampleWindow(int width, int height, std::shared_ptr<App> app)
         CW_USEDEFAULT, CW_USEDEFAULT, adjustedWidth, adjustedHeight, nullptr, nullptr, instance, this));
     WINRT_ASSERT(m_window);
 
-    auto isAllDisplaysPresent = winrt::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", 9);
+    auto isAllDisplaysPresent = winrt::ApiInformation::IsApiContractPresent(WindowsUniversalContract, 9);
 
     m_app = app;
     m_windows = std::make_unique<WindowList>();
@@ -365,7 +366,7 @@ void SampleWindow::StopCapture()
     EnableWindow(m_snapshotButton, false);
 }
 
-void SampleWindow::OnCaptureItemClosed(winrt::GraphicsCaptureItem const&, winrt::Windows::Foundation::IInspectable const&)
+void SampleWindow::OnCaptureItemClosed(winrt::GraphicsCaptureItem const&, winrt::IInspectable const&)
 {
     StopCapture();
 }
