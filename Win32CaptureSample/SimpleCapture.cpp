@@ -152,21 +152,44 @@ void SimpleCapture::OnFrameArrived(winrt::Direct3D11CaptureFramePool const& send
 
             // First, let's clear our render target
             winrt::com_ptr<ID3D11RenderTargetView> rtv;
-            winrt::check_hresult(m_d3dDevice->CreateRenderTargetView(surfaceTexture.get(), nullptr, rtv.put()));
+            winrt::check_hresult(m_d3dDevice->CreateRenderTargetView(backBuffer.get(), nullptr, rtv.put()));
             float clearColor[] = { 0.0f, 0.0f, 0.0f, 1.0f };
             m_d3dContext->ClearRenderTargetView(rtv.get(), clearColor);
+
+            D3D11_TEXTURE2D_DESC desc = {};
+            surfaceTexture->GetDesc(&desc);
+            int textureWidth = static_cast<int>(desc.Width);
+            int textureHeight = static_cast<int>(desc.Height);
 
             // Next, let's copy out each dirty region
             auto dirtyRegion = frame.DirtyRegions();
             for (auto&& dirtyRegion : dirtyRegion)
             {
+                if (dirtyRegion.X >= textureWidth || dirtyRegion.Y >= textureHeight)
+                {
+                    continue;
+                }
+
+                int right = dirtyRegion.X + dirtyRegion.Width;
+                int bottom = dirtyRegion.Y + dirtyRegion.Height;
+
+                if (right <= 0 || bottom <= 0)
+                {
+                    continue;
+                }
+
+                int left = std::max(dirtyRegion.X, 0);
+                int top = std::max(dirtyRegion.Y, 0);
+                right = std::min(right, textureWidth);
+                bottom = std::min(bottom, textureHeight);
+
                 D3D11_BOX region = {};
-                region.left = static_cast<uint32_t>(dirtyRegion.X);
-                region.right = static_cast<uint32_t>(dirtyRegion.X + dirtyRegion.Width);
-                region.top = static_cast<uint32_t>(dirtyRegion.Y);
-                region.bottom = static_cast<uint32_t>(dirtyRegion.X + dirtyRegion.Height);
+                region.left = static_cast<uint32_t>(left);
+                region.right = static_cast<uint32_t>(right);
+                region.top = static_cast<uint32_t>(top);
+                region.bottom = static_cast<uint32_t>(bottom);
                 region.back = 1;
-                m_d3dContext->CopySubresourceRegion(backBuffer.get(), 0, 0, 0, 0, surfaceTexture.get(), 0, &region);
+                m_d3dContext->CopySubresourceRegion(backBuffer.get(), 0, static_cast<uint32_t>(left), static_cast<uint32_t>(top), 0, surfaceTexture.get(), 0, &region);
             }
         }
 
