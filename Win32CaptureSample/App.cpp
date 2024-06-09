@@ -302,3 +302,20 @@ void App::VisualizeDirtyRegions(bool value)
         m_capture->VisualizeDirtyRegions(value);
     }
 }
+
+winrt::GraphicsCaptureDirtyRegionMode App::DirtyRegionMode()
+{
+    if (m_capture != nullptr)
+    {
+        return m_capture->DirtyRegionMode();
+    }
+    return winrt::GraphicsCaptureDirtyRegionMode::ReportOnly;
+}
+
+void App::DirtyRegionMode(winrt::GraphicsCaptureDirtyRegionMode value)
+{
+    if (m_capture != nullptr)
+    {
+        m_capture->DirtyRegionMode(value);
+    }
+}

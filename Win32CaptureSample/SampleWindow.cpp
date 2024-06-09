@@ -70,6 +70,11 @@ SampleWindow::SampleWindow(int width, int height, std::shared_ptr<App> app)
         { L"B8G8R8A8UIntNormalized", winrt::DirectXPixelFormat::B8G8R8A8UIntNormalized },
         { L"R16G16B16A16Float", winrt::DirectXPixelFormat::R16G16B16A16Float }
     };
+    m_dirtyRegionModes =
+    {
+        { L"Report Only", winrt::GraphicsCaptureDirtyRegionMode::ReportOnly },
+        { L"Report and Render", winrt::GraphicsCaptureDirtyRegionMode::ReportAndRender }
+    };
 
     CreateControls(instance);
 
@@ -117,6 +122,11 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
                 {
                     auto pixelFormatData = m_pixelFormats[index];
                     m_app->PixelFormat(pixelFormatData.PixelFormat);
+                }
+                else if (hwnd == m_dirtyRegionModeComboBox)
+                {
+                    auto mode = m_dirtyRegionModes[index];
+                    m_app->DirtyRegionMode(mode.Mode);
                 }
             }
             break;
@@ -217,6 +227,7 @@ void SampleWindow::OnCaptureStarted(winrt::GraphicsCaptureItem const& item, Capt
     SendMessageW(m_cursorCheckBox, BM_SETCHECK, BST_CHECKED, 0);
     SendMessageW(m_borderRequiredCheckBox, BM_SETCHECK, BST_CHECKED, 0);
     SendMessageW(m_visualizeDirtyRegionCheckBox, BM_SETCHECK, BST_UNCHECKED, 0);
+    SendMessageW(m_dirtyRegionModeComboBox, CB_SETCURSEL, 0, 0);
     EnableWindow(m_stopButton, true);
     EnableWindow(m_snapshotButton, true);
 }
@@ -340,6 +351,18 @@ void SampleWindow::CreateControls(HINSTANCE instance)
 
     // The default state is false for dirty region checkbox
     SendMessageW(m_visualizeDirtyRegionCheckBox, BM_SETCHECK, BST_UNCHECKED, 0);
+
+    // Create the dirty region mode combo box
+    m_dirtyRegionModeComboBox = controls.CreateControl(util::ControlType::ComboBox, L"", dirtyRegionStyle);
+
+    // Populate the dirty region mode combo box
+    for (auto& mode : m_dirtyRegionModes)
+    {
+        SendMessageW(m_dirtyRegionModeComboBox, CB_ADDSTRING, 0, (LPARAM)mode.Name.c_str());
+    }
+
+    // The default dirty region mode is ReportOnly (index 0)
+    SendMessageW(m_dirtyRegionModeComboBox, CB_SETCURSEL, 0, 0);
 }
 
 void SampleWindow::SetSubTitle(std::wstring const& text)
@@ -362,6 +385,7 @@ void SampleWindow::StopCapture()
     SendMessageW(m_borderRequiredCheckBox, BM_SETCHECK, BST_CHECKED, 0);
     SendMessageW(m_secondaryWindowsCheckBox, BM_SETCHECK, BST_UNCHECKED, 0);
     SendMessageW(m_visualizeDirtyRegionCheckBox, BM_SETCHECK, BST_UNCHECKED, 0);
+    SendMessageW(m_dirtyRegionModeComboBox, CB_SETCURSEL, 0, 0);
     EnableWindow(m_stopButton, false);
     EnableWindow(m_snapshotButton, false);
 }

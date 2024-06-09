@@ -26,6 +26,8 @@ public:
 
     bool VisualizeDirtyRegions();
     void VisualizeDirtyRegions(bool value);
+    winrt::Windows::Graphics::Capture::GraphicsCaptureDirtyRegionMode DirtyRegionMode();
+    void DirtyRegionMode(winrt::Windows::Graphics::Capture::GraphicsCaptureDirtyRegionMode value);
 
     void StopCapture();
 

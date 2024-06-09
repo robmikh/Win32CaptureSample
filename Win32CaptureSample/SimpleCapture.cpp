@@ -30,10 +30,10 @@ SimpleCapture::SimpleCapture(
     m_pixelFormat = pixelFormat;
     m_dirtyRegionVisualizer = dirtyRegionVisualizer;
 
-    auto d3dDevice = GetDXGIInterfaceFromObject<ID3D11Device>(m_device);
-    d3dDevice->GetImmediateContext(m_d3dContext.put());
+    m_d3dDevice = GetDXGIInterfaceFromObject<ID3D11Device>(m_device);
+    m_d3dDevice->GetImmediateContext(m_d3dContext.put());
 
-    m_swapChain = util::CreateDXGISwapChain(d3dDevice, static_cast<uint32_t>(m_item.Size().Width), static_cast<uint32_t>(m_item.Size().Height),
+    m_swapChain = util::CreateDXGISwapChain(m_d3dDevice, static_cast<uint32_t>(m_item.Size().Width), static_cast<uint32_t>(m_item.Size().Height),
         static_cast<DXGI_FORMAT>(m_pixelFormat), 2);
 
     // Creating our frame pool with 'Create' instead of 'CreateFreeThreaded'
@@ -131,8 +131,44 @@ void SimpleCapture::OnFrameArrived(winrt::Direct3D11CaptureFramePool const& send
         winrt::check_hresult(m_swapChain->GetBuffer(0, winrt::guid_of<ID3D11Texture2D>(), backBuffer.put_void()));
 
         auto surfaceTexture = GetDXGIInterfaceFromObject<ID3D11Texture2D>(frame.Surface());
-        // copy surfaceTexture to backBuffer
-        m_d3dContext->CopyResource(backBuffer.get(), surfaceTexture.get());
+
+        // If we have a dirty region visualizer, then we're running on a build
+        // of Windows that supports dirty regions.
+        bool renderRects = m_dirtyRegionVisualizer && frame.DirtyRegionMode() == winrt::GraphicsCaptureDirtyRegionMode::ReportAndRender;
+
+        if (!renderRects)
+        {
+            // On builds of Windows that don't support dirty regions or when the dirty
+            // region mode is set to ReportOnly, the entire frame has been rendered.
+
+            // copy surfaceTexture to backBuffer
+            m_d3dContext->CopyResource(backBuffer.get(), surfaceTexture.get());
+        }
+        else
+        {
+            // When the dirty region mode is set to ReportAndRender, only the pixels within
+            // the dirty region are valid. To visualize this, we'll clear our render target
+            // to opaque black and copy out the dirty regions.
+
+            // First, let's clear our render target
+            winrt::com_ptr<ID3D11RenderTargetView> rtv;
+            winrt::check_hresult(m_d3dDevice->CreateRenderTargetView(surfaceTexture.get(), nullptr, rtv.put()));
+            float clearColor[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+            m_d3dContext->ClearRenderTargetView(rtv.get(), clearColor);
+
+            // Next, let's copy out each dirty region
+            auto dirtyRegion = frame.DirtyRegions();
+            for (auto&& dirtyRegion : dirtyRegion)
+            {
+                D3D11_BOX region = {};
+                region.left = static_cast<uint32_t>(dirtyRegion.X);
+                region.right = static_cast<uint32_t>(dirtyRegion.X + dirtyRegion.Width);
+                region.top = static_cast<uint32_t>(dirtyRegion.Y);
+                region.bottom = static_cast<uint32_t>(dirtyRegion.X + dirtyRegion.Height);
+                region.back = 1;
+                m_d3dContext->CopySubresourceRegion(backBuffer.get(), 0, 0, 0, 0, surfaceTexture.get(), 0, &region);
+            }
+        }
 
         if (m_dirtyRegionVisualizer && m_visualizeDirtyRegions.load())
         {

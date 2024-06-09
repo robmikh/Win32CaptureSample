@@ -21,6 +21,12 @@ private:
         winrt::Windows::Graphics::DirectX::DirectXPixelFormat PixelFormat;
     };
 
+    struct DirtyRegionModeData
+    {
+        std::wstring Name;
+        winrt::Windows::Graphics::Capture::GraphicsCaptureDirtyRegionMode Mode;
+    };
+
     enum class CaptureType
     {
         ProgrammaticWindow,
@@ -51,9 +57,11 @@ private:
     HWND m_borderRequiredCheckBox = nullptr;
     HWND m_secondaryWindowsCheckBox = nullptr;
     HWND m_visualizeDirtyRegionCheckBox = nullptr;
+    HWND m_dirtyRegionModeComboBox = nullptr;
     std::unique_ptr<WindowList> m_windows;
     std::unique_ptr<MonitorList> m_monitors;
     std::vector<PixelFormatData> m_pixelFormats;
+    std::vector<DirtyRegionModeData> m_dirtyRegionModes;
     std::shared_ptr<App> m_app;
     winrt::Windows::Graphics::Capture::GraphicsCaptureItem::Closed_revoker m_itemClosedRevoker;
     bool m_isSecondaryWindowsFeaturePresent = false;
