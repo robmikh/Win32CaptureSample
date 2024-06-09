@@ -165,6 +165,10 @@ void SimpleCapture::OnFrameArrived(winrt::Direct3D11CaptureFramePool const& send
             auto dirtyRegion = frame.DirtyRegions();
             for (auto&& dirtyRegion : dirtyRegion)
             {
+                // Some of these checks are a bit paranoid. The real thing we need to look out for
+                // is when the render target and the source texture differ in size (e.g. during a
+                // window resize, where we resize the swap chain before we resize the frame pool).
+
                 if (dirtyRegion.X >= textureWidth || dirtyRegion.Y >= textureHeight)
                 {
                     continue;
