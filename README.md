@@ -10,7 +10,7 @@ A simple sample using the Windows.Graphics.Capture APIs in a Win32 application.
   * [Points of interest](https://github.com/robmikh/Win32CaptureSample#points-of-interest)
 
 ## Requirements
-This sample requires the [Windows 11 SDK (10.0.22000.194)](https://developer.microsoft.com/en-us/windows/downloads/sdk-archive/) and [Visual Studio 2022](https://visualstudio.microsoft.com/vs/) to compile. Neither are required to run the sample once you have a binary. The minimum verison of Windows 10 required to run the sample is build 17134.
+This sample requires the [Windows 11 SDK (10.0.26100)](https://developer.microsoft.com/en-us/windows/downloads/windows-sdk/) and [Visual Studio 2022](https://visualstudio.microsoft.com/vs/) to compile. Neither are required to run the sample once you have a binary. The minimum verison of Windows 10 required to run the sample is build 17134.
 
 ## Win32 vs UWP
 This sample demonstrates using the Windows.Graphics.Capture APIs in a Win32 application. For the most part, the usage is the same, except for a few tweaks:
