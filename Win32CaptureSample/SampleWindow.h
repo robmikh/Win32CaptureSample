@@ -27,6 +27,12 @@ private:
         winrt::Windows::Graphics::Capture::GraphicsCaptureDirtyRegionMode Mode;
     };
 
+    struct MinUpdateIntervalData
+    {
+        std::wstring Name;
+        winrt::Windows::Foundation::TimeSpan Interval;
+    };
+
     enum class CaptureType
     {
         ProgrammaticWindow,
@@ -58,10 +64,12 @@ private:
     HWND m_secondaryWindowsCheckBox = nullptr;
     HWND m_visualizeDirtyRegionCheckBox = nullptr;
     HWND m_dirtyRegionModeComboBox = nullptr;
+    HWND m_minUpdateIntervalComboBox = nullptr;
     std::unique_ptr<WindowList> m_windows;
     std::unique_ptr<MonitorList> m_monitors;
     std::vector<PixelFormatData> m_pixelFormats;
     std::vector<DirtyRegionModeData> m_dirtyRegionModes;
+    std::vector<MinUpdateIntervalData> m_updateIntervals;
     std::shared_ptr<App> m_app;
     winrt::Windows::Graphics::Capture::GraphicsCaptureItem::Closed_revoker m_itemClosedRevoker;
     bool m_isSecondaryWindowsFeaturePresent = false;

@@ -35,6 +35,9 @@ public:
     bool VisualizeDirtyRegions() { CheckClosed(); return m_visualizeDirtyRegions.load(); }
     void VisualizeDirtyRegions(bool value);
 
+    winrt::Windows::Foundation::TimeSpan MinUpdateInterval() { CheckClosed(); return m_session.MinUpdateInterval(); }
+    void MinUpdateInterval(winrt::Windows::Foundation::TimeSpan value) { CheckClosed(); m_session.MinUpdateInterval(value); }
+
     void Close();
 
 private:

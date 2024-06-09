@@ -29,6 +29,9 @@ public:
     winrt::Windows::Graphics::Capture::GraphicsCaptureDirtyRegionMode DirtyRegionMode();
     void DirtyRegionMode(winrt::Windows::Graphics::Capture::GraphicsCaptureDirtyRegionMode value);
 
+    winrt::Windows::Foundation::TimeSpan MinUpdateInterval();
+    void MinUpdateInterval(winrt::Windows::Foundation::TimeSpan value);
+
     void StopCapture();
 
 private:

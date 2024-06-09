@@ -319,3 +319,20 @@ void App::DirtyRegionMode(winrt::GraphicsCaptureDirtyRegionMode value)
         m_capture->DirtyRegionMode(value);
     }
 }
+
+winrt::TimeSpan App::MinUpdateInterval()
+{
+    if (m_capture != nullptr)
+    {
+        return m_capture->MinUpdateInterval();
+    }
+    return winrt::TimeSpan{ 0 };
+}
+
+void App::MinUpdateInterval(winrt::TimeSpan value)
+{
+    if (m_capture != nullptr)
+    {
+        m_capture->MinUpdateInterval(value);
+    }
+}

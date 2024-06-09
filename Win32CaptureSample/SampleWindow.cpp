@@ -75,6 +75,12 @@ SampleWindow::SampleWindow(int width, int height, std::shared_ptr<App> app)
         { L"Report Only", winrt::GraphicsCaptureDirtyRegionMode::ReportOnly },
         { L"Report and Render", winrt::GraphicsCaptureDirtyRegionMode::ReportAndRender }
     };
+    m_updateIntervals =
+    {
+        { L"None", winrt::TimeSpan { 0 } },
+        { L"1s", std::chrono::seconds(1) },
+        { L"5s", std::chrono::seconds(5) },
+    };
 
     CreateControls(instance);
 
@@ -127,6 +133,11 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
                 {
                     auto mode = m_dirtyRegionModes[index];
                     m_app->DirtyRegionMode(mode.Mode);
+                }
+                else if (hwnd == m_minUpdateIntervalComboBox)
+                {
+                    auto interval = m_updateIntervals[index];
+                    m_app->MinUpdateInterval(interval.Interval);
                 }
             }
             break;
@@ -228,6 +239,7 @@ void SampleWindow::OnCaptureStarted(winrt::GraphicsCaptureItem const& item, Capt
     SendMessageW(m_borderRequiredCheckBox, BM_SETCHECK, BST_CHECKED, 0);
     SendMessageW(m_visualizeDirtyRegionCheckBox, BM_SETCHECK, BST_UNCHECKED, 0);
     SendMessageW(m_dirtyRegionModeComboBox, CB_SETCURSEL, 0, 0);
+    SendMessageW(m_minUpdateIntervalComboBox, CB_SETCURSEL, 0, 0);
     EnableWindow(m_stopButton, true);
     EnableWindow(m_snapshotButton, true);
 }
@@ -272,6 +284,10 @@ void SampleWindow::CreateControls(HINSTANCE instance)
     // Dirty region mode
     auto isDirtyRegionModePresent = winrt::ApiInformation::IsPropertyPresent(winrt::name_of<winrt::GraphicsCaptureSession>(), L"DirtyRegionMode");
     auto dirtyRegionStyle = isDirtyRegionModePresent ? 0 : WS_DISABLED;
+
+    // Min update interval
+    auto isMinUpdateIntervalPresent = winrt::ApiInformation::IsPropertyPresent(winrt::name_of<winrt::GraphicsCaptureSession>(), L"MinUpdateInterval");
+    auto minUpdateIntervalStyle = isMinUpdateIntervalPresent ? 0 : WS_DISABLED;
 
     // Secondary windows configuration
     m_isSecondaryWindowsFeaturePresent = winrt::ApiInformation::IsPropertyPresent(winrt::name_of<winrt::GraphicsCaptureSession>(), L"IncludeSecondaryWindows");
@@ -365,6 +381,20 @@ void SampleWindow::CreateControls(HINSTANCE instance)
 
     // The default dirty region mode is ReportOnly (index 0)
     SendMessageW(m_dirtyRegionModeComboBox, CB_SETCURSEL, 0, 0);
+
+    auto minUpdateIntervalLabel = controls.CreateControl(util::ControlType::Label, L"Min update interval:");
+
+    // Create the min update interval combo box
+    m_minUpdateIntervalComboBox = controls.CreateControl(util::ControlType::ComboBox, L"", minUpdateIntervalStyle);
+
+    // Populate the min update interval mode combo box
+    for (auto& data : m_updateIntervals)
+    {
+        SendMessageW(m_minUpdateIntervalComboBox, CB_ADDSTRING, 0, (LPARAM)data.Name.c_str());
+    }
+
+    // The default min update interval is None (index 0)
+    SendMessageW(m_minUpdateIntervalComboBox, CB_SETCURSEL, 0, 0);
 }
 
 void SampleWindow::SetSubTitle(std::wstring const& text)
@@ -388,6 +418,7 @@ void SampleWindow::StopCapture()
     SendMessageW(m_secondaryWindowsCheckBox, BM_SETCHECK, BST_UNCHECKED, 0);
     SendMessageW(m_visualizeDirtyRegionCheckBox, BM_SETCHECK, BST_UNCHECKED, 0);
     SendMessageW(m_dirtyRegionModeComboBox, CB_SETCURSEL, 0, 0);
+    SendMessageW(m_minUpdateIntervalComboBox, CB_SETCURSEL, 0, 0);
     EnableWindow(m_stopButton, false);
     EnableWindow(m_snapshotButton, false);
 }

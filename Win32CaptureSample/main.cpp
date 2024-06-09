@@ -48,7 +48,7 @@ int __stdcall WinMain(HINSTANCE, HINSTANCE, PSTR, int)
     // Create the app
     auto app = std::make_shared<App>(root, capturePicker, savePicker);
 
-    auto window = SampleWindow(800, 600, app);
+    auto window = SampleWindow(880, 635, app);
 
     // Provide the window handle to the pickers (explicit HWND initialization)
     window.InitializeObjectWithWindowHandle(capturePicker);
