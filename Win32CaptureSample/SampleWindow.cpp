@@ -352,6 +352,8 @@ void SampleWindow::CreateControls(HINSTANCE instance)
     // The default state is false for dirty region checkbox
     SendMessageW(m_visualizeDirtyRegionCheckBox, BM_SETCHECK, BST_UNCHECKED, 0);
 
+    auto dirtyRegionModeLabel = controls.CreateControl(util::ControlType::Label, L"Dirty region mode:");
+
     // Create the dirty region mode combo box
     m_dirtyRegionModeComboBox = controls.CreateControl(util::ControlType::ComboBox, L"", dirtyRegionStyle);
 
