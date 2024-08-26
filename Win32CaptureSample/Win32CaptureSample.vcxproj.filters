@@ -19,7 +19,6 @@
     <ClInclude Include="CaptureSnapshot.h" />
     <ClInclude Include="WindowList.h" />
     <ClInclude Include="MonitorList.h" />
-    <ClInclude Include="dispatcherqueue.desktop.interop.h" />
     <ClInclude Include="DirtyRegionVisualizer.h" />
   </ItemGroup>
   <ItemGroup>

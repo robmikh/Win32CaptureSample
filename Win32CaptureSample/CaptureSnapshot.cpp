@@ -20,7 +20,7 @@ namespace util
     using namespace robmikh::common::uwp;
 }
 
-std::future<winrt::com_ptr<ID3D11Texture2D>>
+wil::task<winrt::com_ptr<ID3D11Texture2D>>
 CaptureSnapshot::TakeAsync(winrt::IDirect3DDevice const& device, winrt::GraphicsCaptureItem const& item, winrt::DirectXPixelFormat const& pixelFormat)
 {
     // Grab the apartment context so we can return to it.
