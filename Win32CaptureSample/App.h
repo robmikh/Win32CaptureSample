@@ -5,9 +5,7 @@
 class App
 {
 public:
-    App(winrt::Windows::UI::Composition::ContainerVisual root,
-        winrt::Windows::Graphics::Capture::GraphicsCapturePicker capturePicker,
-        winrt::Windows::Storage::Pickers::FileSavePicker savePicker);
+    App(winrt::Windows::UI::Composition::ContainerVisual root);
     ~App() {}
 
     winrt::Windows::Graphics::Capture::GraphicsCaptureItem TryStartCaptureFromWindowHandle(HWND hwnd);
@@ -33,9 +31,11 @@ public:
     void MinUpdateInterval(winrt::Windows::Foundation::TimeSpan value);
 
     void StopCapture();
+    void InitializeWithWindow(HWND window);
 
 private:
     void StartCaptureFromItem(winrt::Windows::Graphics::Capture::GraphicsCaptureItem item);
+    void InitializeObjectWithWindowHandle(winrt::Windows::Foundation::IUnknown const& object);
 
 private:
     winrt::Windows::System::DispatcherQueue m_mainThread{ nullptr };
@@ -44,8 +44,7 @@ private:
     winrt::Windows::UI::Composition::SpriteVisual m_content{ nullptr };
     winrt::Windows::UI::Composition::CompositionSurfaceBrush m_brush{ nullptr };
 
-    winrt::Windows::Graphics::Capture::GraphicsCapturePicker m_capturePicker{ nullptr };
-    winrt::Windows::Storage::Pickers::FileSavePicker m_savePicker{ nullptr };
+    HWND m_mainWindow = nullptr;
 
     winrt::Windows::Graphics::DirectX::Direct3D11::IDirect3DDevice m_device{ nullptr };
     std::unique_ptr<SimpleCapture> m_capture{ nullptr };

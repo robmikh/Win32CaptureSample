@@ -16,7 +16,6 @@ namespace util
 
 int __stdcall WinMain(HINSTANCE, HINSTANCE, PSTR, int)
 {
-    // SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2); // works but everything draws small
     // Initialize COM
     winrt::init_apartment(winrt::apartment_type::single_threaded);
 
@@ -41,18 +40,10 @@ int __stdcall WinMain(HINSTANCE, HINSTANCE, PSTR, int)
     root.Size({ -220.0f, 0.0f });
     root.Offset({ 220.0f, 0.0f, 0.0f });
 
-    // Create the pickers
-    auto capturePicker = winrt::GraphicsCapturePicker();
-    auto savePicker = winrt::FileSavePicker();
-
     // Create the app
-    auto app = std::make_shared<App>(root, capturePicker, savePicker);
+    auto app = std::make_shared<App>(root);
 
     auto window = SampleWindow(880, 635, app);
-
-    // Provide the window handle to the pickers (explicit HWND initialization)
-    window.InitializeObjectWithWindowHandle(capturePicker);
-    window.InitializeObjectWithWindowHandle(savePicker);
 
     // Hookup the visual tree to the window
     auto target = window.CreateWindowTarget(compositor);

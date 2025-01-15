@@ -23,10 +23,8 @@ namespace util
     using namespace robmikh::common::uwp;
 }
 
-App::App(winrt::ContainerVisual root, winrt::GraphicsCapturePicker capturePicker, winrt::FileSavePicker savePicker)
+App::App(winrt::ContainerVisual root)
 {
-    m_capturePicker = capturePicker;
-    m_savePicker = savePicker;
     m_mainThread = winrt::DispatcherQueue::GetForCurrentThread();
     WINRT_VERIFY(m_mainThread != nullptr);
 
@@ -72,7 +70,7 @@ winrt::GraphicsCaptureItem App::TryStartCaptureFromWindowHandle(HWND hwnd)
     }
     catch (winrt::hresult_error const& error)
     {
-        MessageBoxW(nullptr,
+        MessageBoxW(m_mainWindow,
             error.message().c_str(),
             L"Win32CaptureSample",
             MB_OK | MB_ICONERROR);
@@ -90,7 +88,7 @@ winrt::GraphicsCaptureItem App::TryStartCaptureFromMonitorHandle(HMONITOR hmon)
     }
     catch (winrt::hresult_error const& error)
     {
-        MessageBoxW(nullptr,
+        MessageBoxW(m_mainWindow,
             error.message().c_str(),
             L"Win32CaptureSample",
             MB_OK | MB_ICONERROR);
@@ -100,7 +98,9 @@ winrt::GraphicsCaptureItem App::TryStartCaptureFromMonitorHandle(HMONITOR hmon)
 
 winrt::IAsyncOperation<winrt::GraphicsCaptureItem> App::StartCaptureWithPickerAsync()
 {
-    auto item = co_await m_capturePicker.PickSingleItemAsync();
+    auto capturePicker = winrt::GraphicsCapturePicker();
+    InitializeObjectWithWindowHandle(capturePicker);
+    auto item = co_await capturePicker.PickSingleItemAsync();
     if (item)
     {
         // We might resume on a different thread, so let's resume execution on the
@@ -126,14 +126,16 @@ winrt::IAsyncOperation<winrt::StorageFile> App::TakeSnapshotAsync()
     auto item = m_capture->CaptureItem();
 
     // Ask the user where they want to save the snapshot.
-    m_savePicker.SuggestedStartLocation(winrt::PickerLocationId::PicturesLibrary);
-    m_savePicker.SuggestedFileName(L"snapshot");
-    m_savePicker.DefaultFileExtension(L".png");
-    m_savePicker.FileTypeChoices().Clear();
-    m_savePicker.FileTypeChoices().Insert(L"PNG image", winrt::single_threaded_vector<winrt::hstring>({ L".png" }));
-    m_savePicker.FileTypeChoices().Insert(L"JPG image", winrt::single_threaded_vector<winrt::hstring>({ L".jpg" }));
-    m_savePicker.FileTypeChoices().Insert(L"JXR image", winrt::single_threaded_vector<winrt::hstring>({ L".jxr" }));
-    auto file = co_await m_savePicker.PickSaveFileAsync();
+    auto savePicker = winrt::FileSavePicker();
+    InitializeObjectWithWindowHandle(savePicker);
+    savePicker.SuggestedStartLocation(winrt::PickerLocationId::PicturesLibrary);
+    savePicker.SuggestedFileName(L"snapshot");
+    savePicker.DefaultFileExtension(L".png");
+    savePicker.FileTypeChoices().Clear();
+    savePicker.FileTypeChoices().Insert(L"PNG image", winrt::single_threaded_vector<winrt::hstring>({ L".png" }));
+    savePicker.FileTypeChoices().Insert(L"JPG image", winrt::single_threaded_vector<winrt::hstring>({ L".jpg" }));
+    savePicker.FileTypeChoices().Insert(L"JXR image", winrt::single_threaded_vector<winrt::hstring>({ L".jxr" }));
+    auto file = co_await savePicker.PickSaveFileAsync();
     if (file == nullptr)
     {
         co_return nullptr;
@@ -211,6 +213,18 @@ void App::StartCaptureFromItem(winrt::GraphicsCaptureItem item)
     m_capture->StartCapture();
 }
 
+void App::InitializeObjectWithWindowHandle(winrt::Windows::Foundation::IUnknown const& object)
+{
+    if (m_mainWindow == nullptr)
+    {
+        throw winrt::hresult_error(E_FAIL, L"App hasn't been properly initialized!");
+    }
+
+    // Provide the window handle to the pickers (explicit HWND initialization)
+    auto initializer = object.as<util::IInitializeWithWindow>();
+    winrt::check_hresult(initializer->Initialize(m_mainWindow));
+}
+
 void App::StopCapture()
 {
     if (m_capture)
@@ -219,6 +233,11 @@ void App::StopCapture()
         m_capture = nullptr;
         m_brush.Surface(nullptr);
     }
+}
+
+void App::InitializeWithWindow(HWND window)
+{
+    m_mainWindow = window;
 }
 
 bool App::IsCursorEnabled()

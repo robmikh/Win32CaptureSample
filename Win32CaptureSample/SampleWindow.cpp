@@ -63,6 +63,7 @@ SampleWindow::SampleWindow(int width, int height, std::shared_ptr<App> app)
     auto isAllDisplaysPresent = winrt::ApiInformation::IsApiContractPresent(WindowsUniversalContract, 9);
 
     m_app = app;
+    m_app->InitializeWithWindow(m_window);
     m_windows = std::make_unique<WindowList>();
     m_monitors = std::make_unique<MonitorList>(isAllDisplaysPresent);
     m_pixelFormats = 
@@ -114,6 +115,10 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
                     {
                         OnCaptureStarted(item, CaptureType::ProgrammaticWindow);
                     }
+                    else
+                    {
+                        StopCapture();
+                    }
                 }
                 else if (hwnd == m_monitorComboBox)
                 {
@@ -122,6 +127,10 @@ LRESULT SampleWindow::MessageHandler(UINT const message, WPARAM const wparam, LP
                     if (item != nullptr)
                     {
                         OnCaptureStarted(item, CaptureType::ProgrammaticMonitor);
+                    }
+                    else
+                    {
+                        StopCapture();
                     }
                 }
                 else if (hwnd == m_pixelFormatComboBox)
