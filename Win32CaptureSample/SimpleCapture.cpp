@@ -33,8 +33,10 @@ SimpleCapture::SimpleCapture(
     m_d3dDevice = GetDXGIInterfaceFromObject<ID3D11Device>(m_device);
     m_d3dDevice->GetImmediateContext(m_d3dContext.put());
 
+    auto format = static_cast<DXGI_FORMAT>(m_pixelFormat);
     m_swapChain = util::CreateDXGISwapChain(m_d3dDevice, static_cast<uint32_t>(m_item.Size().Width), static_cast<uint32_t>(m_item.Size().Height),
-        static_cast<DXGI_FORMAT>(m_pixelFormat), 2);
+        format, 2).as<IDXGISwapChain3>();
+    winrt::check_hresult(m_swapChain->SetColorSpace1(GetColorSpaceFromPixelFormat(format)));
 
     // We use 'CreateFreeThreaded' instead of 'Create' so that the FrameArrived
     // event fires on a thread other than our UI thread. If you use the 'Create' 
@@ -85,8 +87,10 @@ void SimpleCapture::Close()
 
 void SimpleCapture::ResizeSwapChain()
 {
+    auto format = static_cast<DXGI_FORMAT>(m_pixelFormat);
     winrt::check_hresult(m_swapChain->ResizeBuffers(2, static_cast<uint32_t>(m_lastSize.Width), static_cast<uint32_t>(m_lastSize.Height),
-        static_cast<DXGI_FORMAT>(m_pixelFormat), 0));
+        format, 0));
+    winrt::check_hresult(m_swapChain->SetColorSpace1(GetColorSpaceFromPixelFormat(format)));
 }
 
 bool SimpleCapture::TryResizeSwapChain(winrt::Direct3D11CaptureFrame const& frame)
@@ -117,6 +121,20 @@ bool SimpleCapture::TryUpdatePixelFormat()
         }
     }
     return false;
+}
+
+DXGI_COLOR_SPACE_TYPE SimpleCapture::GetColorSpaceFromPixelFormat(DXGI_FORMAT format)
+{
+    switch (format)
+    {
+    case DXGI_FORMAT_B8G8R8A8_UNORM:
+    case DXGI_FORMAT_R8G8B8A8_UNORM:
+        return DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P709;
+    case DXGI_FORMAT_R16G16B16A16_FLOAT:
+        return DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709;
+    default:
+        throw winrt::hresult_error(E_INVALIDARG, L"Unknown color space for pixel format.");
+    }
 }
 
 void SimpleCapture::OnFrameArrived(winrt::Direct3D11CaptureFramePool const& sender, winrt::IInspectable const&)
