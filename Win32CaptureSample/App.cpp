@@ -144,24 +144,24 @@ winrt::IAsyncOperation<winrt::StorageFile> App::TakeSnapshotAsync()
     // Decide on the pixel format depending on the image type
     auto fileExtension = file.FileType();
     winrt::guid fileFormatGuid = {};
-    winrt::BitmapPixelFormat bitmapPixelFormat;
+    winrt::guid bitmapPixelFormat = {};
     winrt::DirectXPixelFormat pixelFormat;
     if (fileExtension == L".png")
     {
-        fileFormatGuid = winrt::BitmapEncoder::PngEncoderId();
-        bitmapPixelFormat = winrt::BitmapPixelFormat::Bgra8;
+        fileFormatGuid = GUID_ContainerFormatPng;
+        bitmapPixelFormat = GUID_WICPixelFormat32bppBGRA;
         pixelFormat = winrt::DirectXPixelFormat::B8G8R8A8UIntNormalized;
     }
     else if (fileExtension == L".jpg" || fileExtension == L".jpeg")
     {
-        fileFormatGuid = winrt::BitmapEncoder::JpegEncoderId();
-        bitmapPixelFormat = winrt::BitmapPixelFormat::Bgra8;
+        fileFormatGuid = GUID_ContainerFormatJpeg;
+        bitmapPixelFormat = GUID_WICPixelFormat32bppBGRA;
         pixelFormat = winrt::DirectXPixelFormat::B8G8R8A8UIntNormalized;
     }
     else if (fileExtension == L".jxr")
     {
-        fileFormatGuid = winrt::BitmapEncoder::JpegXREncoderId();
-        bitmapPixelFormat = winrt::BitmapPixelFormat::Rgba16;
+        fileFormatGuid = GUID_ContainerFormatWmp;
+        bitmapPixelFormat = GUID_WICPixelFormat64bppRGBAHalf;
         pixelFormat = winrt::DirectXPixelFormat::R16G16B16A16Float;
     }
     else
@@ -175,29 +175,71 @@ winrt::IAsyncOperation<winrt::StorageFile> App::TakeSnapshotAsync()
         co_return nullptr;
     }
 
+    // Ensure WIC
+    if (!m_wicFactory)
+    {
+        m_wicFactory = util::CreateWICFactory();
+    }
+
+    // Take the snapshot
+    auto texture = co_await CaptureSnapshot::TakeAsync(m_device, item, pixelFormat);
+
     {
         // Get the file stream
-        auto stream = co_await file.OpenAsync(winrt::FileAccessMode::ReadWrite);
+        auto randomAccessStream = co_await file.OpenAsync(winrt::FileAccessMode::ReadWrite);
+        auto streamUnknown = randomAccessStream.as<IUnknown>();
+        winrt::com_ptr<IStream> stream;
+        winrt::check_hresult(CreateStreamOverRandomAccessStream(streamUnknown.get(), winrt::guid_of<IStream>(), stream.put_void()));
 
         // Initialize the encoder
-        auto encoder = co_await winrt::BitmapEncoder::CreateAsync(fileFormatGuid, stream);
-
-        // Take the snapshot
-        auto texture = co_await CaptureSnapshot::TakeAsync(m_device, item, pixelFormat);
+        winrt::com_ptr<IWICBitmapEncoder> encoder;
+        winrt::check_hresult(m_wicFactory->CreateEncoder(fileFormatGuid, nullptr, encoder.put()));
+        winrt::check_hresult(encoder->Initialize(stream.get(), WICBitmapEncoderNoCache));
+        winrt::com_ptr<IWICBitmapFrameEncode> frame;
+        winrt::com_ptr<IPropertyBag2> props;
+        winrt::check_hresult(encoder->CreateNewFrame(frame.put(), props.put()));
 
         // Encode the image
         D3D11_TEXTURE2D_DESC desc = {};
         texture->GetDesc(&desc);
         auto bytes = util::CopyBytesFromTexture(texture);
-        encoder.SetPixelData(
-            bitmapPixelFormat,
-            winrt::BitmapAlphaMode::Premultiplied,
-            desc.Width,
-            desc.Height,
-            1.0,
-            1.0,
-            bytes);
-        co_await encoder.FlushAsync();
+        auto bytesPerPixel = util::GetBytesPerPixel(desc.Format);
+        auto stride = static_cast<uint32_t>(bytesPerPixel) * desc.Width;
+        auto bufferSize = stride * desc.Height;
+
+        winrt::check_hresult(frame->Initialize(props.get()));
+        winrt::check_hresult(frame->SetSize(desc.Width, desc.Height));
+        winrt::guid targetFormat = bitmapPixelFormat;
+        winrt::check_hresult(frame->SetPixelFormat(reinterpret_cast<WICPixelFormatGUID*>(&targetFormat)));
+        if (targetFormat != bitmapPixelFormat)
+        {
+            // We must convert the image, but we should only really be converting to a single format.
+            if (targetFormat != winrt::guid(GUID_WICPixelFormat24bppBGR))
+            {
+                throw winrt::hresult_error(E_FAIL, L"Unsupported pixel format!");
+            }
+            uint32_t convertedBytesPerPixel = 3;
+            uint32_t convertedStride = convertedBytesPerPixel * desc.Width;
+            uint32_t convertedBufferSize = convertedStride * desc.Height;
+
+            winrt::com_ptr<IWICFormatConverter> converter;
+            winrt::check_hresult(m_wicFactory->CreateFormatConverter(converter.put()));
+            winrt::com_ptr<IWICBitmap> bitmap;
+            winrt::check_hresult(m_wicFactory->CreateBitmapFromMemory(desc.Width, desc.Height, bitmapPixelFormat, stride, bufferSize, bytes.data(), bitmap.put()));
+
+            winrt::check_hresult(converter->Initialize(bitmap.get(), targetFormat, WICBitmapDitherTypeNone, nullptr, 0.0, WICBitmapPaletteTypeMedianCut));
+
+            bytes = std::vector<byte>(convertedBufferSize, 0);
+            winrt::check_hresult(converter->CopyPixels(nullptr, convertedStride, convertedBufferSize, bytes.data()));
+            bytesPerPixel = convertedBytesPerPixel;
+            stride = convertedStride;
+            bufferSize = convertedBufferSize;
+        }
+        // TODO: Metadata
+
+        winrt::check_hresult(frame->WritePixels(desc.Height, stride, bufferSize, bytes.data()));
+        winrt::check_hresult(frame->Commit());
+        winrt::check_hresult(encoder->Commit());
     }
 
     co_return file;

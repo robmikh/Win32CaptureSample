@@ -50,4 +50,6 @@ private:
     std::unique_ptr<SimpleCapture> m_capture{ nullptr };
     winrt::Windows::Graphics::DirectX::DirectXPixelFormat m_pixelFormat = winrt::Windows::Graphics::DirectX::DirectXPixelFormat::B8G8R8A8UIntNormalized;
     std::shared_ptr<DirtyRegionVisualizer> m_dirtyRegionVisualizer;
+
+    winrt::com_ptr<IWICImagingFactory2> m_wicFactory;
 };

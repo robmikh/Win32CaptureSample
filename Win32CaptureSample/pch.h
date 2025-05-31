@@ -47,6 +47,9 @@
 // DWM
 #include <dwmapi.h>
 
+// Shell
+#include <shcore.h>
+
 // WIL
 #include <wil/resource.h>
 #include <wil/cppwinrt_helpers.h>
@@ -64,3 +67,4 @@
 #include <robmikh.common/stream.interop.h>
 #include <robmikh.common/hwnd.interop.h>
 #include <robmikh.common/ControlsHelper.h>
+#include <robmikh.common/wicHelpers.h>
