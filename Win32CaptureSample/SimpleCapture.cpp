@@ -168,7 +168,8 @@ void SimpleCapture::OnFrameArrived(winrt::Direct3D11CaptureFramePool const& send
         swapChainResizedToFrame = TryResizeSwapChain(frame);
 
         winrt::com_ptr<ID3D12Resource> resource;
-        winrt::check_hresult(m_swapChain->GetBuffer(0, winrt::guid_of<ID3D12Resource>(), resource.put_void()));
+        auto backBufferIndex = m_swapChain->GetCurrentBackBufferIndex();
+        winrt::check_hresult(m_swapChain->GetBuffer(backBufferIndex, winrt::guid_of<ID3D12Resource>(), resource.put_void()));
 
         winrt::com_ptr<ID3D11Texture2D> backBuffer;
         D3D11_RESOURCE_FLAGS d3d11Flags = { D3D11_BIND_RENDER_TARGET };
@@ -179,6 +180,11 @@ void SimpleCapture::OnFrameArrived(winrt::Direct3D11CaptureFramePool const& send
             D3D12_RESOURCE_STATE_PRESENT,
             winrt::guid_of<ID3D11Texture2D>(),
             backBuffer.put_void()));
+
+        std::array<ID3D11Resource*, 1> resources = { backBuffer.get() };
+        m_d3d11on12Device->AcquireWrappedResources(
+            resources.data(),
+            static_cast<uint32_t>(resources.size()));
         
         auto surfaceTexture = GetDXGIInterfaceFromObject<ID3D11Texture2D>(frame.Surface());
 
@@ -251,6 +257,11 @@ void SimpleCapture::OnFrameArrived(winrt::Direct3D11CaptureFramePool const& send
         {
             m_dirtyRegionVisualizer->Render(backBuffer, frame);
         }
+
+        m_d3d11on12Device->ReleaseWrappedResources(
+            resources.data(),
+            static_cast<uint32_t>(resources.size()));
+        m_d3dContext->Flush();
     } // We currently fail here when the frame is returned to the pool. This 
       // is because there is an API currently missing in 11-on-12.
 
