@@ -262,8 +262,7 @@ void SimpleCapture::OnFrameArrived(winrt::Direct3D11CaptureFramePool const& send
             resources.data(),
             static_cast<uint32_t>(resources.size()));
         m_d3dContext->Flush();
-    } // We currently fail here when the frame is returned to the pool. This 
-      // is because there is an API currently missing in 11-on-12.
+    }
 
     DXGI_PRESENT_PARAMETERS presentParameters{};
     m_swapChain->Present1(1, 0, &presentParameters);
